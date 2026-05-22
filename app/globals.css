@@ -1,0 +1,794 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Designer';
+  src: url('/fonts/Designer.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  /* Metric overrides, bring Space Grotesk/Inter fallback close to Designer
+     so the swap-in causes minimal line-box reflow. Conservative values. */
+  size-adjust: 100%;
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* PrizePilot, premium ecommerce light theme. */
+    --background: 30 20% 99%;
+    --foreground: 222 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 12%;
+
+    --primary: 222 47% 18%;          /* deep navy */
+    --primary-foreground: 40 30% 98%;
+
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 222 30% 12%;
+
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 36 92% 52%;            /* gold accent */
+    --accent-foreground: 222 30% 12%;
+
+    --success: 152 60% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 36 92% 52%;
+    --warning-foreground: 222 30% 12%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 222 47% 18%;
+
+    --radius: 0.6rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* ===========================================================================
+   * Public-site dark theme. Scoped via .theme-dark on PublicLayout root so the
+   * admin and account areas keep the clean light theme.
+   * ========================================================================= */
+  .theme-dark {
+    /* COMPO, dark electric brand */
+    --background: 222 45% 3%;            /* deeper graphite */
+    --foreground: 0 0% 100%;
+
+    --card: 222 32% 6.5%;                /* surface 1 */
+    --card-foreground: 0 0% 100%;
+    --card-2: 222 30% 10%;               /* surface 2 */
+    --surface-1: 222 30% 8%;
+    --surface-2: 222 28% 11%;
+    --surface-3: 222 26% 14%;
+    --silver: 220 15% 88%;
+    --hairline: 220 30% 100%;            /* used as hsl(var(--hairline) / .08) */
+
+    --popover: 222 30% 8%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 204 100% 50%;             /* #00A3FF electric blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 28% 12%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 222 20% 16%;
+    --muted-foreground: 220 12% 70%;
+
+    --accent: 230 90% 62%;               /* violet-blue */
+    --accent-foreground: 0 0% 100%;
+
+    --info: 190 95% 55%;                 /* cyan */
+    --info-foreground: 222 40% 4%;
+
+    --gold: 43 96% 56%;
+    --gold-foreground: 222 40% 4%;
+
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 25 95% 55%;               /* hot orange (urgency only) */
+    --warning-foreground: 222 40% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 222 25% 16%;
+    --input: 222 25% 16%;
+    --ring: 204 100% 50%;
+
+    --grad-electric: linear-gradient(135deg, hsl(204 100% 50%) 0%, hsl(190 95% 55%) 50%, hsl(230 90% 62%) 100%);
+    --grad-graphite: linear-gradient(180deg, hsl(222 32% 8% / 0.85) 0%, hsl(222 38% 5% / 0.9) 100%);
+    --grad-glass-top: linear-gradient(180deg, hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 100% / 0) 60%);
+    --grad-blue-fade: linear-gradient(180deg, hsl(204 100% 55% / 0.18) 0%, transparent 100%);
+    --grad-silver: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(220 15% 82%) 100%);
+    --grad-gold: linear-gradient(135deg, hsl(43 96% 62%) 0%, hsl(36 92% 50%) 100%);
+    --glow-blue: 0 0 0 1px hsl(204 100% 55% / 0.35), 0 8px 30px -8px hsl(204 100% 55% / 0.45);
+    --shadow-elev-1: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 6px 16px -8px hsl(222 60% 0% / 0.6);
+    --shadow-elev-2: 0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 18px 50px -18px hsl(222 60% 0% / 0.75);
+    --shadow-deep: 0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -20px hsl(204 100% 30% / 0.45), 0 8px 30px -10px hsl(0 0% 0% / 0.6);
+  }
+
+  /* Public-site typography */
+  .theme-dark { font-family: 'Inter', system-ui, sans-serif; }
+  .theme-dark h1, .theme-dark h2, .theme-dark h3,
+  .theme-dark .font-display {
+    font-family: 'Designer', 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+  .theme-dark .font-mono-num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  /* Background utilities */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(0 0% 100% / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(0 0% 100% / 0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+  }
+  .bg-radial-glow {
+    background-image:
+      radial-gradient(60% 50% at 20% 0%, hsl(204 100% 50% / 0.18), transparent 60%),
+      radial-gradient(50% 40% at 90% 20%, hsl(230 90% 62% / 0.18), transparent 60%);
+  }
+  .bg-noise {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .glow-border { box-shadow: var(--glow-blue); }
+  .glow-text { text-shadow: 0 0 24px hsl(204 100% 55% / 0.6); }
+  .grad-electric { background-image: var(--grad-electric); }
+  .grad-text {
+    background-image: var(--grad-electric);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Animations used by public site */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .animate-marquee { animation: marquee 22s linear infinite; }
+  .animate-marquee-slow { animation: marquee 45s linear infinite; }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: .72; transform: scale(1); }
+    50%      { opacity: 1; transform: scale(1.45); }
+  }
+  @keyframes confetti-fall {
+    0% { opacity: 0; transform: translate3d(0, -16px, 0) rotate(0deg); }
+    12% { opacity: 1; }
+    100% { opacity: 0; transform: translate3d(18px, 110vh, 0) rotate(520deg); }
+  }
+  .animate-glow-pulse { animation: glow-pulse 2.4s ease-out infinite; will-change: transform, opacity; }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up { animation: fade-up 0.5s ease-out both; }
+  @keyframes fade-in-img { from { opacity: 0; } to { opacity: 1; } }
+  .animate-fade-in-img { animation: fade-in-img 0.4s ease-out both; }
+  @keyframes shimmer-sweep {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+  }
+  @keyframes aurora-drift {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: .9; }
+    50%      { transform: translate3d(2%, -1%, 0) scale(1.05); opacity: 1; }
+  }
+  @keyframes rim-rotate {
+    to { --angle: 360deg; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee, .animate-marquee-slow, .animate-glow-pulse,
+    .shimmer::after, .bg-aurora::before, .rim-glow::before { animation: none !important; }
+  }
+}
+
+/* ===========================================================================
+ * Premium primitives (theme-dark)
+ * ========================================================================= */
+@layer components {
+  .theme-dark .glass-panel {
+    position: relative;
+    background: hsl(222 32% 8% / 0.72);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 16px;
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: var(--shadow-elev-1);
+  }
+  .theme-dark .glass-panel::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    background: var(--grad-glass-top);
+    pointer-events: none;
+  }
+  .theme-dark .glass-panel-strong {
+    position: relative;
+    background:
+      radial-gradient(120% 80% at 0% 0%, hsl(204 100% 55% / 0.12), transparent 60%),
+      hsl(222 34% 7% / 0.85);
+    border: 1px solid hsl(204 100% 60% / 0.18);
+    border-radius: 18px;
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    box-shadow: var(--shadow-deep);
+  }
+  .theme-dark .surface-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(0 0% 100% / 0.07);
+    border-radius: 14px;
+    box-shadow: var(--shadow-elev-1);
+  }
+  .theme-dark .rim-glow {
+    position: relative;
+  }
+  .theme-dark .rim-glow::before {
+    content: "";
+    position: absolute; inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--angle, 0deg),
+      hsl(204 100% 55% / 0.0) 0%,
+      hsl(204 100% 55% / 0.55) 25%,
+      hsl(230 90% 62% / 0.55) 50%,
+      hsl(190 95% 55% / 0.55) 75%,
+      hsl(204 100% 55% / 0.0) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+  @property --angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  .theme-dark .rim-glow:hover::before,
+  .theme-dark .rim-glow.is-active::before {
+    opacity: 1;
+    animation: rim-rotate 6s linear infinite;
+  }
+  .theme-dark .shimmer { position: relative; overflow: hidden; }
+  .theme-dark .shimmer::after {
+    content: "";
+    position: absolute; top: 0; bottom: 0; left: 0; width: 40%;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.15), transparent);
+    transform: translateX(-120%);
+    animation: shimmer-sweep 2.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .theme-dark .bg-aurora {
+    position: relative;
+    isolation: isolate;
+  }
+  .theme-dark .bg-aurora::before {
+    content: "";
+    position: absolute; inset: -10%;
+    background:
+      radial-gradient(40% 35% at 15% 20%, hsl(204 100% 55% / 0.28), transparent 70%),
+      radial-gradient(40% 35% at 85% 25%, hsl(230 90% 62% / 0.22), transparent 70%),
+      radial-gradient(45% 40% at 50% 100%, hsl(190 95% 55% / 0.18), transparent 70%);
+    filter: blur(20px);
+    z-index: -1;
+    animation: aurora-drift 14s ease-in-out infinite;
+  }
+  .theme-dark .bg-hero-mesh {
+    background:
+      radial-gradient(60% 40% at 20% 0%, hsl(204 100% 55% / 0.22), transparent 70%),
+      radial-gradient(50% 40% at 90% 10%, hsl(230 90% 62% / 0.18), transparent 70%),
+      radial-gradient(70% 60% at 50% 100%, hsl(190 95% 55% / 0.10), transparent 70%),
+      linear-gradient(180deg, hsl(222 45% 4%) 0%, hsl(222 45% 3%) 100%);
+  }
+  .theme-dark .home-bg {
+    background:
+      linear-gradient(180deg, hsl(222 45% 3%) 0%, hsl(222 47% 3.4%) 38%, hsl(222 46% 3.7%) 72%, hsl(222 45% 3%) 100%);
+  }
+  .theme-dark .home-bg-layer {
+    background:
+      radial-gradient(70% 18% at 50% 4%, hsl(204 100% 55% / 0.16), transparent 72%),
+      radial-gradient(65% 18% at 50% 28%, hsl(190 95% 55% / 0.095), transparent 76%),
+      radial-gradient(72% 22% at 20% 52%, hsl(230 90% 62% / 0.075), transparent 78%),
+      radial-gradient(72% 22% at 86% 66%, hsl(204 100% 55% / 0.08), transparent 78%),
+      radial-gradient(80% 22% at 50% 88%, hsl(190 95% 55% / 0.065), transparent 80%);
+  }
+  .theme-dark .divider-glow {
+    height: 1px; width: 100%;
+    background: linear-gradient(90deg, transparent, hsl(204 100% 55% / 0.4), transparent);
+  }
+  .theme-dark .eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: hsl(204 100% 65%);
+  }
+  .theme-dark .price-chip {
+    display: inline-flex; align-items: center;
+    background: var(--grad-silver);
+    color: hsl(222 40% 6%);
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 8px;
+    box-shadow: 0 6px 16px -8px hsl(0 0% 0% / 0.6);
+  }
+  .theme-dark .gold-chip {
+    display: inline-flex; align-items: center;
+    background: var(--grad-gold);
+    color: hsl(36 90% 12%);
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 10px;
+    box-shadow: 0 6px 16px -8px hsl(36 90% 30% / 0.6);
+  }
+  .theme-dark .btn-primary-glow {
+    background-image: linear-gradient(135deg, hsl(204 100% 50%), hsl(204 100% 60%) 50%, hsl(230 90% 62%));
+    color: hsl(0 0% 100%);
+    box-shadow:
+      0 0 0 1px hsl(204 100% 60% / 0.5),
+      0 12px 30px -10px hsl(204 100% 50% / 0.7),
+      inset 0 1px 0 hsl(0 0% 100% / 0.25);
+    transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .theme-dark .btn-primary-glow:hover {
+    filter: brightness(1.06);
+    box-shadow:
+      0 0 0 1px hsl(204 100% 65% / 0.7),
+      0 18px 40px -10px hsl(204 100% 50% / 0.8),
+      inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  }
+  .theme-dark .btn-primary-glow:active { transform: translateY(1px); }
+  .theme-dark .free-chip {
+    display: inline-flex; align-items: center;
+    background-image: linear-gradient(135deg, hsl(350 85% 42%), hsl(0 90% 55%));
+    color: hsl(0 0% 100%);
+    font-weight: 800;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 8px;
+    box-shadow:
+      0 0 0 1px hsl(0 90% 60% / 0.5),
+      0 6px 18px -6px hsl(0 85% 50% / 0.55);
+  }
+  .theme-dark .btn-free-glow {
+    background-image: linear-gradient(135deg, hsl(350 85% 45%), hsl(0 90% 55%) 50%, hsl(8 95% 58%));
+    color: hsl(0 0% 100%);
+    box-shadow:
+      0 0 0 1px hsl(0 90% 60% / 0.5),
+      0 12px 30px -10px hsl(0 90% 50% / 0.7),
+      inset 0 1px 0 hsl(0 0% 100% / 0.25);
+    transition: transform .15s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .theme-dark .btn-free-glow:hover {
+    filter: brightness(1.06);
+    box-shadow:
+      0 0 0 1px hsl(0 90% 65% / 0.7),
+      0 18px 40px -10px hsl(0 90% 50% / 0.8),
+      inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  }
+  .theme-dark .btn-free-glow:active { transform: translateY(1px); }
+  .theme-dark .btn-ghost-rim {
+    background: hsl(0 0% 100% / 0.04);
+    border: 1px solid hsl(0 0% 100% / 0.14);
+    color: hsl(0 0% 100%);
+    transition: background .2s, border-color .2s;
+  }
+  .theme-dark .btn-ghost-rim:hover {
+    background: hsl(0 0% 100% / 0.08);
+    border-color: hsl(204 100% 60% / 0.5);
+  }
+
+  /* =========================================================================
+   * TopDraw design system utility classes, admin (scoped to .theme-dark) and
+   * public. Use these instead of inventing one-off styles when a small piece
+   * of markup needs the same look but doesn't justify a component.
+   * ======================================================================= */
+
+  /* Admin */
+  .theme-dark .admin-page { @apply space-y-5 md:space-y-6; }
+  .theme-dark .admin-panel {
+    background: hsl(222 32% 8% / 0.72);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+  .theme-dark .admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+  }
+  .theme-dark .admin-toolbar {
+    @apply flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4;
+  }
+  .theme-dark .admin-input,
+  .theme-dark .admin-select {
+    background: hsl(0 0% 100% / 0.05);
+    border: 1px solid hsl(0 0% 100% / 0.15);
+    color: hsl(0 0% 100%);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  .theme-dark .admin-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: hsl(0 0% 100% / 0.05);
+    color: hsl(0 0% 100% / 0.7);
+  }
+  .theme-dark .admin-drawer {
+    background: hsl(222 45% 4%);
+    border-left: 1px solid hsl(0 0% 100% / 0.1);
+  }
+  .theme-dark .admin-drawer-section {
+    border-radius: 0.75rem;
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    background: hsl(0 0% 100% / 0.03);
+    padding: 1rem;
+  }
+  .theme-dark .admin-muted { color: hsl(0 0% 100% / 0.55); }
+  .theme-dark .admin-value { color: hsl(0 0% 100%); font-weight: 600; }
+
+  /* Public */
+  .td-section { @apply py-12 md:py-20; }
+  .td-section-dark { background: hsl(222 45% 4%); }
+  .td-panel {
+    background: hsl(222 32% 8% / 0.72);
+    border: 1px solid hsl(0 0% 100% / 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .td-glow-blue {
+    box-shadow:
+      0 0 0 1px hsl(204 100% 60% / 0.3),
+      0 18px 50px -18px hsl(204 100% 55% / 0.45);
+  }
+  .td-divider-soft {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.12), transparent);
+  }
+  .td-text-muted { color: hsl(0 0% 100% / 0.65); }
+  .td-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: hsl(204 100% 65%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom range slider for EntryQuantitySelector */
+.entry-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+.entry-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4), 0 0 12px hsl(var(--primary) / 0.6);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.entry-range::-webkit-slider-thumb:hover { transform: scale(1.1); }
+.entry-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.4), 0 0 12px hsl(var(--primary) / 0.6);
+  cursor: pointer;
+}
+.entry-range:disabled { cursor: not-allowed; }
+
+/* Slim variant, used in the competition detail entry panel for a more premium, compact control */
+.entry-range--slim { height: 5px; }
+.entry-range--slim::-webkit-slider-thumb { width: 18px; height: 18px; box-shadow: 0 0 0 2px hsl(var(--primary) / 0.35), 0 0 10px hsl(var(--primary) / 0.55); }
+.entry-range--slim::-moz-range-thumb { width: 18px; height: 18px; box-shadow: 0 0 0 2px hsl(var(--primary) / 0.35), 0 0 10px hsl(var(--primary) / 0.55); }
+
+/* Hero subcopy entrance */
+@keyframes subcopy-rise {
+  0% { opacity: 0; transform: translateY(6px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.animate-subcopy-rise {
+  animation: subcopy-rise 700ms ease-out 220ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-subcopy-rise { animation: none; opacity: 1; filter: none; transform: none; }
+}
+
+/* Mobile performance kill-switch, disable expensive always-running effects under 768px */
+@media (max-width: 767px) {
+  .theme-dark .bg-aurora::before { animation: none; filter: blur(10px); opacity: 0.7; }
+  .theme-dark .shimmer::after { animation: none; display: none; }
+  .theme-dark .rim-glow::before { animation: none; opacity: 0; }
+  .theme-dark .glass-panel { backdrop-filter: blur(8px) saturate(110%); -webkit-backdrop-filter: blur(8px) saturate(110%); }
+  .theme-dark .glass-panel-strong { backdrop-filter: blur(10px) saturate(115%); -webkit-backdrop-filter: blur(10px) saturate(115%); }
+  .animate-glow-pulse { animation: none; }
+  .animate-marquee { animation-duration: 22s; }
+  .animate-marquee-slow { animation-duration: 45s; }
+  .bg-noise { background-image: none; }
+  .animate-subcopy-rise { animation: none; opacity: 1; filter: none; transform: none; }
+}
+
+/* ===========================================================================
+ * Admin/CRM polish, scoped under .theme-dark which wraps AdminLayout. Makes
+ * native form controls (date pickers, native selects), default tables and
+ * raw text inputs look consistent with the dark admin shell. UI-only.
+ * ========================================================================= */
+.theme-dark select:not([data-styled]),
+.theme-dark input[type="date"]:not([data-styled]),
+.theme-dark input[type="datetime-local"]:not([data-styled]),
+.theme-dark input[type="time"]:not([data-styled]) {
+  background-color: hsl(222 30% 8%) !important;
+  color: hsl(0 0% 100%) !important;
+  border: 1px solid hsl(0 0% 100% / 0.1) !important;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+.theme-dark select:not([data-styled]):focus,
+.theme-dark input[type="date"]:not([data-styled]):focus,
+.theme-dark input[type="datetime-local"]:not([data-styled]):focus,
+.theme-dark input[type="time"]:not([data-styled]):focus {
+  outline: none;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.3);
+}
+.theme-dark select:not([data-styled]) option {
+  background-color: hsl(222 38% 8%);
+  color: hsl(0 0% 100%);
+}
+.theme-dark input[type="date"]::-webkit-calendar-picker-indicator,
+.theme-dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.theme-dark input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.6);
+  cursor: pointer;
+}
+/* Generic table polish for raw <table> usage in admin pages */
+.theme-dark table.w-full:not([data-styled]) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.theme-dark table.w-full:not([data-styled]) thead {
+  background: hsl(0 0% 100% / 0.04);
+}
+.theme-dark table.w-full:not([data-styled]) thead th {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: hsl(0 0% 100% / 0.55);
+  font-weight: 600;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid hsl(0 0% 100% / 0.08);
+}
+.theme-dark table.w-full:not([data-styled]) tbody td {
+  border-top: 1px solid hsl(0 0% 100% / 0.06);
+}
+.theme-dark table.w-full:not([data-styled]) tbody tr:hover {
+  background: hsl(0 0% 100% / 0.03);
+}
+/* Cards-as-table fallback (PostalEntries, FAQs, etc) */
+.theme-dark .bg-card { background: hsl(222 32% 6.5%); }
+.theme-dark .border:not([class*="border-"]) { border-color: hsl(0 0% 100% / 0.08); }
+
+/* Two-line clamp for long titles in admin tables */
+.line-clamp-2-tight {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* ===========================================================================
+ * Customer account utility classes. Scoped via classname so they only affect
+ * /account/* pages. Dark graphite/navy glass with electric-blue accents to
+ * match the public site, checkout and competition detail pages.
+ * ========================================================================= */
+.account-page { @apply space-y-5 md:space-y-6; }
+
+.account-header {
+  position: relative;
+  border-radius: 1rem;
+  border: 1px solid hsl(0 0% 100% / 0.10);
+  background: linear-gradient(135deg, hsl(222 28% 13% / 0.92), hsl(222 34% 7% / 0.84));
+  padding: 1.25rem 1.25rem;
+  box-shadow:
+    0 24px 70px -38px hsl(204 100% 45% / 0.55),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08);
+}
+@media (min-width: 768px) { .account-header { padding: 1.5rem 1.5rem; } }
+
+.account-panel {
+  position: relative;
+  border-radius: 1rem;
+  border: 1px solid hsl(0 0% 100% / 0.10);
+  background: linear-gradient(180deg, hsl(222 28% 12% / 0.88), hsl(222 34% 7% / 0.82));
+  box-shadow:
+    0 18px 50px -32px hsl(222 60% 4% / 0.7),
+    inset 0 1px 0 hsl(0 0% 100% / 0.06);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.account-panel-blue {
+  border-color: hsl(var(--primary) / 0.35);
+  box-shadow:
+    0 22px 60px -34px hsl(var(--primary) / 0.55),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08);
+}
+
+.account-field-card {
+  border-radius: 0.85rem;
+  border: 1px solid hsl(0 0% 100% / 0.10);
+  background: hsl(0 0% 100% / 0.045);
+  padding: 0.85rem 1rem;
+  box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.05);
+}
+
+.account-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 0.6rem;
+  background: hsl(222 32% 8% / 0.85) !important;
+  color: #fff !important;
+  border: 1px solid hsl(0 0% 100% / 0.12) !important;
+  padding: 0 0.85rem;
+  font-size: 0.9rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.account-input:focus,
+.account-input:focus-visible {
+  outline: none !important;
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.28), 0 0 22px -6px hsl(var(--primary) / 0.55) !important;
+}
+.account-input::placeholder { color: hsl(0 0% 100% / 0.35); }
+
+.account-secondary-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 40px; padding: 0 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid hsl(var(--primary) / 0.4);
+  background: hsl(222 32% 9% / 0.8);
+  color: #fff;
+  font-weight: 600; font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.account-secondary-button:hover {
+  background: hsl(222 32% 12% / 0.9);
+  border-color: hsl(var(--primary) / 0.7);
+  box-shadow: 0 10px 24px -16px hsl(var(--primary) / 0.7);
+}
+
+.account-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, hsl(222 28% 10% / 0.85), hsl(222 32% 7% / 0.82));
+}
+.account-table thead th {
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: hsl(0 0% 100% / 0.55);
+  font-weight: 700;
+  padding: 0.7rem 0.9rem;
+  background: hsl(0 0% 100% / 0.04);
+  border-bottom: 1px solid hsl(0 0% 100% / 0.08);
+}
+.account-table tbody td {
+  padding: 0.75rem 0.9rem;
+  color: hsl(0 0% 100% / 0.85);
+  border-top: 1px solid hsl(0 0% 100% / 0.06);
+  font-size: 0.875rem;
+}
+.account-table tbody tr:hover td { background: hsl(var(--primary) / 0.05); }
