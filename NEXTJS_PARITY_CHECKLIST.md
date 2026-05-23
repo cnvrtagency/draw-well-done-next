@@ -59,6 +59,9 @@
 - [x] Supabase browser auth/session provider
 - [x] Vite-compatible basket provider and MiniCart drawer
 - [x] Fixed basket provider localStorage/custom-event feedback loop that could stall global clicks
+- [x] Header auth state switches from login to account/admin controls after session/role load
+- [x] Next sitemap route for public pages and public competition/guide records
+- [x] Next robots route with private/auth/checkout/admin disallows and Sitemap line
 - [x] Closed MiniCart drawer no longer receives pointer events
 - [x] Hero decorative image/overlay layers marked `pointer-events-none`
 - [x] `/basket` redirect/open-drawer behaviour
@@ -158,8 +161,8 @@
 - [x] Wallet settings mutation
 - [x] Wallet customer grant/adjust mutations
 - [x] Postal entries create/process/reject/reset actions
-- [x] Emails read-only template view with send/editor blocker documented
+- [x] Emails read-only template view plus `/api/send-email` compatibility route
 - [x] FAQs create/edit/archive/delete
 - [x] Guides create/edit/publish/archive/delete/duplicate/image upload
 - [x] Content library storage list/upload/delete/copy URL
-- [x] SEO centre URL review/copy helpers with IndexNow submit blocker documented
+- [x] SEO centre URL review/copy/IndexNow submit through `/api/indexnow-submit`

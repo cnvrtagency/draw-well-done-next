@@ -2328,8 +2328,10 @@ function SeoCentrePage() {
   const [selectedStatic, setSelectedStatic] = useState<Set<string>>(() => new Set(staticPaths));
   const [selectedCompetitions, setSelectedCompetitions] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState<string | null>(null);
 
   const fullUrl = useCallback((path: string) => path === "/" ? `${site}/` : `${site}${path}`, []);
 
@@ -2384,12 +2386,50 @@ function SeoCentrePage() {
     }
   }
 
+  async function submitUrls(urls: string[]) {
+    if (!supabase || submitting) return;
+    setError(null);
+    setSubmitted(null);
+    if (!urls.length) {
+      setError("No URLs selected.");
+      return;
+    }
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) {
+      setError("Not signed in.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      let total = 0;
+      let lastStatus = 0;
+      for (let i = 0; i < urls.length; i += 100) {
+        const batch = urls.slice(i, i + 100);
+        const response = await fetch("/api/indexnow-submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ urls: batch }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(body?.error || `HTTP ${response.status}`);
+        total += body?.submitted ?? batch.length;
+        lastStatus = body?.indexnowStatus ?? response.status;
+      }
+      setSubmitted(`Submitted ${total} URL(s) to IndexNow. Last status ${lastStatus}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "IndexNow submission failed.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div>
-      <AdminPageHeader eyebrow="Indexing" title="SEO Centre" subtitle="Vite's SEO centre submits selected URLs to IndexNow. Next can safely review and copy the same URL sets, but submission is blocked until the matching API route exists." icon={<Search className="h-5 w-5" />} />
-      <IncompleteNotice>IndexNow submission is intentionally disabled in Next because the Vite tool posts to <code>/api/indexnow-submit</code> and this Next app does not currently expose that route. No email, SEO or indexing action is faked.</IncompleteNotice>
+      <AdminPageHeader eyebrow="Indexing" title="SEO Centre" subtitle="Submit selected public URLs to IndexNow using the same admin-only request shape as Vite." icon={<Search className="h-5 w-5" />} />
       <LoadingOrError loading={loading} error={error} />
       {copied ? <div className="my-4 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">{copied} copied.</div> : null}
+      {submitted ? <div className="my-4 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">{submitted}</div> : null}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <AdminPanel title="Sitemap and IndexNow key" description="Copied from the Vite SEO centre constants.">
           <div className="space-y-3 text-sm text-white/75">
@@ -2398,7 +2438,7 @@ function SeoCentrePage() {
             <p>Google indexing remains sitemap/Search Console driven. Vite does not use the Google Indexing API for these public pages.</p>
           </div>
         </AdminPanel>
-        <AdminPanel title="Selected URLs" description={`${selectedUrls.length} URL(s) selected for review.`} actions={<Button variant="outline" onClick={() => copyText(selectedUrls.join("\n"), "Selected URLs")}><Copy className="h-4 w-4" /> Copy URLs</Button>}>
+        <AdminPanel title="Selected URLs" description={`${selectedUrls.length} URL(s) selected for review.`} actions={<><Button variant="outline" onClick={() => copyText(selectedUrls.join("\n"), "Selected URLs")}><Copy className="h-4 w-4" /> Copy URLs</Button><Button onClick={() => submitUrls(selectedUrls)} disabled={submitting || selectedUrls.length === 0}>{submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Submit</Button></>}>
           <div className="max-h-52 overflow-auto rounded-lg border border-white/10 bg-black/20 p-3 font-mono text-xs text-white/70">
             {selectedUrls.length ? selectedUrls.map((url) => <div key={url} className="break-all">{url}</div>) : "No URLs selected."}
           </div>

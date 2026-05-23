@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, Menu, User, X } from "lucide-react";
 import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { MiniCartTrigger } from "@/components/MiniCart";
+import { useAuth } from "@/hooks/useAuth";
 
 const promo = ["Live competitions open now", "18+ only", "Free postal entry route", "Winners published", "Entry caps shown upfront", "UK prize competitions"];
 const navItems = [
@@ -26,6 +27,7 @@ function Wordmark() {
 
 export function Header() {
   const pathname = usePathname();
+  const { user, isAdmin, loading, signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -40,6 +42,10 @@ export function Header() {
         ? "text-white after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-px after:bg-primary after:shadow-[0_0_8px_hsl(204_100%_55%/.9)]"
         : "text-white hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-white hover:to-primary"
     }`;
+  const closeAndSignOut = async () => {
+    setOpen(false);
+    await signOut();
+  };
 
   return (
     <header className={`sticky top-0 z-40 backdrop-blur-xl border-b border-white/10 transition-colors duration-300 ${scrolled ? "bg-background/85 shadow-[0_1px_0_0_hsl(204_100%_55%/0.25),0_8px_24px_-12px_hsl(204_100%_30%/0.4)]" : "bg-background/60 shadow-[0_1px_0_0_hsl(204_100%_55%/0.12)]"}`}>
@@ -56,9 +62,22 @@ export function Header() {
         </nav>
         <div className="flex items-center gap-2">
           <MiniCartTrigger />
-          <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs">
-            <Link href="/login">Log in</Link>
-          </Button>
+          {!loading && user ? (
+            <>
+              {isAdmin ? (
+                <Button asChild variant="outline" size="sm" className="hidden lg:inline-flex border-white/20 bg-transparent text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs">
+                  <Link href="/admin">Admin</Link>
+                </Button>
+              ) : null}
+              <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs">
+                <Link href="/account">Account</Link>
+              </Button>
+            </>
+          ) : !loading ? (
+            <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs">
+              <Link href="/login">Log in</Link>
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -81,8 +100,29 @@ export function Header() {
               <Link href="/free-entry" onClick={() => setOpen(false)} className="block rounded-lg border border-info/40 bg-info/10 px-4 py-3 font-display text-[13px] font-bold uppercase tracking-[0.06em] text-info">Free postal entry route →</Link>
             </div>
             <div className="relative p-4 border-t border-white/10 mt-2 space-y-2">
-              <Button asChild variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs"><Link href="/login" onClick={() => setOpen(false)}>Log in</Link></Button>
-              <Button asChild className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs"><Link href="/register" onClick={() => setOpen(false)}>Create account</Link></Button>
+              {!loading && user ? (
+                <>
+                  <div className="flex items-center gap-3 px-1 pb-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-full bg-electric text-white">
+                      <User className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-bold uppercase tracking-wider text-white/55">Signed in</div>
+                      <div className="truncate text-sm text-white">{user.email}</div>
+                    </div>
+                  </div>
+                  {isAdmin ? <Button asChild variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs"><Link href="/admin" onClick={() => setOpen(false)}>Admin</Link></Button> : null}
+                  <Button asChild variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs"><Link href="/account" onClick={() => setOpen(false)}>My account</Link></Button>
+                  <Button className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs" onClick={closeAndSignOut}>Sign out</Button>
+                </>
+              ) : !loading ? (
+                <>
+                  <Button asChild variant="outline" className="w-full border-white/20 bg-transparent text-white hover:bg-white/10 font-display uppercase tracking-[0.06em] text-xs"><Link href="/login" onClick={() => setOpen(false)}>Log in</Link></Button>
+                  <Button asChild className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs"><Link href="/register" onClick={() => setOpen(false)}>Create account</Link></Button>
+                </>
+              ) : (
+                <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-[0.06em] text-white/55">Checking session...</div>
+              )}
             </div>
           </aside>
         </div>

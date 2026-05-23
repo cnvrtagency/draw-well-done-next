@@ -188,8 +188,8 @@ Next admin features currently implemented:
 - FAQs create/edit/archive/unarchive/delete against the existing `faq_items` table.
 - Guides list/create/edit/publish/unpublish/archive/delete/duplicate plus featured-image upload against the existing `guides` table and `competition-images` bucket.
 - Content library storage list/upload/delete/copy URL for the existing `competition-images` bucket.
-- SEO centre URL selection/copy helpers copied from Vite, with IndexNow submission disabled because the matching Next API route is absent.
-- Read-only email template list. Email editor/preview/send flows remain blocked because Vite calls `/api/send-email` and no matching Next route exists.
+- SEO centre URL selection/copy helpers copied from Vite, with admin-only IndexNow submission through `/api/indexnow-submit`.
+- Read-only email template list plus a server-only `/api/send-email` compatibility route for DB-backed templates, admin JWTs and internal webhook-secret calls.
 
 Exact gaps:
 - Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editing are incomplete.
@@ -197,15 +197,15 @@ Exact gaps:
 - Draw execution, winner publishing/proof and postal processing require real admin/RLS/RPC/storage testing before launch.
 - Customer verification-review workflow is still incomplete; wallet grant/adjust and entry void/refund/archive/delete actions are wired but require staging function/RLS tests.
 - Payment cancel/refund functions are wired but require staging provider/RLS testing; no refund should be considered verified until the existing Edge Functions return success in staging.
-- Email editor/preview/send/test is blocked by missing Next `/api/send-email` compatibility route.
-- SEO IndexNow submission is blocked by missing Next `/api/indexnow-submit` compatibility route. Public SEO metadata/routes were not changed.
+- Email editor/preview UI is still not ported, but `/api/send-email` exists for DB-backed template sends. Hardcoded Vite fallback template rendering was not copied into Next.
+- SEO IndexNow submission route now exists. The IndexNow key file at the public site root still needs to be present for production indexing.
 
 High-risk actions:
 - Draw execution and winner publishing must keep using the Vite RPC/function path and must not introduce client-side winner selection.
 - Payment/refund, wallet and ticket allocation flows must only call the existing Edge Functions/RPCs.
 - Competition pricing, max entry, free entry and reserved entry changes must match Vite validation and audit logging.
 - Storage uploads must respect existing bucket/RLS policies; blocked uploads must surface the Supabase error instead of bypassing policy.
-- Email and SEO submits must remain disabled until the matching server routes exist; the UI must not fake successful sends/submissions.
+- Email and SEO submits must return real provider/API responses or clear configuration errors; the UI must not fake successful sends/submissions.
 
 Required manual tests:
 - Admin login/guard, non-admin access denial and no data render before role eligibility is known.
@@ -215,14 +215,15 @@ Required manual tests:
 - Postal entry process/reject, customer/wallet/payment/entry actions and all content mutation flows.
 - Discount code create/edit/delete, review create/edit/toggle/delete, FAQ archive/delete and guide publish/upload flows.
 - Content library upload/delete against `competition-images`, with storage policy errors surfaced.
-- Email send/test remains disabled unless a compatible `/api/send-email` route is added.
-- SEO IndexNow submit remains disabled unless a compatible `/api/indexnow-submit` route is added.
+- Email send/test route rejects invalid/missing payloads safely and requires admin JWT or internal secret.
+- SEO IndexNow route rejects invalid/private URLs safely and requires admin JWT.
 - Browser console check for hydration errors, invisible overlays, global click blocking and double submits.
 
 Implemented in Next:
 - Vite-compatible admin guard through `useAuth`/`user_roles` admin role. Logged-out users are redirected to `/login`; non-admin users see the same admin-only block.
 - Admin layout/nav/sidebar, active states and public/sign-out controls.
 - Admin `robots: noindex,nofollow` metadata.
+- Public `sitemap.xml` route and `robots.txt` route with private/admin/auth disallows and a Sitemap line.
 - Dashboard stat cards for live competitions, entries, revenue, postal entries, awaiting draws and unpublished winners.
 - Required route map for `/admin`, competitions, hero banners, customers, entries, orders, payments, draws, winners, reviews, discount codes, wallet settings, postal entries, emails, FAQs, guides, content library and SEO centre.
 - Competition list plus real create/edit/status, reserved-entry audit, main/gallery upload and original/card/detail/thumb image variant regeneration.
@@ -235,14 +236,14 @@ Implemented in Next:
 - Entry void/refund/archive/delete through existing Edge Functions.
 - Discount code create/edit/delete/activate through `admin-discount-codes`.
 - Review create/edit/delete/toggle, FAQ create/edit/archive/delete, guide create/edit/publish/archive/delete/duplicate/upload and content library storage list/upload/delete.
-- SEO URL selection/copy helpers with IndexNow submission safely blocked.
-- Read-only email template list with send/editor blocker documented.
+- SEO URL selection/copy helpers with admin-only IndexNow submission.
+- Read-only email template list with server-only send route available for DB-backed templates.
 
 Still incomplete:
 - Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editors.
 - Customer verification review workflow.
-- Email editor/preview/send/test flows.
-- SEO IndexNow submission until the missing Next API route is added.
+- Full email editor/preview UI and hardcoded Vite fallback template rendering.
+- IndexNow key file availability on the deployed public origin.
 - Real staging verification for discount, review, FAQ, guide, content, wallet, entry, payment, postal, draw and winner actions.
 
 Do not launch admin until all mutations are ported and tested against RLS and existing Edge Functions.
@@ -274,8 +275,8 @@ Manual admin tests required:
 - FAQ create/edit/archive/unarchive/delete works through `faq_items` RLS.
 - Guide create/edit/publish/archive/delete/duplicate and featured-image upload work through `guides` RLS and `competition-images` storage.
 - Content library list/upload/delete/copy URL works through `competition-images` storage or reports exact storage policy error.
-- SEO centre URL copy works; IndexNow submission remains disabled until `/api/indexnow-submit` exists.
-- Email templates load; send/test remains disabled until `/api/send-email` exists.
+- SEO centre URL copy works; IndexNow submission works through `/api/indexnow-submit` or reports exact auth/config/provider error.
+- Email templates load; `/api/send-email` rejects invalid payloads safely and sends DB-backed templates only when Resend/Supabase server env vars are configured.
 - No console errors, hydration errors, or global click issues.
 
 ### Admin Route/Function Matrix
@@ -296,12 +297,12 @@ Manual admin tests required:
 | `/admin/reviews` | Partial | List/create/edit/delete/toggle via `reviews` | Requires RLS/homepage review compatibility test | Yes |
 | `/admin/discount-codes` | Partial | List/create/edit/delete/activate via `admin-discount-codes` | Requires Edge Function/RLS/checkout compatibility test | Yes |
 | `/admin/wallet-settings` | Partial | Settings edit/save; customer grant/adjust available on customers page | Requires wallet/RLS/function staging test | Yes |
-| `/admin/postal-entries` | Partial | Create, process through `allocate_postal_entry`, reject, reset broken processed rows | Requires RPC/RLS/email side-effect test; Next does not add missing email route | Yes |
-| `/admin/emails` | Read-only | Template list only | Vite calls `/api/send-email`; no matching Next API route exists for editor/preview/send/test | Yes |
+| `/admin/postal-entries` | Partial | Create, process through `allocate_postal_entry`, reject, reset broken processed rows | Requires RPC/RLS/email side-effect test | Yes |
+| `/admin/emails` | Partial | Template list; `/api/send-email` compatibility route for DB-backed sends | Full Vite editor/preview UI and hardcoded fallback templates not ported | Yes |
 | `/admin/faqs` | Partial | List/create/edit/archive/unarchive/delete via `faq_items` | Requires RLS/public FAQ compatibility test | Yes |
 | `/admin/guides` | Partial | List/create/edit/publish/unpublish/archive/delete/duplicate/featured upload via `guides` | Requires RLS/storage/public guide compatibility test | Yes |
 | `/admin/content-library` | Partial | Storage list/upload/delete/copy URL in `competition-images` | Requires storage policy test; no service-role bypass | Yes |
-| `/admin/seo-centre` | Partial | Static/competition URL selection and copy helpers | IndexNow submit blocked: Vite calls `/api/indexnow-submit`, no matching Next API route exists | Yes |
+| `/admin/seo-centre` | Partial | Static/competition URL selection, copy helpers and admin-only IndexNow submit | Requires admin/provider/key-file staging test | Yes |
 
 ## Data Mutation Status
 
@@ -311,6 +312,7 @@ Manual admin tests required:
 - No Stripe logic changes.
 - No ticket allocation changes.
 - No service role keys added.
+- Service role key is only referenced in server-only API route helpers and is not exposed to the browser.
 
 Latest verification:
 - `npm run build` passed on 2026-05-23. Existing Google Fonts fetch warning remains, plus existing `<img>` lint warnings and new admin preview/list `<img>` warnings.
@@ -322,12 +324,22 @@ Latest verification:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SITE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `RESEND_REPLY_TO`
+- `EMAIL_WEBHOOK_SECRET`
+- `INDEXNOW_KEY`
 
-Server-side Netlify functions still require their existing Vite/Netlify env vars for Klaviyo, Stripe, Resend and any private Supabase operations. These are not exposed in the Next client.
+Server-side Netlify functions still require their existing Vite/Netlify env vars for Klaviyo, Stripe, Resend and any private Supabase operations. Server-only values must remain in Netlify/server environments and must not be exposed with `NEXT_PUBLIC_`.
 
 ## Manual Testing Checklist
 
 Public:
+- `/robots.txt` includes private route disallows and the staging/production sitemap URL.
+- `/sitemap.xml` includes public static pages, public competitions and published guides, and excludes account/admin/checkout/auth routes.
 - Homepage at 390px and 1440px.
 - Direct refresh homepage without hydration errors.
 - Competitions tabs.
@@ -357,7 +369,12 @@ Basket/checkout:
 Auth:
 - Register.
 - Login.
+- Header switches from Log in to Account after login without full refresh.
+- Admin user sees the Admin header button only after role check completes.
+- Non-admin user never sees the Admin header button.
+- Mobile menu shows the same logged-out/logged-in/admin states.
 - Logout.
+- Header returns to Log in/Create account state after logout without full refresh.
 - Forgot/reset password.
 - Protected route redirects.
 - Profile update.
