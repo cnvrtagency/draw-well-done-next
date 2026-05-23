@@ -6,7 +6,7 @@ The Next.js rebuild is closer to customer-facing launch parity, but it is not re
 
 ## Full Parity Audit - 2026-05-23
 
-Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, and `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder. Several public static/legal pages are still abbreviated rather than literal Vite parity, and high-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.
+Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.
 
 ### Public Route Matrix
 
@@ -16,17 +16,17 @@ Overall verdict: not ready for staging sign-off as a Vite replacement. The main 
 | `/competitions` | Partial | Data and tabs exist; tab changes are server route transitions rather than Vite client transition; pixel review required. | No |
 | `/competitions/[slug]` | Partial | Core entry, gallery, tiers, marquee and basket flow exist; requires browser/manual parity and checkout integration tests. | Yes |
 | `/build-a-bundle` | Partial | Real Vite-style builder is implemented; manual mobile, basket, MiniCart and checkout handoff tests still required. | Yes |
-| `/winners` | Near complete | Data query and cards exist; Vite loading skeleton is not visible on server render; browser visual test required. | No |
+| `/winners` | Near complete | Data query and Vite-style winner cards exist; Vite loading skeleton is not visible on server render; browser visual test required. | No |
 | `/past-competitions` | Redirect parity | Redirects to `/competitions?tab=ended`, matching Vite route behavior. | No |
 | `/faqs` | Partial | DB-backed FAQ list exists; static FAQ content in homepage bundle panel exists; visual/content review required. | No |
 | `/guides` | Partial | Published guide list exists; markdown rendering is simplified compared with Vite guide body component. | No |
 | `/guides/[slug]` | Partial | Guide detail exists, but rich markdown/body rendering is simplified. | No |
-| `/free-entry` | Partial | Page exists but content is abbreviated and still contains `[Insert postal address]`; Vite static page is much longer. | Yes |
-| `/contact` | Partial | Page exists but has placeholder postal address and shorter Vite content. | Yes |
-| `/terms-and-conditions` | Partial | Page exists but is a very short summary, not full Vite legal text. | Yes |
-| `/privacy-policy` | Partial | Page exists but is a short summary, not full Vite privacy policy. | Yes |
-| `/cookie-policy` | Partial | Page exists but is a short summary, not full Vite cookie policy. | Yes |
-| `/responsible-play` | Partial | Page exists but is a short summary, not full Vite responsible-play content. | Yes |
+| `/free-entry` | Partial | Full Vite content is ported; Vite source still contains `[Insert postal address]`. | Yes |
+| `/contact` | Partial | Full Vite content is ported; Vite source still contains placeholder postal address. | Yes |
+| `/terms-and-conditions` | Partial | Full Vite legal text is ported; Vite source still contains placeholder promoter address/date. | Yes |
+| `/privacy-policy` | Partial | Full Vite privacy text is ported; Vite source still contains placeholder postal address/date. | Yes |
+| `/cookie-policy` | Near complete | Full Vite cookie policy is ported; final date content still follows Vite placeholder date. | No |
+| `/responsible-play` | Near complete | Full Vite responsible-play copy is ported; final date content still follows Vite placeholder date. | No |
 | `/how-it-works` | Complete | Redirects to `/faqs`, matching Vite. | No |
 | `/terms` | Complete | Redirects to `/terms-and-conditions`, matching Vite. | No |
 | `/footers-preview` | Missing | Vite has a public preview route; likely non-production/dev-only. | No |
@@ -70,10 +70,10 @@ Manual tests still required:
 ### Public UI Gaps
 
 - Header is close to Vite: same nav items, auth/account/admin state, wallet pill and MiniCart. Manual logged-out/customer/admin/mobile tests still required.
-- Footer is close to Vite, but still shows “Promoter details to be confirmed before launch”; legal/contact pages also still contain placeholder postal-address text.
+- Footer is close to Vite, but still shows “Promoter details to be confirmed before launch”; legal/contact pages now match Vite and therefore still contain Vite placeholder postal-address text.
 - Homepage visually includes hero, reviews, PrizeDrops and BundleFAQ, and the destination bundle route is now operational pending manual QA.
 - Competition detail has key Vite features, but requires browser QA for gallery, quantity selector, discount tiers, free entry notice, dynamic marquee, winner/drawn state and basket integration.
-- Static/legal pages need literal content parity from Vite `src/pages/public/Static.tsx` before launch.
+- Static/legal pages now use literal content parity from Vite `src/pages/public/Static.tsx`; final real promoter address/date values are still needed.
 
 ### Basket And Checkout Gaps
 
@@ -101,7 +101,7 @@ Manual tests still required:
 
 - `app/sitemap.ts` and `app/robots.ts` exist; sitemap now includes `/build-a-bundle`.
 - Private/auth/checkout/admin routes are disallowed in robots and admin metadata is noindex/nofollow.
-- Core public metadata and JSON-LD exist for homepage, competition detail and guides; static/legal metadata is minimal.
+- Core public metadata and JSON-LD exist for homepage, competition detail and guides; static/legal metadata has been expanded to match Vite intent.
 - `/api/send-email` and `/api/indexnow-submit` exist and are server-only/admin guarded where required.
 - IndexNow key file must exist at the deployed public origin.
 - `netlify.toml` uses `@netlify/plugin-nextjs`; environment variables must be set in Netlify, not just `.env.local`.
@@ -114,7 +114,7 @@ Manual tests still required:
 
 ### Ranked Launch Blockers
 
-1. Legal/static pages are abbreviated and contain placeholder postal/promoter details.
+1. Real promoter postal address/date values remain missing in the Vite source and therefore in the ported static/legal pages.
 2. Bundle Builder is implemented but still needs manual mobile, basket, MiniCart and checkout handoff tests.
 3. Stripe/free checkout and checkout-success allocation flows require real staging tests.
 4. Account prize claim and verification upload require real staging tests against RPCs/storage policies.
@@ -124,7 +124,7 @@ Manual tests still required:
 
 ### Recommended Next Implementation Order
 
-1. Replace abbreviated static/legal/contact/free-entry/responsible-play pages with Vite content.
+1. Confirm and replace final legal promoter address/date placeholders once the business provides approved values.
 2. Run Bundle Builder manual tests for mobile, pricing, basket, MiniCart and checkout handoff.
 3. Run browser QA on homepage, competitions, detail, basket, checkout, auth, account and admin guard.
 4. Run staging transaction tests for Stripe/free checkout and checkout success.

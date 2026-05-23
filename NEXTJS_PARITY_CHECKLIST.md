@@ -75,7 +75,7 @@
 - [x] Button/card utility classes copied
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present
-- [ ] Free Entry and Contact page content parity with Vite
+- [x] Free Entry and Contact page content parity with Vite source
 - [x] Supabase browser auth/session provider
 - [x] Vite-compatible basket provider and MiniCart drawer
 - [x] Fixed basket provider localStorage/custom-event feedback loop that could stall global clicks
@@ -89,12 +89,21 @@
 - [x] `/basket` redirect/open-drawer behaviour
 - [x] Checkout page calls existing Supabase Edge Functions
 - [x] Login/register/forgot/reset auth screens use Supabase auth
-- [ ] Full legal text parity
-- [ ] Static page content parity for `/terms-and-conditions`, `/privacy-policy`, `/cookie-policy`, `/responsible-play`, `/free-entry`, `/contact`
+- [x] Full legal text parity with Vite source
+- [x] Static page content parity for `/terms-and-conditions`, `/privacy-policy`, `/cookie-policy`, `/responsible-play`, `/free-entry`, `/contact`
+- [ ] Real promoter postal address/date content remains a launch content blocker because Vite source still contains placeholders
 - [x] Checkout success full polling/allocation UI parity
 - [x] Klaviyo checkout-success confirmed subscribe parity
 - [ ] Account route parity
 - [ ] Admin/account route parity
+
+## Winners
+
+- [x] Winners page published-only Supabase query
+- [x] Winner cards match Vite square image treatment, winner chip, ticket badge, proof link and hover lift
+- [x] Winner card image fallback priority matches Vite
+- [ ] Winners page browser visual test mobile
+- [ ] Winners page browser visual test desktop
 
 ## Basket And Checkout
 

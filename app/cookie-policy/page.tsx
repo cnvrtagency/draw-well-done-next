@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { InfoPage } from "@/components/InfoPage";
+import { Cookies } from "@/components/StaticPages";
 
-export const metadata: Metadata = { title: "Cookie Policy" };
-export default function Cookies() {
-  return (
-    <InfoPage eyebrow="Legal" title="Cookie Policy">
-      <p>TopDraw may use essential cookies for site operation, authentication and checkout. Analytics or marketing cookies should only be used where configured with appropriate consent controls.</p>
-    </InfoPage>
-  );
-}
+export const metadata: Metadata = {
+  title: "TopDraw Cookie Policy",
+  description: "Read how TopDraw uses cookies and similar technologies to run the website, improve performance, support analytics and manage user preferences.",
+  alternates: { canonical: "/cookie-policy" },
+};
+
+export default Cookies;
