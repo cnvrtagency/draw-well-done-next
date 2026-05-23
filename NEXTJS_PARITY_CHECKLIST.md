@@ -142,18 +142,21 @@
 - [x] Admin noindex/nofollow metadata
 - [x] Dashboard read-only stats
 - [x] Required admin route map
-- [x] Competitions list read-only view
-- [ ] Competition form/create/edit mutations
-- [ ] Image upload/regenerate
-- [x] Hero banners read-only view
+- [x] Competitions list view
+- [x] Competition form/create/edit mutations
+- [x] Competition image upload/regenerate
+- [ ] Competition duplicate/reconcile/archive/delete RPC actions
+- [ ] Competition discount tiers/dynamic content editors
+- [x] Hero banners list/create/edit/delete/activate/upload/preview
 - [x] Customers/users read-only view
-- [x] Entries/orders/payments read-only views
-- [x] Draw route read-only review view
-- [x] Winners read-only view
+- [x] Entries read-only view
+- [x] Orders/payments cancel/refund function actions
+- [x] Draw route execution RPC flow
+- [x] Winners publish/proof/claim status actions
 - [x] Reviews read-only view
 - [ ] Discount code mutations/function UI
-- [x] Wallet settings read-only view
+- [x] Wallet settings mutation
 - [ ] Wallet customer grant/refund mutations
-- [x] Postal entries read-only view
+- [x] Postal entries create/process/reject/reset actions
 - [x] Emails read-only template view
 - [x] FAQs/guides/content/SEO route shells and read-only views where safe

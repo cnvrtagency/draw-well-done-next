@@ -159,7 +159,51 @@ Manual tests required:
 
 ## Admin Status
 
-Not launch-ready. This pass ports the guarded admin shell, noindex/nofollow metadata, dashboard counts and safe read-only route views. Mutation-heavy operational flows remain in Vite until they can be ported and tested against the existing RLS/RPC/Edge Function contracts.
+Not launch-ready. This pass ports the guarded admin shell, noindex/nofollow metadata, dashboard counts, safe read-only route views and the first real competition create/edit/image workflow. Higher-risk operational flows remain in Vite until they can be ported and tested against the existing RLS/RPC/Edge Function contracts.
+
+### Full Admin Audit Snapshot
+
+Vite admin features found:
+- Admin guard uses the authenticated Supabase client plus `user_roles`/admin role checks; no service role is exposed in the browser.
+- Competition admin supports list/search, create/edit, status changes, manual reserved entry audit logging, main/gallery image upload, generated original/card/detail/thumb variants in the `competition-images` bucket, variant regeneration from an existing source URL, discount tiers and dynamic content sections.
+- Hero banner admin supports list/create/edit/delete, active banner deactivation for the same `page_key`, schedule fields, CTA/trust chip fields, desktop/mobile image upload and preview.
+- Draw and winner admin use existing database/RPC/function contracts including `perform_competition_draw`, winner record mutations, draw proof upload and winner publishing/status controls.
+- Postal entry admin uses existing `postal_entries` mutations and `allocate_postal_entry` flow.
+- Customer, entry, payment and wallet admin actions use existing Edge Functions/RPCs such as wallet grant/adjust, entry void/refund/archive/delete and payment cancel/refund.
+- Reviews, discount codes, wallet settings, FAQs, guides, email templates, content library and SEO pages use existing table mutations, storage access or Edge Function calls rather than local fake state.
+
+Next admin features currently implemented:
+- Guarded admin shell, mobile/desktop nav, route map, dashboard stat cards, noindex/nofollow metadata and safe read-only views for every required admin route.
+- Competition create/edit/status form with Vite field names, reserved-entry capacity validation, reserved-entry audit log insert, main/gallery image upload and image variant regeneration against the existing `competition-images` bucket.
+- Hero banner list/create/edit/delete/activate, active-banner deactivation for the same `page_key`, schedule/copy/CTA/trust-chip fields, desktop/mobile upload and preview.
+- Draw execution through the existing `perform_competition_draw` RPC, with valid-entry counts and proof JSON download.
+- Winner publish/unpublish, display fields, proof JSON upload/signed open/download and claim status/delivery field edits.
+- Postal entry create/process/reject/reset using the existing `postal_entries` table and `allocate_postal_entry` RPC.
+- Payment cancel/refund actions using the existing `admin-cancel-payment` and `admin-refund-payment` Edge Functions.
+- Wallet settings edit/save through the existing `wallet_settings` row.
+- Read-only customer, entry, review, email, FAQ, guide and SEO lists.
+
+Exact gaps:
+- Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editing are incomplete.
+- Hero banner browser tests against the public homepage active-banner query are still required.
+- Draw execution, winner publishing/proof and postal processing require real admin/RLS/RPC/storage testing before launch.
+- Customer detail, verification review, wallet grant/adjust and entry void/refund/archive/delete actions are incomplete.
+- Payment cancel/refund functions are wired but require staging provider/RLS testing; no refund should be considered verified until the existing Edge Functions return success in staging.
+- Discount code, review, FAQ, guide, email, content library and SEO mutations remain incomplete.
+
+High-risk actions:
+- Draw execution and winner publishing must keep using the Vite RPC/function path and must not introduce client-side winner selection.
+- Payment/refund, wallet and ticket allocation flows must only call the existing Edge Functions/RPCs.
+- Competition pricing, max entry, free entry and reserved entry changes must match Vite validation and audit logging.
+- Storage uploads must respect existing bucket/RLS policies; blocked uploads must surface the Supabase error instead of bypassing policy.
+
+Required manual tests:
+- Admin login/guard, non-admin access denial and no data render before role eligibility is known.
+- Competition create/edit/status, image upload and regenerate variant attempts against a real admin account.
+- Hero banner create/edit/activate and homepage active banner compatibility.
+- Draw execution/winner publishing only against a safe staging/test competition.
+- Postal entry process/reject, customer/wallet/payment/entry actions and all content mutation flows.
+- Browser console check for hydration errors, invisible overlays, global click blocking and double submits.
 
 Implemented in Next:
 - Vite-compatible admin guard through `useAuth`/`user_roles` admin role. Logged-out users are redirected to `/login`; non-admin users see the same admin-only block.
@@ -167,15 +211,18 @@ Implemented in Next:
 - Admin `robots: noindex,nofollow` metadata.
 - Dashboard stat cards for live competitions, entries, revenue, postal entries, awaiting draws and unpublished winners.
 - Required route map for `/admin`, competitions, hero banners, customers, entries, orders, payments, draws, winners, reviews, discount codes, wallet settings, postal entries, emails, FAQs, guides, content library and SEO centre.
-- Read-only list views for competitions, hero banners, customers/users, entries, payments/orders, draws, winners, reviews, wallet settings, postal entries, email templates, FAQs, guides and SEO source review.
+- Competition list plus real create/edit/status, reserved-entry audit, main/gallery upload and original/card/detail/thumb image variant regeneration.
+- Hero banners create/edit/delete/activate/scheduling/upload/preview.
+- Draw execution through `perform_competition_draw`.
+- Winners publish/proof/claim status and delivery fields.
+- Postal entries create/process/reject/reset through `allocate_postal_entry`.
+- Payment cancel/refund Edge Function calls and wallet settings save.
+- Read-only list views for customers/users, entries, reviews, email templates, FAQs, guides and SEO source review.
 
 Still incomplete:
-- Competition create/edit form, status controls, duplicate/archive/delete, discount tiers, image upload and generated variant regeneration.
-- Hero banner create/edit/toggle/scheduling/upload/preview.
+- Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editors.
 - Customer detail drawer and wallet grant/adjust flows.
 - Entry void/refund/archive/delete flows.
-- Payment cancel/refund flows.
-- Draw execution and winner publishing/proof upload/status editing.
 - Review/FAQ/guide/email/content/SEO create/edit/delete flows.
 - Discount code admin function UI.
 - Content library storage list/upload/delete.
@@ -188,15 +235,48 @@ Manual admin tests required:
 - Admin user can load `/admin`.
 - Admin nav works on desktop/mobile.
 - Competitions list loads.
-- Create competition route loads and clearly reports incomplete form status.
-- Edit competition route loads and clearly reports incomplete form status.
-- Image upload/regenerate route state clearly reports incomplete status; no fake upload URL is produced.
-- Hero banners admin loads.
+- Create competition form loads and saves through existing `competitions` RLS for an admin user.
+- Edit competition form loads and updates through existing `competitions` RLS for an admin user.
+- Image upload/regenerate either writes to `competition-images` through existing storage policy or reports the exact Supabase/RLS/CORS error.
+- Hero banner create/edit/delete/activate works or reports exact RLS/storage error.
+- Hero desktop/mobile image upload writes to `competition-images` or reports exact storage policy error.
+- Public homepage uses the intended active banner after activation.
+- Draw eligible competitions list valid-entry counts match `entries`.
+- Draw execution works through `perform_competition_draw` or reports exact RPC/RLS error.
+- Winner publishing/proof/claim status actions work or report exact table/storage error.
+- Postal create/process/reject/reset works through `allocate_postal_entry` or reports exact RPC/RLS error.
+- Payment cancel/refund works through existing Edge Functions or reports exact function/provider error.
+- Wallet settings save through RLS.
 - Customers/entries/orders/payments load.
 - Draws/winners routes load.
 - Reviews/discount codes/wallet/postal entries load.
 - FAQs/guides/content/SEO routes load.
 - No console errors, hydration errors, or global click issues.
+
+### Admin Route/Function Matrix
+
+| Route | Status | Actions implemented | Blocker | Launch blocker |
+| --- | --- | --- | --- | --- |
+| `/admin` | Partial | Guarded dashboard stats | Activity widgets/actions still read-only | Yes |
+| `/admin/competitions` | Partial | Real list/search plus edit links | Duplicate/reconcile/archive/delete RPC buttons not ported | Yes |
+| `/admin/competitions/new` | Partial | Create via `competitions`, upload main/gallery images, generate variants | Discount tiers/dynamic content editors not ported; requires admin RLS/storage test | Yes |
+| `/admin/competitions/[id]` | Partial | Edit via `competitions`, status update, reserved-entry audit log, upload/regenerate variants | Duplicate/archive/delete/reconcile RPC actions and discount/content editors not ported | Yes |
+| `/admin/hero-banners` | Partial | List/create/edit/delete/activate/scheduling/copy/CTA/trust chips/desktop+mobile upload/preview | Requires RLS/storage/homepage active-banner browser tests | Yes |
+| `/admin/customers` | Read-only | List only | Detail, verification review and wallet actions not ported | Yes |
+| `/admin/entries` | Read-only | List only | Void/refund/archive/delete functions not ported | Yes |
+| `/admin/orders` | Partial | Payment/order list, cancel pending, refund succeeded via existing Edge Functions | Requires staging provider/function testing | Yes |
+| `/admin/payments` | Partial | Payment/order list, cancel pending, refund succeeded via existing Edge Functions | Requires staging provider/function testing | Yes |
+| `/admin/draws` | Partial | Eligible draw review, valid-entry counts, `perform_competition_draw`, proof JSON download | Requires safe staging draw test | Yes |
+| `/admin/winners` | Partial | Winner list, publish/unpublish, display edits, proof upload/open/download, claim/delivery edits | Requires RLS/storage/public winners test | Yes |
+| `/admin/reviews` | Read-only | List only | Create/edit/delete/toggle not ported | Yes |
+| `/admin/discount-codes` | Placeholder | Safe route only | `admin-discount-codes` function UI not ported | Yes |
+| `/admin/wallet-settings` | Partial | Settings edit/save | Customer wallet grant/adjust actions not ported | Yes |
+| `/admin/postal-entries` | Partial | Create, process through `allocate_postal_entry`, reject, reset broken processed rows | Requires RPC/RLS/email side-effect test; Next does not add missing email route | Yes |
+| `/admin/emails` | Read-only | Template list only | Editor/preview/send/test flows not ported | Yes |
+| `/admin/faqs` | Read-only | List only | Create/edit/archive/delete not ported | Yes |
+| `/admin/guides` | Read-only | List only | Editor/upload/publish actions not ported | Yes |
+| `/admin/content-library` | Placeholder | Safe route only | Storage list/upload/delete not ported | Yes |
+| `/admin/seo-centre` | Read-only | SEO source review list only | SEO editing tools not ported | Yes |
 
 ## Data Mutation Status
 
@@ -206,6 +286,11 @@ Manual admin tests required:
 - No Stripe logic changes.
 - No ticket allocation changes.
 - No service role keys added.
+
+Latest verification:
+- `npm run build` passed on 2026-05-23. Existing Google Fonts fetch warning remains, plus existing `<img>` lint warnings and new admin preview/list `<img>` warnings.
+- `npm run lint` passed on 2026-05-23 with the same `<img>`/font warnings.
+- Original Vite app worktree checked clean after this pass.
 
 ## Required Env Vars
 
