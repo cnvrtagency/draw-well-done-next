@@ -13,9 +13,29 @@
 - [x] PrizeDrops / Play to win section
 - [x] BundleFAQ two-panel section
 - [x] Footer
+- [x] Homepage Bundle Builder CTA links to real `/build-a-bundle` route
 - [ ] Pixel review at mobile 390px
 - [ ] Pixel review at desktop 1440px
 - [ ] Newsletter popup parity
+
+## Bundle Builder
+
+- [x] `/build-a-bundle` real route parity
+- [x] Port Vite `src/pages/public/BuildBundle.tsx`
+- [x] Port Vite `src/components/home/BundleBuilder.tsx`
+- [x] Homepage `BundleFAQSection` teaser/CTA exists
+- [x] Live competition query, remaining-ticket cap and per-user cap handling
+- [x] Discount tier fetch from `competition_discount_tiers`
+- [x] Vite `computePricing` pricing display in bundle rows
+- [x] Quantity stepper and manual quantity input
+- [x] Expanded prize row details
+- [x] Sticky bundle summary on desktop
+- [x] Mobile bundle summary/layout parity
+- [x] Add selected competitions to shared basket and open MiniCart
+- [x] Empty/loading states
+- [x] Bundle page SEO/JSON-LD parity
+- [ ] Bundle Builder manual test at mobile 390px
+- [ ] Bundle Builder manual add-to-basket/MiniCart/checkout handoff test
 
 ## Competitions
 
@@ -55,13 +75,14 @@
 - [x] Button/card utility classes copied
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present
-- [x] Free Entry and Contact page shells now match Vite layout more closely
+- [ ] Free Entry and Contact page content parity with Vite
 - [x] Supabase browser auth/session provider
 - [x] Vite-compatible basket provider and MiniCart drawer
 - [x] Fixed basket provider localStorage/custom-event feedback loop that could stall global clicks
 - [x] Header auth state switches from login to account/admin controls after session/role load
 - [x] Header wallet balance pill matches Vite `wallets.balance` query and links to `/account/wallet`
 - [x] Next sitemap route for public pages and public competition/guide records
+- [x] `/build-a-bundle` included in sitemap now that the route is real
 - [x] Next robots route with private/auth/checkout/admin disallows and Sitemap line
 - [x] Closed MiniCart drawer no longer receives pointer events
 - [x] Hero decorative image/overlay layers marked `pointer-events-none`
@@ -69,6 +90,7 @@
 - [x] Checkout page calls existing Supabase Edge Functions
 - [x] Login/register/forgot/reset auth screens use Supabase auth
 - [ ] Full legal text parity
+- [ ] Static page content parity for `/terms-and-conditions`, `/privacy-policy`, `/cookie-policy`, `/responsible-play`, `/free-entry`, `/contact`
 - [x] Checkout success full polling/allocation UI parity
 - [x] Klaviyo checkout-success confirmed subscribe parity
 - [ ] Account route parity

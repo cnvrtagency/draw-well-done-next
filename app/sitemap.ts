@@ -16,6 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [
     entry("/", 1),
     entry("/competitions", 0.9),
+    entry("/build-a-bundle", 0.8),
     entry("/winners", 0.7),
     entry("/faqs", 0.7),
     entry("/guides", 0.7),

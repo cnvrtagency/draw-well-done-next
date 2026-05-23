@@ -4,6 +4,134 @@
 
 The Next.js rebuild is closer to customer-facing launch parity, but it is not ready to replace the Vite app yet.
 
+## Full Parity Audit - 2026-05-23
+
+Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, and `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder. Several public static/legal pages are still abbreviated rather than literal Vite parity, and high-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.
+
+### Public Route Matrix
+
+| Route | Next status | Main parity gap | Launch blocker |
+| --- | --- | --- | --- |
+| `/` | Partial | Homepage sections exist and Bundle CTA now lands on the real builder; newsletter popup parity not present; browser pixel review still required. | No |
+| `/competitions` | Partial | Data and tabs exist; tab changes are server route transitions rather than Vite client transition; pixel review required. | No |
+| `/competitions/[slug]` | Partial | Core entry, gallery, tiers, marquee and basket flow exist; requires browser/manual parity and checkout integration tests. | Yes |
+| `/build-a-bundle` | Partial | Real Vite-style builder is implemented; manual mobile, basket, MiniCart and checkout handoff tests still required. | Yes |
+| `/winners` | Near complete | Data query and cards exist; Vite loading skeleton is not visible on server render; browser visual test required. | No |
+| `/past-competitions` | Redirect parity | Redirects to `/competitions?tab=ended`, matching Vite route behavior. | No |
+| `/faqs` | Partial | DB-backed FAQ list exists; static FAQ content in homepage bundle panel exists; visual/content review required. | No |
+| `/guides` | Partial | Published guide list exists; markdown rendering is simplified compared with Vite guide body component. | No |
+| `/guides/[slug]` | Partial | Guide detail exists, but rich markdown/body rendering is simplified. | No |
+| `/free-entry` | Partial | Page exists but content is abbreviated and still contains `[Insert postal address]`; Vite static page is much longer. | Yes |
+| `/contact` | Partial | Page exists but has placeholder postal address and shorter Vite content. | Yes |
+| `/terms-and-conditions` | Partial | Page exists but is a very short summary, not full Vite legal text. | Yes |
+| `/privacy-policy` | Partial | Page exists but is a short summary, not full Vite privacy policy. | Yes |
+| `/cookie-policy` | Partial | Page exists but is a short summary, not full Vite cookie policy. | Yes |
+| `/responsible-play` | Partial | Page exists but is a short summary, not full Vite responsible-play content. | Yes |
+| `/how-it-works` | Complete | Redirects to `/faqs`, matching Vite. | No |
+| `/terms` | Complete | Redirects to `/terms-and-conditions`, matching Vite. | No |
+| `/footers-preview` | Missing | Vite has a public preview route; likely non-production/dev-only. | No |
+
+### Bundle Builder Audit
+
+Vite source files:
+- `src/pages/public/BuildBundle.tsx`
+- `src/components/home/BundleBuilder.tsx`
+- `src/components/home/BundleFAQSection.tsx`
+- `src/components/home/PrizeDrops.tsx` bundle strip/link references
+- `src/hooks/useBasket.tsx`
+- `src/components/EntryQuantitySelector.tsx` for `computePricing`
+- `src/pages/public/Checkout.tsx` for discount-tier checkout compatibility
+
+Next current state:
+- `app/build-a-bundle/page.tsx` renders real metadata, JSON-LD, page header and the interactive Bundle Builder.
+- `components/home/BundleBuilder.tsx` ports the Vite live competition query, discount tier grouping, quantity controls, pricing rows, sticky summary and basket/MiniCart handoff.
+- `components/home/BundleFAQSection.tsx` exists and links to `/build-a-bundle`.
+- `hooks/useBasket.tsx`, `components/EntryQuantitySelector.tsx`, MiniCart and checkout tier calculations already provide the shared primitives needed for the port.
+
+Exact Bundle Builder behavior now implemented:
+- Live competition query with `status = live`, `archived_at is null`, `opens_at` open/null, `closes_at` future/null, sorted by closing date and filtered for remaining capacity.
+- Discount tier fetch from `competition_discount_tiers` grouped by competition.
+- Quantity steppers, manual quantity input and cap enforcement against remaining tickets and `per_user_entry_limit`.
+- Per-row pricing with Vite `computePricing`, next-tier nudges, expanded details, mobile tier hints and image/title links.
+- Sticky summary with selected competitions, subtotal, tier savings, final total and selected prize list.
+- Add selected bundle rows to the shared basket and open MiniCart.
+- Loading and empty states.
+- Bundle page SEO and JSON-LD.
+
+Manual tests still required:
+- `/build-a-bundle` loads with live competitions.
+- Single and multi-competition selection works.
+- Quantity caps prevent exceeding effective remaining and per-user limits.
+- Discount tiers display and calculate correctly.
+- Add bundle writes correct `topdraw_basket_v1` item IDs/quantities and opens MiniCart.
+- Checkout receives the selected bundle items.
+- Mobile layout works at 390px with no hydration or click issues.
+
+### Public UI Gaps
+
+- Header is close to Vite: same nav items, auth/account/admin state, wallet pill and MiniCart. Manual logged-out/customer/admin/mobile tests still required.
+- Footer is close to Vite, but still shows “Promoter details to be confirmed before launch”; legal/contact pages also still contain placeholder postal-address text.
+- Homepage visually includes hero, reviews, PrizeDrops and BundleFAQ, and the destination bundle route is now operational pending manual QA.
+- Competition detail has key Vite features, but requires browser QA for gallery, quantity selector, discount tiers, free entry notice, dynamic marquee, winner/drawn state and basket integration.
+- Static/legal pages need literal content parity from Vite `src/pages/public/Static.tsx` before launch.
+
+### Basket And Checkout Gaps
+
+- Basket provider and MiniCart use the Vite `topdraw_basket_v1` shape and DB merge/persist pattern.
+- Checkout uses existing `validate-discount-code` and `create-checkout-session` Edge Functions and wallet settings queries.
+- Manual staging tests are still required for Stripe redirect, free-order handling, stale basket blocking, wallet credit use, discount codes and checkout success allocation polling.
+- Bundle Builder is now implemented and still requires basket/MiniCart/checkout handoff testing.
+
+### Auth And Account Gaps
+
+- Login, register, forgot/reset, account overview, entries, orders, transactions, wallet, profile, security, wins, prize claim, verification upload and responsible-play routes are implemented.
+- Account verification and prize claim still depend on existing RPC/storage policy behavior in staging.
+- Manual tests are required for logged-out redirects, profile updates, document upload, claim submission and self-exclusion RPC flow.
+
+### Admin Gaps
+
+- Required admin areas are routed and most operational actions are wired to existing tables, RPCs or Edge Functions.
+- Vite admin routes still not represented in normal Next nav or fully ported: `/admin/profit-calculator`, `/admin/users`, `/admin/verifications`, `/admin/notifications`, `/admin/dynamic-content`, `/admin/page-content`, `/admin/settings`, plus Vite route aliases `/admin/content` and `/admin/seo`.
+- Customer verification review workflow remains incomplete.
+- Email admin is limited to template listing plus `/api/send-email`; Vite editor/preview/preset/fallback-template UI is not ported.
+- Guide editor uses a textarea/markdown flow and may not match Vite rich/body rendering polish.
+- Every admin mutation still needs real staging tests for RLS/function/storage/provider behavior.
+
+### SEO And Infrastructure Gaps
+
+- `app/sitemap.ts` and `app/robots.ts` exist; sitemap now includes `/build-a-bundle`.
+- Private/auth/checkout/admin routes are disallowed in robots and admin metadata is noindex/nofollow.
+- Core public metadata and JSON-LD exist for homepage, competition detail and guides; static/legal metadata is minimal.
+- `/api/send-email` and `/api/indexnow-submit` exist and are server-only/admin guarded where required.
+- IndexNow key file must exist at the deployed public origin.
+- `netlify.toml` uses `@netlify/plugin-nextjs`; environment variables must be set in Netlify, not just `.env.local`.
+
+### Data, Function And RLS Risks
+
+- No browser-side service role exposure was found. `SUPABASE_SERVICE_ROLE_KEY` is only referenced in server admin/API files.
+- Browser clients call existing Supabase tables, storage, RPCs and Edge Functions with anon/authenticated clients; staging RLS/storage policy tests remain mandatory.
+- High-risk functions/RPCs needing staging verification: `create-checkout-session`, `validate-discount-code`, `submit_prize_claim`, `submit_account_verification`, `create_self_exclusion`, `perform_competition_draw`, `allocate_postal_entry`, `duplicate_competition`, `archive_competition`, `unarchive_competition`, `delete_competition_if_safe`, `admin-reconcile-counts`, `admin-discount-codes`, `admin-cancel-payment`, `admin-refund-payment`, wallet grant/adjust and entry action Edge Functions.
+
+### Ranked Launch Blockers
+
+1. Legal/static pages are abbreviated and contain placeholder postal/promoter details.
+2. Bundle Builder is implemented but still needs manual mobile, basket, MiniCart and checkout handoff tests.
+3. Stripe/free checkout and checkout-success allocation flows require real staging tests.
+4. Account prize claim and verification upload require real staging tests against RPCs/storage policies.
+5. Admin operational mutations require real staging tests; customer verification review remains incomplete.
+6. Email editor/preview and IndexNow key-file availability remain incomplete for full admin parity.
+7. Browser/pixel/interactivity QA is still outstanding across public, account and admin routes.
+
+### Recommended Next Implementation Order
+
+1. Replace abbreviated static/legal/contact/free-entry/responsible-play pages with Vite content.
+2. Run Bundle Builder manual tests for mobile, pricing, basket, MiniCart and checkout handoff.
+3. Run browser QA on homepage, competitions, detail, basket, checkout, auth, account and admin guard.
+4. Run staging transaction tests for Stripe/free checkout and checkout success.
+5. Run staging account verification/prize claim tests.
+6. Run staging admin mutation tests by risk: draw/winners, payments/refunds/wallet, postal, competitions, hero banners, discounts, reviews/content.
+7. Port remaining lower-priority admin parity: verifications review, email editor/preview, profit calculator, notifications/settings/page-content aliases if required for launch operations.
+
 ## Urgent Interactivity Fix
 
 Fixed the global click/link/button regression introduced by the basket provider layer.
