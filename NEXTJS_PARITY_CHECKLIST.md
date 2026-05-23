@@ -148,15 +148,18 @@
 - [ ] Competition duplicate/reconcile/archive/delete RPC actions
 - [ ] Competition discount tiers/dynamic content editors
 - [x] Hero banners list/create/edit/delete/activate/upload/preview
-- [x] Customers/users read-only view
-- [x] Entries read-only view
+- [x] Customers/users list, detail and wallet grant/adjust actions
+- [x] Entries list plus void/refund/archive/delete function actions
 - [x] Orders/payments cancel/refund function actions
 - [x] Draw route execution RPC flow
 - [x] Winners publish/proof/claim status actions
-- [x] Reviews read-only view
-- [ ] Discount code mutations/function UI
+- [x] Reviews create/edit/delete/toggle
+- [x] Discount code mutations/function UI
 - [x] Wallet settings mutation
-- [ ] Wallet customer grant/refund mutations
+- [x] Wallet customer grant/adjust mutations
 - [x] Postal entries create/process/reject/reset actions
-- [x] Emails read-only template view
-- [x] FAQs/guides/content/SEO route shells and read-only views where safe
+- [x] Emails read-only template view with send/editor blocker documented
+- [x] FAQs create/edit/archive/delete
+- [x] Guides create/edit/publish/archive/delete/duplicate/image upload
+- [x] Content library storage list/upload/delete/copy URL
+- [x] SEO centre URL review/copy helpers with IndexNow submit blocker documented

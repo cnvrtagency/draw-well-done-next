@@ -159,7 +159,7 @@ Manual tests required:
 
 ## Admin Status
 
-Not launch-ready. This pass ports the guarded admin shell, noindex/nofollow metadata, dashboard counts, safe read-only route views and the first real competition create/edit/image workflow. Higher-risk operational flows remain in Vite until they can be ported and tested against the existing RLS/RPC/Edge Function contracts.
+Not launch-ready. The guarded admin shell, dashboard, competition operations, hero banners, draw/winner tooling, postal entries, payments, wallet settings and the main CRUD/content areas are now wired to the same Supabase tables, storage buckets, RPCs and Edge Functions used by Vite. Launch still depends on real admin-account staging tests against RLS/storage/function policies, plus the remaining email and SEO API blockers.
 
 ### Full Admin Audit Snapshot
 
@@ -181,21 +181,31 @@ Next admin features currently implemented:
 - Postal entry create/process/reject/reset using the existing `postal_entries` table and `allocate_postal_entry` RPC.
 - Payment cancel/refund actions using the existing `admin-cancel-payment` and `admin-refund-payment` Edge Functions.
 - Wallet settings edit/save through the existing `wallet_settings` row.
-- Read-only customer, entry, review, email, FAQ, guide and SEO lists.
+- Customer list/detail, linked entries/orders/payments/winners, wallet ledger preview and wallet grant/adjust actions through existing Edge Functions.
+- Entry list plus void, wallet/manual refund, archive/unarchive and delete actions through existing Edge Functions.
+- Discount code list/create/edit/delete/activate through the existing `admin-discount-codes` Edge Function.
+- Reviews create/edit/delete/toggle against the existing `reviews` table.
+- FAQs create/edit/archive/unarchive/delete against the existing `faq_items` table.
+- Guides list/create/edit/publish/unpublish/archive/delete/duplicate plus featured-image upload against the existing `guides` table and `competition-images` bucket.
+- Content library storage list/upload/delete/copy URL for the existing `competition-images` bucket.
+- SEO centre URL selection/copy helpers copied from Vite, with IndexNow submission disabled because the matching Next API route is absent.
+- Read-only email template list. Email editor/preview/send flows remain blocked because Vite calls `/api/send-email` and no matching Next route exists.
 
 Exact gaps:
 - Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editing are incomplete.
 - Hero banner browser tests against the public homepage active-banner query are still required.
 - Draw execution, winner publishing/proof and postal processing require real admin/RLS/RPC/storage testing before launch.
-- Customer detail, verification review, wallet grant/adjust and entry void/refund/archive/delete actions are incomplete.
+- Customer verification-review workflow is still incomplete; wallet grant/adjust and entry void/refund/archive/delete actions are wired but require staging function/RLS tests.
 - Payment cancel/refund functions are wired but require staging provider/RLS testing; no refund should be considered verified until the existing Edge Functions return success in staging.
-- Discount code, review, FAQ, guide, email, content library and SEO mutations remain incomplete.
+- Email editor/preview/send/test is blocked by missing Next `/api/send-email` compatibility route.
+- SEO IndexNow submission is blocked by missing Next `/api/indexnow-submit` compatibility route. Public SEO metadata/routes were not changed.
 
 High-risk actions:
 - Draw execution and winner publishing must keep using the Vite RPC/function path and must not introduce client-side winner selection.
 - Payment/refund, wallet and ticket allocation flows must only call the existing Edge Functions/RPCs.
 - Competition pricing, max entry, free entry and reserved entry changes must match Vite validation and audit logging.
 - Storage uploads must respect existing bucket/RLS policies; blocked uploads must surface the Supabase error instead of bypassing policy.
+- Email and SEO submits must remain disabled until the matching server routes exist; the UI must not fake successful sends/submissions.
 
 Required manual tests:
 - Admin login/guard, non-admin access denial and no data render before role eligibility is known.
@@ -203,6 +213,10 @@ Required manual tests:
 - Hero banner create/edit/activate and homepage active banner compatibility.
 - Draw execution/winner publishing only against a safe staging/test competition.
 - Postal entry process/reject, customer/wallet/payment/entry actions and all content mutation flows.
+- Discount code create/edit/delete, review create/edit/toggle/delete, FAQ archive/delete and guide publish/upload flows.
+- Content library upload/delete against `competition-images`, with storage policy errors surfaced.
+- Email send/test remains disabled unless a compatible `/api/send-email` route is added.
+- SEO IndexNow submit remains disabled unless a compatible `/api/indexnow-submit` route is added.
 - Browser console check for hydration errors, invisible overlays, global click blocking and double submits.
 
 Implemented in Next:
@@ -217,15 +231,19 @@ Implemented in Next:
 - Winners publish/proof/claim status and delivery fields.
 - Postal entries create/process/reject/reset through `allocate_postal_entry`.
 - Payment cancel/refund Edge Function calls and wallet settings save.
-- Read-only list views for customers/users, entries, reviews, email templates, FAQs, guides and SEO source review.
+- Customer detail plus wallet grant/adjust through existing Edge Functions.
+- Entry void/refund/archive/delete through existing Edge Functions.
+- Discount code create/edit/delete/activate through `admin-discount-codes`.
+- Review create/edit/delete/toggle, FAQ create/edit/archive/delete, guide create/edit/publish/archive/delete/duplicate/upload and content library storage list/upload/delete.
+- SEO URL selection/copy helpers with IndexNow submission safely blocked.
+- Read-only email template list with send/editor blocker documented.
 
 Still incomplete:
 - Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editors.
-- Customer detail drawer and wallet grant/adjust flows.
-- Entry void/refund/archive/delete flows.
-- Review/FAQ/guide/email/content/SEO create/edit/delete flows.
-- Discount code admin function UI.
-- Content library storage list/upload/delete.
+- Customer verification review workflow.
+- Email editor/preview/send/test flows.
+- SEO IndexNow submission until the missing Next API route is added.
+- Real staging verification for discount, review, FAQ, guide, content, wallet, entry, payment, postal, draw and winner actions.
 
 Do not launch admin until all mutations are ported and tested against RLS and existing Edge Functions.
 
@@ -247,10 +265,17 @@ Manual admin tests required:
 - Postal create/process/reject/reset works through `allocate_postal_entry` or reports exact RPC/RLS error.
 - Payment cancel/refund works through existing Edge Functions or reports exact function/provider error.
 - Wallet settings save through RLS.
+- Customer detail loads; wallet grant/adjust works through existing functions or reports exact function/RLS error.
+- Entry void/refund/archive/delete works through existing functions or reports exact function/RLS error.
 - Customers/entries/orders/payments load.
 - Draws/winners routes load.
-- Reviews/discount codes/wallet/postal entries load.
-- FAQs/guides/content/SEO routes load.
+- Discount code create/edit/delete/toggle works through `admin-discount-codes` or reports exact function/RLS error.
+- Review create/edit/delete/toggle works through `reviews` RLS.
+- FAQ create/edit/archive/unarchive/delete works through `faq_items` RLS.
+- Guide create/edit/publish/archive/delete/duplicate and featured-image upload work through `guides` RLS and `competition-images` storage.
+- Content library list/upload/delete/copy URL works through `competition-images` storage or reports exact storage policy error.
+- SEO centre URL copy works; IndexNow submission remains disabled until `/api/indexnow-submit` exists.
+- Email templates load; send/test remains disabled until `/api/send-email` exists.
 - No console errors, hydration errors, or global click issues.
 
 ### Admin Route/Function Matrix
@@ -262,21 +287,21 @@ Manual admin tests required:
 | `/admin/competitions/new` | Partial | Create via `competitions`, upload main/gallery images, generate variants | Discount tiers/dynamic content editors not ported; requires admin RLS/storage test | Yes |
 | `/admin/competitions/[id]` | Partial | Edit via `competitions`, status update, reserved-entry audit log, upload/regenerate variants | Duplicate/archive/delete/reconcile RPC actions and discount/content editors not ported | Yes |
 | `/admin/hero-banners` | Partial | List/create/edit/delete/activate/scheduling/copy/CTA/trust chips/desktop+mobile upload/preview | Requires RLS/storage/homepage active-banner browser tests | Yes |
-| `/admin/customers` | Read-only | List only | Detail, verification review and wallet actions not ported | Yes |
-| `/admin/entries` | Read-only | List only | Void/refund/archive/delete functions not ported | Yes |
+| `/admin/customers` | Partial | List, detail, linked records, wallet grant and adjust via existing Edge Functions | Verification review workflow still not ported; requires function/RLS tests | Yes |
+| `/admin/entries` | Partial | List, void, void with wallet/manual refund, archive/unarchive and delete via existing Edge Functions | Requires function/RLS tests; paid delete remains server-guarded | Yes |
 | `/admin/orders` | Partial | Payment/order list, cancel pending, refund succeeded via existing Edge Functions | Requires staging provider/function testing | Yes |
 | `/admin/payments` | Partial | Payment/order list, cancel pending, refund succeeded via existing Edge Functions | Requires staging provider/function testing | Yes |
 | `/admin/draws` | Partial | Eligible draw review, valid-entry counts, `perform_competition_draw`, proof JSON download | Requires safe staging draw test | Yes |
 | `/admin/winners` | Partial | Winner list, publish/unpublish, display edits, proof upload/open/download, claim/delivery edits | Requires RLS/storage/public winners test | Yes |
-| `/admin/reviews` | Read-only | List only | Create/edit/delete/toggle not ported | Yes |
-| `/admin/discount-codes` | Placeholder | Safe route only | `admin-discount-codes` function UI not ported | Yes |
-| `/admin/wallet-settings` | Partial | Settings edit/save | Customer wallet grant/adjust actions not ported | Yes |
+| `/admin/reviews` | Partial | List/create/edit/delete/toggle via `reviews` | Requires RLS/homepage review compatibility test | Yes |
+| `/admin/discount-codes` | Partial | List/create/edit/delete/activate via `admin-discount-codes` | Requires Edge Function/RLS/checkout compatibility test | Yes |
+| `/admin/wallet-settings` | Partial | Settings edit/save; customer grant/adjust available on customers page | Requires wallet/RLS/function staging test | Yes |
 | `/admin/postal-entries` | Partial | Create, process through `allocate_postal_entry`, reject, reset broken processed rows | Requires RPC/RLS/email side-effect test; Next does not add missing email route | Yes |
-| `/admin/emails` | Read-only | Template list only | Editor/preview/send/test flows not ported | Yes |
-| `/admin/faqs` | Read-only | List only | Create/edit/archive/delete not ported | Yes |
-| `/admin/guides` | Read-only | List only | Editor/upload/publish actions not ported | Yes |
-| `/admin/content-library` | Placeholder | Safe route only | Storage list/upload/delete not ported | Yes |
-| `/admin/seo-centre` | Read-only | SEO source review list only | SEO editing tools not ported | Yes |
+| `/admin/emails` | Read-only | Template list only | Vite calls `/api/send-email`; no matching Next API route exists for editor/preview/send/test | Yes |
+| `/admin/faqs` | Partial | List/create/edit/archive/unarchive/delete via `faq_items` | Requires RLS/public FAQ compatibility test | Yes |
+| `/admin/guides` | Partial | List/create/edit/publish/unpublish/archive/delete/duplicate/featured upload via `guides` | Requires RLS/storage/public guide compatibility test | Yes |
+| `/admin/content-library` | Partial | Storage list/upload/delete/copy URL in `competition-images` | Requires storage policy test; no service-role bypass | Yes |
+| `/admin/seo-centre` | Partial | Static/competition URL selection and copy helpers | IndexNow submit blocked: Vite calls `/api/indexnow-submit`, no matching Next API route exists | Yes |
 
 ## Data Mutation Status
 
@@ -377,7 +402,9 @@ Admin:
 ## Known Risks
 
 - Checkout success has not been manually tested against a real Stripe redirect in this environment.
-- Account/admin are not ported.
+- Account routes and most admin routes are ported, but admin operational mutations still need staging tests with a real admin account and existing RLS/storage/function policies.
+- Email admin send/editor flows and SEO IndexNow submission are intentionally blocked until matching Next API routes exist.
+- Competition duplicate/archive/delete/reconcile actions, discount tier editing, dynamic content editing and customer verification review remain incomplete.
 - Browser screenshot parity has not been run in this environment.
 - `<img>` warnings remain intentionally where Vite-like remote image behavior is preserved.
 - Google font optimization warning appears during offline builds.

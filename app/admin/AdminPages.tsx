@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Award, BookOpen, ChevronRight, Copy, CreditCard, Download, ExternalLink, FileText, Gavel, Image as ImageIcon, Library, LifeBuoy, Loader2, Mail, Megaphone, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, Star, Tag, Ticket, Trash2, Upload, Users, Wallet, X } from "lucide-react";
+import { AlertTriangle, Archive, ArchiveRestore, Award, BookOpen, ChevronRight, Copy, CreditCard, Download, ExternalLink, FileText, Gavel, Gift, Image as ImageIcon, Library, LifeBuoy, Loader2, Mail, Megaphone, Minus, Pencil, Plus, RefreshCw, RotateCcw, Search, Send, ShieldCheck, SlidersHorizontal, Star, Tag, Ticket, Trash2, Upload, Users, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,6 +17,8 @@ import { AdminPageHeader, AdminPanel, AdminTable, AdminTD, AdminTH, AdminTR, Inc
 import { AdminImageUploader } from "@/components/admin/AdminImageUploader";
 
 type Row = Record<string, any>;
+
+const EMPTY_GUIDE: Row = { title: "", slug: "", excerpt: "", category: "Getting Started", tags: [], featured_image_url: "", body_markdown: "", seo_title: "", seo_description: "", is_featured: false, status: "draft", published_at: null };
 
 function fmtDate(value?: string | null) {
   return value ? new Date(value).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "-";
@@ -905,13 +907,241 @@ function HeroBannersPage() {
 }
 
 function CustomersPage() {
-  const { rows, loading, error } = useRows("profiles", "id,email,full_name,phone,postcode,verification_status,created_at,updated_at", "created_at", false, 100);
-  return <SimpleListPage eyebrow="CRM" title="Customers" subtitle="Customer list/detail is read-only in this Next pass." loading={loading} error={error} rows={rows} icon={<Users className="h-5 w-5" />} columns={["email", "full_name", "phone", "postcode", "verification_status", "created_at"]} incomplete="Customer detail drawer, wallet grant/adjust actions and verification review mutations are not ported in Next yet." />;
+  const supabase = createSupabaseBrowserClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [wallets, setWallets] = useState<Record<string, Row>>({});
+  const [selected, setSelected] = useState<Row | null>(null);
+  const [detail, setDetail] = useState<{ payments: Row[]; entries: Row[]; txns: Row[]; winners: Row[] } | null>(null);
+  const [grantFor, setGrantFor] = useState<Row | null>(null);
+  const [adjustFor, setAdjustFor] = useState<Row | null>(null);
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [adjustType, setAdjustType] = useState<"add" | "remove">("add");
+  const [q, setQ] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+    let query = supabase.from("profiles").select("id,email,full_name,phone,date_of_birth,address_line_1,address_line_2,town_city,county,postcode,country,marketing_consent,verification_status,created_at,updated_at").order("created_at", { ascending: false }).limit(200);
+    if (q.trim()) {
+      const term = q.trim();
+      query = query.or(`email.ilike.%${term}%,full_name.ilike.%${term}%,phone.ilike.%${term}%,postcode.ilike.%${term}%`);
+    }
+    const { data, error: nextError } = await query;
+    const list = (data as Row[]) ?? [];
+    setRows(list);
+    if (nextError) setError(nextError.message);
+    const ids = list.map((row) => row.id);
+    if (ids.length) {
+      const { data: walletRows } = await supabase.from("wallets").select("user_id,balance,lifetime_earned,lifetime_spent").in("user_id", ids);
+      const map: Record<string, Row> = {};
+      for (const wallet of ((walletRows as Row[]) ?? [])) map[wallet.user_id] = wallet;
+      setWallets(map);
+    }
+    setLoading(false);
+  }, [q, supabase]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function openCustomer(row: Row) {
+    if (!supabase) return;
+    setSelected(row);
+    setDetail(null);
+    const [payments, entries, txns, winners] = await Promise.all([
+      supabase.from("payments").select("id,amount,status,refund_status,refunded_amount,created_at,is_multiline").eq("user_id", row.id).order("created_at", { ascending: false }).limit(25),
+      supabase.from("entries").select("id,ticket_number,status,entry_type,created_at,competition_id,archived_at,is_winner").eq("user_id", row.id).order("created_at", { ascending: false }).limit(25),
+      supabase.from("wallet_transactions").select("id,delta,balance_after,kind,note,created_at,created_by,reference_type").eq("user_id", row.id).order("created_at", { ascending: false }).limit(25),
+      supabase.from("winners").select("id,competition_id,prize_title,is_published,draw_date").eq("user_id", row.id).order("draw_date", { ascending: false }).limit(10),
+    ]);
+    setDetail({ payments: (payments.data as Row[]) ?? [], entries: (entries.data as Row[]) ?? [], txns: (txns.data as Row[]) ?? [], winners: (winners.data as Row[]) ?? [] });
+  }
+
+  async function invokeCustomerFunction(name: string, body: Row) {
+    if (!supabase) throw new Error("Supabase client is not configured.");
+    const { data, error: nextError } = await supabase.functions.invoke(name, { body });
+    if (nextError) throw new Error(nextError.message);
+    if ((data as Row)?.error) throw new Error(String((data as Row).error));
+  }
+
+  async function grantCredit() {
+    if (!grantFor) return;
+    const amt = Number(amount);
+    if (!amt || amt <= 0) return setError("Amount required.");
+    if (!reason.trim()) return setError("Reason required.");
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await invokeCustomerFunction("admin-grant-credit", { user_id: grantFor.id, amount: amt, reason: reason.trim(), expires_at: expiry || null });
+      setSuccess(`Granted ${formatMoney(amt)} to ${grantFor.email}.`);
+      setGrantFor(null); setAmount(""); setReason(""); setExpiry("");
+      await load();
+      if (selected?.id === grantFor.id) await openCustomer(grantFor);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Grant credit failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function adjustWallet() {
+    if (!adjustFor) return;
+    const amt = Number(amount);
+    if (!amt || amt <= 0) return setError("Amount required.");
+    if (!reason.trim()) return setError("Reason required.");
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await invokeCustomerFunction("admin-adjust-wallet", { user_id: adjustFor.id, amount: amt, adjustment_type: adjustType, reason: reason.trim() });
+      setSuccess(`${adjustType === "add" ? "Added" : "Removed"} ${formatMoney(amt)} ${adjustType === "add" ? "to" : "from"} ${adjustFor.email}.`);
+      setAdjustFor(null); setAmount(""); setReason(""); setAdjustType("add");
+      await load();
+      if (selected?.id === adjustFor.id) await openCustomer(adjustFor);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Wallet adjustment failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="People" title="Customers" subtitle="Search, inspect and manage customers, including wallet grant/adjust actions through existing Edge Functions." icon={<Users className="h-5 w-5" />} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <div className="mb-4 flex gap-2"><Input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && load()} placeholder="Search email, name, phone, postcode" className="max-w-xl" /><Button onClick={load}>Search</Button></div>
+      <LoadingOrError loading={loading} error={null} />
+      {rows.length ? <AdminTable minWidth={1000}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Customer</AdminTH><AdminTH>Contact</AdminTH><AdminTH>Verification</AdminTH><AdminTH align="right">Wallet</AdminTH><AdminTH>Joined</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{rows.map((row) => <AdminTR key={row.id}><AdminTD><div className="font-semibold text-white">{row.full_name || "Unnamed"}</div><div className="text-xs text-white/50">{row.email || "-"}</div></AdminTD><AdminTD>{row.phone || "-"}<div className="text-xs text-white/50">{row.postcode || ""}</div></AdminTD><AdminTD><StatusBadge status={row.verification_status || "pending"} /></AdminTD><AdminTD align="right">{formatMoney(Number(wallets[row.id]?.balance || 0))}</AdminTD><AdminTD>{fmtDate(row.created_at)}</AdminTD><AdminTD align="right"><div className="flex justify-end gap-2"><Button size="sm" onClick={() => openCustomer(row)}>View</Button><Button size="sm" variant="outline" onClick={() => { setGrantFor(row); setAmount(""); setReason(""); }}>Credit</Button></div></AdminTD></AdminTR>)}</tbody></AdminTable> : !loading ? <EmptyRows rows={rows} label="customers" /> : null}
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto border-white/10 bg-[hsl(222_45%_5%)] text-white">
+          {selected ? <><DialogHeader><DialogTitle>{selected.full_name || selected.email || "Customer"}</DialogTitle></DialogHeader><div className="space-y-5"><AdminPanel title="Profile"><div className="grid gap-2 text-sm md:grid-cols-2"><div>Email: {selected.email || "-"}</div><div>Phone: {selected.phone || "-"}</div><div>DOB: {selected.date_of_birth ? fmtDate(selected.date_of_birth) : "-"}</div><div>Postcode: {selected.postcode || "-"}</div><div className="md:col-span-2">Address: {[selected.address_line_1, selected.address_line_2, selected.town_city, selected.county, selected.postcode, selected.country].filter(Boolean).join(", ") || "-"}</div></div></AdminPanel><AdminPanel title="Wallet" actions={<><Button size="sm" onClick={() => { setGrantFor(selected); setAmount(""); setReason(""); }}>Grant credit</Button><Button size="sm" variant="outline" onClick={() => { setAdjustFor(selected); setAmount(""); setReason(""); }}>Adjust balance</Button></>}><div className="grid gap-2 text-sm md:grid-cols-3"><div>Balance: <strong>{formatMoney(Number(wallets[selected.id]?.balance || 0))}</strong></div><div>Earned: {formatMoney(Number(wallets[selected.id]?.lifetime_earned || 0))}</div><div>Spent: {formatMoney(Number(wallets[selected.id]?.lifetime_spent || 0))}</div></div></AdminPanel><AdminPanel title="Recent entries">{detail?.entries?.length ? <ul className="space-y-1 text-sm">{detail.entries.map((entry) => <li key={entry.id} className="flex justify-between rounded bg-white/[0.03] px-3 py-2"><span>#{entry.ticket_number} {entry.entry_type}</span><StatusBadge status={entry.status} /></li>)}</ul> : <p className="text-sm text-white/55">No entries.</p>}</AdminPanel><AdminPanel title="Recent payments">{detail?.payments?.length ? <ul className="space-y-1 text-sm">{detail.payments.map((payment) => <li key={payment.id} className="flex justify-between rounded bg-white/[0.03] px-3 py-2"><span>{shortId(payment.id)} · {payment.status}</span><span>{formatMoney(Number(payment.amount || 0))}</span></li>)}</ul> : <p className="text-sm text-white/55">No payments.</p>}</AdminPanel><AdminPanel title="Wallet activity">{detail?.txns?.length ? <ul className="space-y-1 text-sm">{detail.txns.map((txn) => <li key={txn.id} className="flex justify-between rounded bg-white/[0.03] px-3 py-2"><span>{txn.kind}{txn.note ? ` · ${txn.note}` : ""}</span><span>{Number(txn.delta) < 0 ? "-" : "+"}{formatMoney(Math.abs(Number(txn.delta || 0)))}</span></li>)}</ul> : <p className="text-sm text-white/55">No wallet activity.</p>}</AdminPanel></div></> : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!grantFor} onOpenChange={(open) => !open && setGrantFor(null)}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>Grant wallet credit</DialogTitle></DialogHeader><div className="space-y-3"><p className="text-sm text-white/70">Granting to <strong>{grantFor?.email}</strong></p><Input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" /><Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason" /><Input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} /></div><DialogFooter><Button variant="outline" onClick={() => setGrantFor(null)}>Cancel</Button><Button onClick={grantCredit} disabled={busy}>Grant credit</Button></DialogFooter></DialogContent>
+      </Dialog>
+      <Dialog open={!!adjustFor} onOpenChange={(open) => !open && setAdjustFor(null)}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>Adjust wallet balance</DialogTitle></DialogHeader><div className="space-y-3"><p className="text-sm text-white/70">Adjusting <strong>{adjustFor?.email}</strong></p><div className="flex gap-2"><Button variant={adjustType === "add" ? "default" : "outline"} onClick={() => setAdjustType("add")}><Plus className="h-4 w-4" /> Add</Button><Button variant={adjustType === "remove" ? "default" : "outline"} onClick={() => setAdjustType("remove")}><Minus className="h-4 w-4" /> Remove</Button></div><Input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" /><Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason" /></div><DialogFooter><Button variant="outline" onClick={() => setAdjustFor(null)}>Cancel</Button><Button onClick={adjustWallet} disabled={busy}>Save adjustment</Button></DialogFooter></DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 function EntriesPage() {
-  const { rows, loading, error } = useRows("entries", "id,ticket_number,entry_type,status,is_winner,created_at,user_id,competition_id,payment_id,archived_at", "created_at", false, 200);
-  return <SimpleListPage eyebrow="Operations" title="Entries" subtitle="Read-only entries view. Vite void/archive/delete/refund functions are intentionally not duplicated yet." loading={loading} error={error} rows={rows} icon={<Users className="h-5 w-5" />} columns={["ticket_number", "entry_type", "status", "is_winner", "competition_id", "user_id", "created_at"]} incomplete="Void, refund, archive, unarchive and delete actions call existing Edge Functions in Vite and are not wired in Next yet." />;
+  const supabase = createSupabaseBrowserClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [competitions, setCompetitions] = useState<Record<string, Row>>({});
+  const [profiles, setProfiles] = useState<Record<string, Row>>({});
+  const [actionTarget, setActionTarget] = useState<{ row: Row; action: "void" | "archive" | "unarchive" | "delete" } | null>(null);
+  const [reason, setReason] = useState("");
+  const [confirmText, setConfirmText] = useState("");
+  const [refundMode, setRefundMode] = useState<"void" | "wallet" | "manual">("void");
+  const [refundAmount, setRefundAmount] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    const { data, error: nextError } = await supabase.from("entries").select("id,ticket_number,entry_type,status,is_winner,created_at,user_id,competition_id,payment_id,voided_at,void_reason,archived_at,archive_reason").order("created_at", { ascending: false }).limit(200);
+    const list = (data as Row[]) ?? [];
+    setRows(list);
+    if (nextError) setError(nextError.message);
+    const compIds = Array.from(new Set(list.map((row) => row.competition_id).filter(Boolean)));
+    const userIds = Array.from(new Set(list.map((row) => row.user_id).filter(Boolean)));
+    if (compIds.length) {
+      const { data: comps } = await supabase.from("competitions").select("id,title,slug,status").in("id", compIds);
+      const map: Record<string, Row> = {};
+      for (const comp of ((comps as Row[]) ?? [])) map[comp.id] = comp;
+      setCompetitions(map);
+    }
+    if (userIds.length) {
+      const { data: profs } = await supabase.from("profiles").select("id,email,full_name").in("id", userIds);
+      const map: Record<string, Row> = {};
+      for (const profile of ((profs as Row[]) ?? [])) map[profile.id] = profile;
+      setProfiles(map);
+    }
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function invokeEntryFunction(name: string, body: Row) {
+    if (!supabase) throw new Error("Supabase client is not configured.");
+    const { data, error: nextError } = await supabase.functions.invoke(name, { body });
+    if (nextError) throw new Error(nextError.message);
+    if ((data as Row)?.error) throw new Error(String((data as Row).error));
+    return data as Row;
+  }
+
+  async function submitEntryAction() {
+    if (!actionTarget || busy) return;
+    if (actionTarget.action !== "unarchive" && !reason.trim()) {
+      setError("Reason is required.");
+      return;
+    }
+    if (actionTarget.action === "delete" && confirmText !== "DELETE ENTRY") {
+      setError("Type DELETE ENTRY to confirm.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      if (actionTarget.action === "void") {
+        const needsAmount = refundMode === "wallet" || refundMode === "manual";
+        if (needsAmount && (!Number(refundAmount) || Number(refundAmount) <= 0)) throw new Error("Refund amount must be positive.");
+        const fn = refundMode === "void" ? "admin-void-entry" : "admin-void-entry-with-refund";
+        const body = refundMode === "void" ? { entry_id: actionTarget.row.id, reason: reason.trim() } : { entry_id: actionTarget.row.id, reason: reason.trim(), mode: refundMode, amount: Number(refundAmount) };
+        await invokeEntryFunction(fn, body);
+        setSuccess(`Entry #${actionTarget.row.ticket_number} voided.`);
+      } else if (actionTarget.action === "archive") {
+        await invokeEntryFunction("admin-archive-entry", { entry_id: actionTarget.row.id, action: "archive", reason: reason.trim() });
+        setSuccess(`Entry #${actionTarget.row.ticket_number} archived.`);
+      } else if (actionTarget.action === "unarchive") {
+        await invokeEntryFunction("admin-archive-entry", { entry_id: actionTarget.row.id, action: "unarchive" });
+        setSuccess(`Entry #${actionTarget.row.ticket_number} unarchived.`);
+      } else {
+        await invokeEntryFunction("admin-delete-entry", { entry_id: actionTarget.row.id, reason: reason.trim(), confirm: "DELETE ENTRY" });
+        setSuccess(`Entry #${actionTarget.row.ticket_number} deleted.`);
+      }
+      setActionTarget(null); setReason(""); setConfirmText(""); setRefundMode("void"); setRefundAmount("");
+      await load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Entry action failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Operations" title="Entries" subtitle="Manage entries through the same Vite Edge Functions for void/refund/archive/delete." icon={<Users className="h-5 w-5" />} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <LoadingOrError loading={loading} error={null} />
+      {rows.length ? <AdminTable minWidth={1200}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Ticket</AdminTH><AdminTH>Competition</AdminTH><AdminTH>Customer</AdminTH><AdminTH>Type</AdminTH><AdminTH>Status</AdminTH><AdminTH>Created</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{rows.map((row) => <AdminTR key={row.id}><AdminTD className="font-mono font-bold">#{row.ticket_number}</AdminTD><AdminTD>{row.competition_id ? competitions[row.competition_id]?.title || shortId(row.competition_id) : "-"}</AdminTD><AdminTD>{row.user_id ? profiles[row.user_id]?.email || shortId(row.user_id) : "-"}</AdminTD><AdminTD>{row.entry_type}</AdminTD><AdminTD><div className="flex flex-wrap gap-1"><StatusBadge status={row.status} />{row.archived_at ? <StatusBadge status="archived" /> : null}{row.is_winner ? <StatusBadge status="published" /> : null}</div></AdminTD><AdminTD>{fmtDateTime(row.created_at)}</AdminTD><AdminTD align="right"><div className="flex justify-end gap-1">{row.status === "valid" && !row.archived_at ? <Button size="sm" variant="outline" onClick={() => setActionTarget({ row, action: "void" })}>Void</Button> : null}{row.archived_at ? <Button size="sm" variant="outline" onClick={() => setActionTarget({ row, action: "unarchive" })}><ArchiveRestore className="h-3.5 w-3.5" /></Button> : <Button size="sm" variant="outline" onClick={() => setActionTarget({ row, action: "archive" })}><Archive className="h-3.5 w-3.5" /></Button>}<Button size="sm" variant="outline" className="text-destructive" onClick={() => setActionTarget({ row, action: "delete" })}><Trash2 className="h-3.5 w-3.5" /></Button></div></AdminTD></AdminTR>)}</tbody></AdminTable> : !loading ? <EmptyRows rows={rows} label="entries" /> : null}
+
+      <Dialog open={!!actionTarget} onOpenChange={(open) => !open && setActionTarget(null)}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white">
+          <DialogHeader><DialogTitle>{actionTarget ? `${actionTarget.action} entry #${actionTarget.row.ticket_number}` : "Entry action"}</DialogTitle></DialogHeader>
+          {actionTarget ? <div className="space-y-3">{actionTarget.action === "void" ? <div className="space-y-2"><FieldLabel label="Void mode" /><select className="h-10 w-full rounded-md border border-white/10 bg-[#111827] px-3 text-sm text-white" value={refundMode} onChange={(e) => setRefundMode(e.target.value as any)}><option value="void">Void only</option><option value="wallet">Void and refund to wallet</option><option value="manual">Void and record manual refund</option></select>{refundMode !== "void" ? <Input type="number" step="0.01" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} placeholder="Refund amount" /> : null}</div> : null}{actionTarget.action !== "unarchive" ? <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason" /> : null}{actionTarget.action === "delete" ? <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type DELETE ENTRY" /> : null}</div> : null}
+          <DialogFooter><Button variant="outline" onClick={() => setActionTarget(null)}>Cancel</Button><Button onClick={submitEntryAction} disabled={busy}>{busy ? "Working..." : "Confirm"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 function PaymentsPage({ title }: { title: string }) {
@@ -1349,12 +1579,263 @@ function WinnersPage() {
 }
 
 function ReviewsPage() {
-  const { rows, loading, error } = useRows("reviews", "id,reviewer_name,rating,review_text,display_order,is_active,review_date,location,created_at,updated_at", "display_order", true, 100);
-  return <SimpleListPage eyebrow="Content" title="Reviews" subtitle="Read-only reviews list." loading={loading} error={error} rows={rows} icon={<Star className="h-5 w-5" />} columns={["reviewer_name", "rating", "location", "is_active", "display_order", "review_date"]} incomplete="Review create/edit/delete is not wired in Next yet." />;
+  const supabase = createSupabaseBrowserClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const emptyReview = { reviewer_name: "", rating: 5, review_text: "", display_order: 100, is_active: true, review_date: null, location: "" };
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    const { data, error: nextError } = await supabase.from("reviews").select("id,reviewer_name,rating,review_text,display_order,is_active,review_date,location,created_at,updated_at").order("display_order", { ascending: true }).order("created_at", { ascending: false });
+    setRows((data as Row[]) ?? []);
+    setError(nextError?.message ?? null);
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => { load(); }, [load]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (status === "active" && !row.is_active) return false;
+      if (status === "hidden" && row.is_active) return false;
+      if (q && !`${row.reviewer_name || ""} ${row.review_text || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [rows, search, status]);
+
+  async function saveReview() {
+    if (!supabase || !editing || saving) return;
+    const payload = {
+      reviewer_name: String(editing.reviewer_name || "").trim(),
+      rating: Math.min(5, Math.max(1, Number(editing.rating) || 5)),
+      review_text: String(editing.review_text || "").trim(),
+      display_order: Number(editing.display_order) || 0,
+      is_active: !!editing.is_active,
+      review_date: editing.review_date || null,
+      location: String(editing.location || "").trim() || null,
+    };
+    if (!payload.reviewer_name || !payload.review_text) {
+      setError("Name and review text are required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    const result = editing.id ? await supabase.from("reviews").update(payload).eq("id", editing.id) : await supabase.from("reviews").insert(payload);
+    setSaving(false);
+    if (result.error) setError(result.error.message);
+    else {
+      setSuccess(editing.id ? "Review updated." : "Review created.");
+      setEditing(null);
+      await load();
+    }
+  }
+
+  async function deleteReview(row: Row) {
+    if (!supabase || !window.confirm(`Delete review by "${row.reviewer_name}"?`)) return;
+    const { error: nextError } = await supabase.from("reviews").delete().eq("id", row.id);
+    if (nextError) setError(nextError.message);
+    else {
+      setSuccess("Review deleted.");
+      setEditing(null);
+      await load();
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Social proof" title="Reviews" subtitle="Manage the reviews shown in the homepage trust marquee. Only active reviews appear publicly." icon={<Star className="h-5 w-5" />} actions={<Button onClick={() => setEditing({ ...emptyReview })}><Plus className="h-4 w-4" /> New review</Button>} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <AdminPanel className="mb-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><Input className="max-w-md" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name or text" /><div className="flex gap-2">{["all", "active", "hidden"].map((key) => <Button key={key} size="sm" variant={status === key ? "default" : "outline"} onClick={() => setStatus(key)}>{key}</Button>)}</div></div>
+      </AdminPanel>
+      <LoadingOrError loading={loading} error={null} />
+      {filtered.length ? <AdminTable minWidth={920}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Reviewer</AdminTH><AdminTH>Rating</AdminTH><AdminTH>Review</AdminTH><AdminTH>Sort</AdminTH><AdminTH>Status</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{filtered.map((row) => <AdminTR key={row.id}><AdminTD>{row.reviewer_name}{row.location ? <div className="text-xs text-white/50">{row.location}</div> : null}</AdminTD><AdminTD className="text-primary">{"*".repeat(Number(row.rating || 0))}</AdminTD><AdminTD className="max-w-md truncate">{row.review_text}</AdminTD><AdminTD>{row.display_order}</AdminTD><AdminTD><StatusBadge status={row.is_active ? "published" : "draft"} /></AdminTD><AdminTD align="right"><Button size="sm" variant="outline" onClick={() => setEditing(row)}>Edit</Button></AdminTD></AdminTR>)}</tbody></AdminTable> : !loading ? <EmptyRows rows={filtered} label="reviews" /> : null}
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white">
+          <DialogHeader><DialogTitle>{editing?.id ? "Edit review" : "New review"}</DialogTitle></DialogHeader>
+          {editing ? <div className="space-y-3"><Input value={editing.reviewer_name || ""} onChange={(e) => setEditing({ ...editing, reviewer_name: e.target.value })} placeholder="Reviewer name" /><Input value={editing.location || ""} onChange={(e) => setEditing({ ...editing, location: e.target.value })} placeholder="Location" /><div className="grid grid-cols-2 gap-3"><Input type="number" min="1" max="5" value={editing.rating ?? 5} onChange={(e) => setEditing({ ...editing, rating: e.target.value })} /><Input type="date" value={editing.review_date || ""} onChange={(e) => setEditing({ ...editing, review_date: e.target.value || null })} /></div><Textarea rows={5} value={editing.review_text || ""} onChange={(e) => setEditing({ ...editing, review_text: e.target.value })} placeholder="Review text" /><div className="grid grid-cols-2 gap-3"><Input type="number" value={editing.display_order ?? 100} onChange={(e) => setEditing({ ...editing, display_order: e.target.value })} /><label className="flex items-center gap-2"><input type="checkbox" checked={!!editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Active</label></div></div> : null}
+          <DialogFooter>{editing?.id ? <Button variant="outline" className="border-destructive/40 text-destructive" onClick={() => deleteReview(editing)}>Delete</Button> : null}<Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={saveReview} disabled={saving}>{saving ? "Saving..." : "Save"}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 function DiscountCodesPage() {
-  return <IncompleteAdminPage title="Discount codes" icon={<Tag className="h-5 w-5" />} body="Vite manages discount codes through the existing admin-discount-codes Edge Function. This Next route is present but intentionally does not fake list/create/update/delete actions." />;
+  const supabase = createSupabaseBrowserClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [competitions, setCompetitions] = useState<Row[]>([]);
+  const [redemptions, setRedemptions] = useState<Record<string, number>>({});
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const emptyCode = {
+    code: "",
+    description: "",
+    discount_type: "percent",
+    discount_value: 10,
+    is_active: true,
+    starts_at: null,
+    expires_at: null,
+    max_uses: null,
+    max_uses_per_user: null,
+    min_quantity: null,
+    min_subtotal: null,
+    competition_id: null,
+  };
+
+  const parseFunctionError = async (fnError: any, fallback: string) => {
+    let msg = fnError?.message || fallback;
+    try {
+      const ctx = fnError?.context;
+      if (ctx && typeof ctx.text === "function") {
+        const text = await ctx.clone().text();
+        if (text) {
+          try {
+            const parsed = JSON.parse(text);
+            if (parsed?.error) msg = parsed.error;
+          } catch {
+            msg = text;
+          }
+        }
+      }
+    } catch {}
+    if (/Failed to send a request to the Edge Function/i.test(fnError?.message || "")) {
+      msg = "Could not reach discount code admin function. Check that admin-discount-codes is deployed in Supabase.";
+    }
+    return msg;
+  };
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+    const [listRes, compsRes] = await Promise.all([
+      supabase.functions.invoke("admin-discount-codes", { body: { action: "list", payload: {} } }),
+      supabase.from("competitions").select("id,title").order("title"),
+    ]);
+    if (listRes.error) {
+      setError(await parseFunctionError(listRes.error, "Failed to load discount codes."));
+      setRows([]);
+    } else {
+      const data = listRes.data as Row | null;
+      setRows(((data?.rows ?? []) as Row[]).map((row) => ({ ...row, discount_value: Number(row.discount_value) })));
+      const counts: Record<string, number> = {};
+      for (const item of ((data?.redemptions ?? []) as Row[])) if (item.status === "confirmed") counts[item.discount_code_id] = (counts[item.discount_code_id] ?? 0) + 1;
+      setRedemptions(counts);
+    }
+    if (compsRes.error) setError(compsRes.error.message);
+    setCompetitions((compsRes.data as Row[]) ?? []);
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function callAdmin(action: "create" | "update" | "delete", payload: Row) {
+    if (!supabase) throw new Error("Supabase client is not configured.");
+    const { data, error: nextError } = await supabase.functions.invoke("admin-discount-codes", { body: { action, payload } });
+    if (nextError) throw new Error(await parseFunctionError(nextError, "Discount code request failed."));
+    if ((data as Row)?.error) throw new Error(String((data as Row).error));
+    return data;
+  }
+
+  async function saveDiscountCode() {
+    if (!editing || saving) return;
+    const payload: Row = {
+      code: String(editing.code || "").toUpperCase().trim(),
+      description: editing.description || null,
+      discount_type: editing.discount_type || "percent",
+      discount_value: Number(editing.discount_value || 0),
+      is_active: editing.is_active ?? true,
+      starts_at: editing.starts_at || null,
+      expires_at: editing.expires_at || null,
+      max_uses: editing.max_uses ? Number(editing.max_uses) : null,
+      max_uses_per_user: editing.max_uses_per_user ? Number(editing.max_uses_per_user) : null,
+      min_quantity: editing.min_quantity ? Number(editing.min_quantity) : null,
+      min_subtotal: editing.min_subtotal ? Number(editing.min_subtotal) : null,
+      competition_id: editing.competition_id || null,
+    };
+    if (!payload.code) {
+      setError("Code is required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      if (editing.id) await callAdmin("update", { id: editing.id, ...payload });
+      else await callAdmin("create", payload);
+      setSuccess(editing.id ? "Code updated." : "Code created.");
+      setEditing(null);
+      await load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Failed to save discount code.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteDiscountCode(row: Row) {
+    if (!window.confirm("Delete this code? Existing redemptions will be kept.")) return;
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await callAdmin("delete", { id: row.id });
+      setSuccess("Code deleted.");
+      await load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Failed to delete discount code.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function toggleDiscountCode(row: Row) {
+    setError(null);
+    setSuccess(null);
+    try {
+      await callAdmin("update", { id: row.id, is_active: !row.is_active });
+      await load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Failed to update discount code.");
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Marketing" title="Discount codes" icon={<Tag className="h-5 w-5" />} subtitle="Create and manage promo codes through the existing admin-discount-codes Edge Function." actions={<Button onClick={() => setEditing({ ...emptyCode })}><Plus className="h-4 w-4" /> New code</Button>} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <LoadingOrError loading={loading} error={null} />
+      {rows.length ? (
+        <AdminTable minWidth={1000}>
+          <thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Code</AdminTH><AdminTH>Discount</AdminTH><AdminTH>Limits</AdminTH><AdminTH>Validity</AdminTH><AdminTH align="right">Used</AdminTH><AdminTH>Status</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead>
+          <tbody>{rows.map((row) => <AdminTR key={row.id}><AdminTD><div className="font-mono font-bold text-primary">{row.code}</div>{row.description ? <div className="text-xs text-white/55">{row.description}</div> : null}</AdminTD><AdminTD>{row.discount_type === "percent" ? `${row.discount_value}%` : formatMoney(Number(row.discount_value || 0))}</AdminTD><AdminTD className="text-xs text-white/70">{row.max_uses ? <div>Max {row.max_uses} total</div> : null}{row.max_uses_per_user ? <div>{row.max_uses_per_user} per user</div> : null}{row.min_quantity ? <div>Min qty {row.min_quantity}</div> : null}{row.min_subtotal ? <div>Min {formatMoney(Number(row.min_subtotal))}</div> : null}{!row.max_uses && !row.max_uses_per_user && !row.min_quantity && !row.min_subtotal ? "-" : null}</AdminTD><AdminTD className="text-xs text-white/70">{row.starts_at ? <div>From {fmtDate(row.starts_at)}</div> : null}{row.expires_at ? <div>Until {fmtDate(row.expires_at)}</div> : null}{!row.starts_at && !row.expires_at ? "Always" : null}</AdminTD><AdminTD align="right">{redemptions[row.id] ?? 0}</AdminTD><AdminTD><button type="button" onClick={() => toggleDiscountCode(row)} className={`rounded px-2 py-1 text-xs font-bold ${row.is_active ? "bg-success/20 text-success" : "bg-white/10 text-white/60"}`}>{row.is_active ? "Active" : "Inactive"}</button></AdminTD><AdminTD align="right"><div className="flex justify-end gap-1"><Button size="sm" variant="outline" onClick={() => setEditing(row)}><Pencil className="h-3.5 w-3.5" /></Button><Button size="sm" variant="outline" onClick={() => deleteDiscountCode(row)}><Trash2 className="h-3.5 w-3.5" /></Button></div></AdminTD></AdminTR>)}</tbody>
+        </AdminTable>
+      ) : !loading ? <EmptyRows rows={rows} label="discount codes" /> : null}
+
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-lg border-white/10 bg-[hsl(222_45%_5%)] text-white">
+          <DialogHeader><DialogTitle>{editing?.id ? "Edit code" : "New discount code"}</DialogTitle></DialogHeader>
+          {editing ? <div className="space-y-3 text-sm"><div className="space-y-1"><FieldLabel label="Code" /><Input value={editing.code || ""} onChange={(e) => setEditing({ ...editing, code: e.target.value.toUpperCase() })} /></div><div className="space-y-1"><FieldLabel label="Description" /><Input value={editing.description || ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Type" /><select className="h-10 w-full rounded-md border border-white/10 bg-[#111827] px-3 text-sm text-white" value={editing.discount_type || "percent"} onChange={(e) => setEditing({ ...editing, discount_type: e.target.value })}><option value="percent">Percentage</option><option value="fixed">Fixed amount</option></select></div><div className="space-y-1"><FieldLabel label="Value" /><Input type="number" step="0.01" value={editing.discount_value ?? 0} onChange={(e) => setEditing({ ...editing, discount_value: e.target.value })} /></div></div><div className="space-y-1"><FieldLabel label="Restrict to competition" /><select className="h-10 w-full rounded-md border border-white/10 bg-[#111827] px-3 text-sm text-white" value={editing.competition_id || ""} onChange={(e) => setEditing({ ...editing, competition_id: e.target.value || null })}><option value="">Any competition</option>{competitions.map((competition) => <option key={competition.id} value={competition.id}>{competition.title}</option>)}</select></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Starts at" /><Input type="datetime-local" value={editing.starts_at?.slice(0, 16) || ""} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Expires at" /><Input type="datetime-local" value={editing.expires_at?.slice(0, 16) || ""} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value || null })} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Max uses" /><Input type="number" value={editing.max_uses ?? ""} onChange={(e) => setEditing({ ...editing, max_uses: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Max uses per user" /><Input type="number" value={editing.max_uses_per_user ?? ""} onChange={(e) => setEditing({ ...editing, max_uses_per_user: e.target.value || null })} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Min quantity" /><Input type="number" value={editing.min_quantity ?? ""} onChange={(e) => setEditing({ ...editing, min_quantity: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Min subtotal" /><Input type="number" step="0.01" value={editing.min_subtotal ?? ""} onChange={(e) => setEditing({ ...editing, min_subtotal: e.target.value || null })} /></div></div><label className="inline-flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Active</label></div> : null}
+          <DialogFooter><Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={saveDiscountCode} disabled={saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 function WalletSettingsPage() {
@@ -1559,26 +2040,401 @@ function EmailsPage() {
 }
 
 function FaqsPage() {
-  const { rows, loading, error } = useRows("faqs", "id,category,question,sort_order,is_published,archived_at,updated_at", "sort_order", true, 100);
-  return <SimpleListPage eyebrow="Content" title="FAQs" subtitle="Read-only FAQ list." loading={loading} error={error} rows={rows} icon={<LifeBuoy className="h-5 w-5" />} columns={["category", "question", "is_published", "sort_order", "updated_at"]} incomplete="FAQ create/edit/archive/delete remains in Vite." />;
+  const supabase = createSupabaseBrowserClient();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const emptyFaq = { category: "getting_started", question: "", answer: "", sort_order: 100, is_published: false, archived_at: null };
+  const categories = ["getting_started", "entries_tickets", "payments_wallet", "free_postal_entry", "draws_winners", "prize_claims", "account_responsible_play"];
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    const { data, error: nextError } = await supabase.from("faq_items").select("id,category,question,answer,sort_order,is_published,archived_at,updated_at").order("category", { ascending: true }).order("sort_order", { ascending: true });
+    setRows((data as Row[]) ?? []);
+    setError(nextError?.message ?? null);
+    setLoading(false);
+  }, [supabase]);
+  useEffect(() => { load(); }, [load]);
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if (status === "published" && (!row.is_published || row.archived_at)) return false;
+      if (status === "draft" && (row.is_published || row.archived_at)) return false;
+      if (status === "archived" && !row.archived_at) return false;
+      if (q && !`${row.question || ""} ${row.answer || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [rows, search, status]);
+
+  async function saveFaq() {
+    if (!supabase || !editing || saving) return;
+    const payload = { category: editing.category, question: String(editing.question || "").trim(), answer: String(editing.answer || "").trim(), sort_order: Number(editing.sort_order) || 0, is_published: !!editing.is_published };
+    if (!payload.question || !payload.answer) return setError("Question and answer are required.");
+    setSaving(true);
+    const result = editing.id ? await supabase.from("faq_items").update(payload).eq("id", editing.id) : await supabase.from("faq_items").insert(payload);
+    setSaving(false);
+    if (result.error) setError(result.error.message);
+    else {
+      setSuccess(editing.id ? "FAQ updated." : "FAQ created.");
+      setEditing(null);
+      await load();
+    }
+  }
+
+  async function archiveFaq(row: Row) {
+    if (!supabase) return;
+    const { error: nextError } = await supabase.from("faq_items").update({ archived_at: row.archived_at ? null : new Date().toISOString() }).eq("id", row.id);
+    if (nextError) setError(nextError.message);
+    else {
+      setSuccess(row.archived_at ? "FAQ unarchived." : "FAQ archived.");
+      await load();
+    }
+  }
+
+  async function deleteFaq(row: Row) {
+    if (!supabase || !window.confirm(`Delete FAQ "${row.question}"? This cannot be undone.`)) return;
+    const { error: nextError } = await supabase.from("faq_items").delete().eq("id", row.id);
+    if (nextError) setError(nextError.message);
+    else {
+      setSuccess("FAQ deleted.");
+      setEditing(null);
+      await load();
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Help Centre" title="FAQs" subtitle="Manage the public Help Centre. Only published, non-archived FAQs appear on /faqs." icon={<LifeBuoy className="h-5 w-5" />} actions={<Button onClick={() => setEditing({ ...emptyFaq })}><Plus className="h-4 w-4" /> New FAQ</Button>} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <AdminPanel className="mb-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><Input className="max-w-md" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search question or answer" /><div className="flex gap-2">{["all", "published", "draft", "archived"].map((key) => <Button key={key} size="sm" variant={status === key ? "default" : "outline"} onClick={() => setStatus(key)}>{key}</Button>)}</div></div></AdminPanel>
+      <LoadingOrError loading={loading} error={null} />
+      {filtered.length ? <AdminTable minWidth={980}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Category</AdminTH><AdminTH>Question</AdminTH><AdminTH>Sort</AdminTH><AdminTH>Status</AdminTH><AdminTH>Updated</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{filtered.map((row) => <AdminTR key={row.id}><AdminTD>{String(row.category || "").replaceAll("_", " ")}</AdminTD><AdminTD>{row.question}</AdminTD><AdminTD>{row.sort_order}</AdminTD><AdminTD><StatusBadge status={row.archived_at ? "archived" : row.is_published ? "published" : "draft"} /></AdminTD><AdminTD>{fmtDate(row.updated_at)}</AdminTD><AdminTD align="right"><div className="flex justify-end gap-1"><Button size="sm" variant="outline" onClick={() => setEditing(row)}>Edit</Button><Button size="sm" variant="outline" onClick={() => archiveFaq(row)}>{row.archived_at ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}</Button>{row.archived_at ? <Button size="sm" variant="outline" className="text-destructive" onClick={() => deleteFaq(row)}><Trash2 className="h-3.5 w-3.5" /></Button> : null}</div></AdminTD></AdminTR>)}</tbody></AdminTable> : !loading ? <EmptyRows rows={filtered} label="FAQs" /> : null}
+      <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-w-2xl border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>{editing?.id ? "Edit FAQ" : "New FAQ"}</DialogTitle></DialogHeader>{editing ? <div className="space-y-3"><select className="h-10 w-full rounded-md border border-white/10 bg-[#111827] px-3 text-sm text-white" value={editing.category} onChange={(e) => setEditing({ ...editing, category: e.target.value })}>{categories.map((cat) => <option key={cat} value={cat}>{cat.replaceAll("_", " ")}</option>)}</select><Input value={editing.question || ""} onChange={(e) => setEditing({ ...editing, question: e.target.value })} placeholder="Question" /><Textarea rows={8} value={editing.answer || ""} onChange={(e) => setEditing({ ...editing, answer: e.target.value })} placeholder="Answer" /><div className="grid grid-cols-2 gap-3"><Input type="number" value={editing.sort_order ?? 100} onChange={(e) => setEditing({ ...editing, sort_order: e.target.value })} /><label className="flex items-center gap-2"><input type="checkbox" checked={!!editing.is_published} onChange={(e) => setEditing({ ...editing, is_published: e.target.checked })} /> Published</label></div></div> : null}<DialogFooter>{editing?.id ? <Button variant="outline" onClick={() => archiveFaq(editing)}>{editing.archived_at ? "Unarchive" : "Archive"}</Button> : null}<Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={saveFaq} disabled={saving}>{saving ? "Saving..." : "Save"}</Button></DialogFooter></DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 function GuidesPage() {
-  const { rows, loading, error } = useRows("guides", "id,title,slug,category,status,is_featured,updated_at,published_at", "updated_at", false, 100);
-  return <SimpleListPage eyebrow="Content" title="Guides" subtitle="Read-only guides list." loading={loading} error={error} rows={rows} icon={<BookOpen className="h-5 w-5" />} columns={["title", "slug", "category", "status", "is_featured", "updated_at"]} actions={<Button asChild><Link href="/admin/guides/new">New guide</Link></Button>} incomplete="Guide create/edit/delete and featured image upload remain in Vite." />;
+  const supabase = createSupabaseBrowserClient();
+  const { rows, loading, error, reload } = useRows("guides", "id,title,slug,category,status,is_featured,updated_at,published_at", "updated_at", false, 200);
+  const [q, setQ] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const filtered = rows.filter((row) => !q.trim() || `${row.title} ${row.slug} ${row.category}`.toLowerCase().includes(q.toLowerCase()));
+
+  async function duplicateGuide(row: Row) {
+    if (!supabase) return;
+    setActionError(null); setSuccess(null);
+    const { data: full, error: fetchError } = await supabase.from("guides").select("*").eq("id", row.id).maybeSingle();
+    if (fetchError || !full) return setActionError(fetchError?.message || "Guide not found.");
+    const { id, created_at, updated_at, published_at, ...rest } = full as Row;
+    const { error: insertError } = await supabase.from("guides").insert({ ...rest, slug: `${row.slug}-copy-${Math.random().toString(36).slice(2, 6)}`, title: `${row.title} (copy)`, status: "draft", is_featured: false, published_at: null });
+    if (insertError) setActionError(insertError.message);
+    else { setSuccess("Guide duplicated."); reload(); }
+  }
+
+  async function deleteGuide(row: Row) {
+    if (!supabase || !window.confirm(`Delete guide "${row.title}"? This cannot be undone.`)) return;
+    const { error: deleteError } = await supabase.from("guides").delete().eq("id", row.id);
+    if (deleteError) setActionError(deleteError.message);
+    else { setSuccess("Guide deleted."); reload(); }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Content" title="Guides" subtitle={`${rows.length} total - ${filtered.length} shown`} icon={<BookOpen className="h-5 w-5" />} actions={<Button asChild><Link href="/admin/guides/new">New guide</Link></Button>} />
+      {actionError ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{actionError}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <div className="mb-4 max-w-sm"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by title, slug, category" /></div>
+      <LoadingOrError loading={loading} error={error} />
+      {filtered.length ? <AdminTable minWidth={1000}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Title</AdminTH><AdminTH>Status</AdminTH><AdminTH>Category</AdminTH><AdminTH align="center">Featured</AdminTH><AdminTH>Updated</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{filtered.map((row) => <AdminTR key={row.id}><AdminTD><Link href={`/admin/guides/${row.id}`} className="font-semibold text-white hover:text-primary">{row.title}</Link><div className="text-xs text-white/45">/guides/{row.slug}</div></AdminTD><AdminTD><StatusBadge status={row.status} /></AdminTD><AdminTD>{row.category || "-"}</AdminTD><AdminTD align="center">{row.is_featured ? <Star className="inline h-4 w-4 text-primary" fill="currentColor" /> : "-"}</AdminTD><AdminTD>{fmtDateTime(row.updated_at)}</AdminTD><AdminTD align="right"><div className="flex justify-end gap-1"><Button asChild size="sm" variant="outline"><Link href={`/admin/guides/${row.id}`}><Pencil className="h-3.5 w-3.5" /></Link></Button>{row.status === "published" ? <Button asChild size="sm" variant="outline"><Link href={`/guides/${row.slug}`} target="_blank"><ExternalLink className="h-3.5 w-3.5" /></Link></Button> : null}<Button size="sm" variant="outline" onClick={() => duplicateGuide(row)}><Copy className="h-3.5 w-3.5" /></Button><Button size="sm" variant="outline" className="text-destructive" onClick={() => deleteGuide(row)}><Trash2 className="h-3.5 w-3.5" /></Button></div></AdminTD></AdminTR>)}</tbody></AdminTable> : !loading ? <EmptyRows rows={filtered} label="guides" /> : null}
+    </div>
+  );
 }
 
 function GuideFormShell({ mode, id }: { mode: "new" | "edit"; id?: string }) {
-  return <IncompleteAdminPage title={mode === "new" ? "New guide" : "Edit guide"} icon={<BookOpen className="h-5 w-5" />} body={`Guide form route is present (${id ?? "new"}) but the Vite editor and upload flow are not ported in Next yet.`} />;
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
+  const [form, setForm] = useState<Row>(EMPTY_GUIDE);
+  const [loading, setLoading] = useState(mode === "edit");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!supabase || mode !== "edit" || !id) return;
+    supabase.from("guides").select("*").eq("id", id).maybeSingle().then(({ data, error: nextError }: { data: Row | null; error: any }) => {
+      if (nextError) setError(nextError.message);
+      if (data) setForm({ ...EMPTY_GUIDE, ...data, tags: data.tags || [] });
+      setLoading(false);
+    });
+  }, [id, mode, supabase]);
+
+  async function saveGuide(status = form.status || "draft") {
+    if (!supabase || saving) return;
+    if (!form.title?.trim() || !form.excerpt?.trim() || !form.body_markdown?.trim()) {
+      setError("Title, excerpt and body are required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    const payload = {
+      ...form,
+      slug: String(form.slug || slugify(form.title)).trim(),
+      tags: Array.isArray(form.tags) ? form.tags.filter(Boolean) : [],
+      status,
+      published_at: status === "published" && !form.published_at ? new Date().toISOString() : form.published_at,
+    };
+    delete (payload as Row).id;
+    delete (payload as Row).created_at;
+    delete (payload as Row).updated_at;
+    const result = mode === "new" ? await supabase.from("guides").insert(payload).select("id").single() : await supabase.from("guides").update(payload).eq("id", id).select("id").single();
+    setSaving(false);
+    if (result.error) setError(result.error.message);
+    else {
+      setSuccess("Guide saved.");
+      if (mode === "new") router.push(`/admin/guides/${(result.data as Row).id}`);
+    }
+  }
+
+  return (
+    <div className="max-w-4xl">
+      <AdminPageHeader eyebrow={mode === "new" ? "Content" : "Edit"} title={mode === "new" ? "New guide" : "Edit guide"} icon={<BookOpen className="h-5 w-5" />} actions={mode === "edit" && form.status === "published" ? <Button asChild variant="outline"><Link href={`/guides/${form.slug}`} target="_blank">Preview public</Link></Button> : null} />
+      <LoadingOrError loading={loading} error={null} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      {!loading ? <div className="space-y-6"><AdminPanel title="Article basics"><div className="grid gap-4 md:grid-cols-2"><Input value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value, slug: form.slug || slugify(e.target.value) })} placeholder="Title" /><Input value={form.slug || ""} onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })} placeholder="Slug" /><Input value={form.category || ""} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Category" /><Input value={(form.tags || []).join(", ")} onChange={(e) => setForm({ ...form, tags: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} placeholder="Tags" /><Textarea className="md:col-span-2" rows={3} value={form.excerpt || ""} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} placeholder="Excerpt" /></div></AdminPanel><AdminPanel title="Featured image"><div className="grid gap-4 md:grid-cols-[260px_1fr]"><div className="aspect-video overflow-hidden rounded-md border border-white/10 bg-white/5">{form.featured_image_url ? <img src={form.featured_image_url} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-xs text-white/40">No image</div>}</div><div className="space-y-3"><AdminImageUploader folder={`guides/${form.slug || id || "new"}`} multiple={false} onUploaded={(files) => files[0] && setForm({ ...form, featured_image_url: files[0].url })} onSuccess={setSuccess} onError={setError} /><Input value={form.featured_image_url || ""} onChange={(e) => setForm({ ...form, featured_image_url: e.target.value })} placeholder="https://..." /></div></div></AdminPanel><AdminPanel title="Body"><Textarea rows={20} value={form.body_markdown || ""} onChange={(e) => setForm({ ...form, body_markdown: e.target.value })} className="font-mono text-sm" /></AdminPanel><AdminPanel title="SEO and status"><div className="grid gap-4 md:grid-cols-2"><Input value={form.seo_title || ""} onChange={(e) => setForm({ ...form, seo_title: e.target.value })} placeholder="SEO title" /><Input value={form.seo_description || ""} onChange={(e) => setForm({ ...form, seo_description: e.target.value })} placeholder="SEO description" /><label className="flex items-center gap-2"><input type="checkbox" checked={!!form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} /> Featured guide</label></div></AdminPanel><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={() => saveGuide("draft")} disabled={saving}>Save draft</Button><Button onClick={() => saveGuide("published")} disabled={saving}>Publish</Button>{form.status === "published" ? <Button variant="outline" onClick={() => saveGuide("draft")} disabled={saving}>Unpublish</Button> : null}{mode === "edit" ? <Button variant="outline" onClick={() => saveGuide("archived")} disabled={saving}>Archive</Button> : null}</div></div> : null}
+    </div>
+  );
 }
 
 function ContentLibraryPage() {
-  return <IncompleteAdminPage title="Content library" icon={<Library className="h-5 w-5" />} body="Vite browses and uploads files in the competition-images bucket. This Next route is present, but storage list/upload/delete is not wired yet to avoid fake media operations." />;
+  const supabase = createSupabaseBrowserClient();
+  const [files, setFiles] = useState<Row[]>([]);
+  const [folders, setFolders] = useState<string[]>([]);
+  const [folder, setFolder] = useState("");
+  const [search, setSearch] = useState("");
+  const [uploadFolder, setUploadFolder] = useState("competitions/general");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const fmtBytes = (n: number | null | undefined) => {
+    if (!n && n !== 0) return "-";
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+    return `${(n / 1024 / 1024).toFixed(2)} MB`;
+  };
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: rootList, error: rootError } = await supabase.storage.from("competition-images").list("competitions", { limit: 200, sortBy: { column: "name", order: "asc" } });
+      if (rootError) throw rootError;
+      const subFolders = (rootList || []).filter((item: Row) => item && item.id == null && item.name).map((item: Row) => item.name);
+      const nextFolders = ["competitions", ...subFolders.map((name: string) => `competitions/${name}`)];
+      setFolders(nextFolders);
+      const prefixes = folder ? [folder] : nextFolders;
+      const all: Row[] = [];
+      for (const prefix of prefixes) {
+        const { data, error: listError } = await supabase.storage.from("competition-images").list(prefix, { limit: 200, sortBy: { column: "created_at", order: "desc" } });
+        if (listError) throw listError;
+        for (const item of ((data as Row[]) || [])) {
+          if (!item || item.id == null) continue;
+          const path = `${prefix}/${item.name}`;
+          const { data: pub } = supabase.storage.from("competition-images").getPublicUrl(path);
+          all.push({ path, name: item.name, folder: prefix, size: item.metadata?.size ?? null, created_at: item.created_at, updated_at: item.updated_at, url: pub.publicUrl });
+        }
+      }
+      setFiles(all);
+    } catch (nextError) {
+      const msg = nextError instanceof Error ? nextError.message : "Failed to load storage.";
+      setError(msg.toLowerCase().includes("policy") || msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("rls") ? "Storage policy blocked listing. Admin RLS on the competition-images bucket may need updating." : msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [folder, supabase]);
+
+  useEffect(() => { load(); }, [load]);
+  const filtered = files.filter((file) => !search.trim() || String(file.path).toLowerCase().includes(search.toLowerCase()));
+
+  async function copyUrl(url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setSuccess("URL copied.");
+    } catch {
+      setError("Copy failed.");
+    }
+  }
+
+  async function deleteFile(path: string) {
+    if (!supabase || !path.startsWith("competitions/")) return;
+    if (!window.confirm(`Permanently delete this file?\n\n${path}`)) return;
+    const { error: removeError } = await supabase.storage.from("competition-images").remove([path]);
+    if (removeError) setError(removeError.message);
+    else {
+      setSuccess("Deleted.");
+      await load();
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Media" title="Content library" subtitle="Browse, upload and manage images stored in the competition-images bucket." icon={<Library className="h-5 w-5" />} actions={<Button variant="outline" onClick={load} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh</Button>} />
+      {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      <AdminPanel title="Upload" className="mb-5"><div className="grid gap-3 md:grid-cols-[1fr_2fr]"><div className="space-y-2"><FieldLabel label="Target folder" help="Must start with competitions/." /><Input value={uploadFolder} onChange={(e) => setUploadFolder(e.target.value)} /></div><AdminImageUploader folder={uploadFolder.startsWith("competitions/") ? uploadFolder : "competitions/general"} multiple onUploaded={() => load()} onSuccess={setSuccess} onError={setError} /></div></AdminPanel>
+      <AdminPanel title="Files">
+        <div className="mb-4 flex flex-col gap-2 md:flex-row"><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search filename or path" /><select className="h-10 rounded-md border border-white/10 bg-[#111827] px-3 text-sm text-white" value={folder} onChange={(e) => setFolder(e.target.value)}><option value="">All folders</option>{folders.map((f) => <option key={f} value={f}>{f}</option>)}</select></div>
+        <LoadingOrError loading={loading} error={null} />
+        {filtered.length ? <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{filtered.map((file) => <div key={file.path} className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.03]"><div className="aspect-square bg-black"><img src={file.url} alt={file.name} className="h-full w-full object-cover" /></div><div className="space-y-1 p-3"><div className="truncate text-xs text-white/85" title={file.path}>{file.name}</div><div className="truncate text-[11px] text-white/50">{file.folder}</div><div className="text-[11px] text-white/50">{fmtBytes(file.size)}</div><div className="flex gap-1 pt-1"><Button size="sm" variant="outline" onClick={() => copyUrl(file.url)}><Copy className="h-3.5 w-3.5" /></Button><Button size="sm" variant="outline" className="text-destructive" onClick={() => deleteFile(file.path)}><Trash2 className="h-3.5 w-3.5" /></Button></div></div></div>)}</div> : !loading ? <EmptyRows rows={filtered} label="files" /> : null}
+      </AdminPanel>
+    </div>
+  );
 }
 
 function SeoCentrePage() {
-  const { rows, loading, error } = useRows("competitions", "id,title,slug,status,short_description,updated_at", "updated_at", false, 100);
-  return <SimpleListPage eyebrow="SEO" title="SEO Centre" subtitle="Read-only competition SEO source review." loading={loading} error={error} rows={rows} icon={<Search className="h-5 w-5" />} columns={["title", "slug", "status", "short_description", "updated_at"]} incomplete="Vite SEO centre editing/review tools are not ported in Next yet." />;
+  const supabase = createSupabaseBrowserClient();
+  const site = "https://topdrawcompetitions.co.uk";
+  const indexNowKey = "27c2bacec30a4cb6b20065d2bcfcf12c";
+  const staticPaths = useMemo(() => [
+    "/",
+    "/competitions",
+    "/build-a-bundle",
+    "/winners",
+    "/past-competitions",
+    "/free-entry",
+    "/faqs",
+    "/contact",
+    "/responsible-play",
+    "/terms-and-conditions",
+    "/privacy-policy",
+    "/cookie-policy",
+  ], []);
+  const googlePriorityPaths = useMemo(() => ["/", "/competitions", "/build-a-bundle", "/free-entry", "/faqs", "/winners", "/past-competitions", "/contact"], []);
+  const [competitions, setCompetitions] = useState<Row[]>([]);
+  const [selectedStatic, setSelectedStatic] = useState<Set<string>>(() => new Set(staticPaths));
+  const [selectedCompetitions, setSelectedCompetitions] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const fullUrl = useCallback((path: string) => path === "/" ? `${site}/` : `${site}${path}`, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      const { data, error: nextError } = await supabase
+        .from("competitions")
+        .select("slug,title,status,updated_at")
+        .not("slug", "is", null)
+        .is("archived_at", null)
+        .in("status", ["live", "sold_out", "closed", "drawn"])
+        .order("updated_at", { ascending: false })
+        .limit(500);
+      if (cancelled) return;
+      const rows = ((data as Row[]) ?? []).filter((row) => row.slug);
+      setCompetitions(rows);
+      setSelectedCompetitions(new Set(rows.map((row) => String(row.slug))));
+      setError(nextError?.message ?? null);
+      setLoading(false);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [supabase]);
+
+  const selectedUrls = useMemo(() => [
+    ...Array.from(selectedStatic).map(fullUrl),
+    ...Array.from(selectedCompetitions).map((slug) => `${site}/competitions/${slug}`),
+  ], [fullUrl, selectedCompetitions, selectedStatic]);
+  const googleList = useMemo(() => [
+    ...googlePriorityPaths.map(fullUrl),
+    ...competitions.map((competition) => `${site}/competitions/${competition.slug}`),
+  ].join("\n"), [competitions, fullUrl, googlePriorityPaths]);
+
+  function toggleSet(setter: (value: Set<string>) => void, current: Set<string>, value: string) {
+    const next = new Set(current);
+    if (next.has(value)) next.delete(value);
+    else next.add(value);
+    setter(next);
+  }
+
+  async function copyText(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(label);
+      window.setTimeout(() => setCopied(null), 2000);
+    } catch {
+      setError("Copy failed. Browser clipboard access was not available.");
+    }
+  }
+
+  return (
+    <div>
+      <AdminPageHeader eyebrow="Indexing" title="SEO Centre" subtitle="Vite's SEO centre submits selected URLs to IndexNow. Next can safely review and copy the same URL sets, but submission is blocked until the matching API route exists." icon={<Search className="h-5 w-5" />} />
+      <IncompleteNotice>IndexNow submission is intentionally disabled in Next because the Vite tool posts to <code>/api/indexnow-submit</code> and this Next app does not currently expose that route. No email, SEO or indexing action is faked.</IncompleteNotice>
+      <LoadingOrError loading={loading} error={error} />
+      {copied ? <div className="my-4 rounded-lg border border-success/30 bg-success/10 p-3 text-sm text-success">{copied} copied.</div> : null}
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <AdminPanel title="Sitemap and IndexNow key" description="Copied from the Vite SEO centre constants.">
+          <div className="space-y-3 text-sm text-white/75">
+            <a className="inline-flex items-center gap-2 break-all text-primary" href={`${site}/sitemap.xml`} target="_blank" rel="noreferrer">{site}/sitemap.xml <ExternalLink className="h-3.5 w-3.5" /></a>
+            <a className="inline-flex items-center gap-2 break-all text-primary" href={`${site}/${indexNowKey}.txt`} target="_blank" rel="noreferrer">{site}/{indexNowKey}.txt <ExternalLink className="h-3.5 w-3.5" /></a>
+            <p>Google indexing remains sitemap/Search Console driven. Vite does not use the Google Indexing API for these public pages.</p>
+          </div>
+        </AdminPanel>
+        <AdminPanel title="Selected URLs" description={`${selectedUrls.length} URL(s) selected for review.`} actions={<Button variant="outline" onClick={() => copyText(selectedUrls.join("\n"), "Selected URLs")}><Copy className="h-4 w-4" /> Copy URLs</Button>}>
+          <div className="max-h-52 overflow-auto rounded-lg border border-white/10 bg-black/20 p-3 font-mono text-xs text-white/70">
+            {selectedUrls.length ? selectedUrls.map((url) => <div key={url} className="break-all">{url}</div>) : "No URLs selected."}
+          </div>
+        </AdminPanel>
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <AdminPanel title="Static public URLs" description="Matches Vite's static IndexNow list." actions={<><Button size="sm" variant="outline" onClick={() => setSelectedStatic(new Set(staticPaths))}>Select all</Button><Button size="sm" variant="outline" onClick={() => setSelectedStatic(new Set())}>Clear</Button></>}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {staticPaths.map((path) => (
+              <label key={path} className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-sm text-white/85">
+                <input type="checkbox" checked={selectedStatic.has(path)} onChange={() => toggleSet(setSelectedStatic, selectedStatic, path)} className="h-4 w-4 accent-primary" />
+                <span className="font-mono">{path}</span>
+              </label>
+            ))}
+          </div>
+        </AdminPanel>
+        <AdminPanel title="Live competition URLs" description="Vite includes live, sold out, closed and drawn competitions that are not archived." actions={<><Button size="sm" variant="outline" onClick={() => setSelectedCompetitions(new Set(competitions.map((row) => String(row.slug))))}>Select all</Button><Button size="sm" variant="outline" onClick={() => setSelectedCompetitions(new Set())}>Clear</Button></>}>
+          <div className="max-h-80 space-y-2 overflow-auto">
+            {competitions.map((competition) => (
+              <label key={competition.slug} className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-2 text-sm text-white/85">
+                <input type="checkbox" checked={selectedCompetitions.has(String(competition.slug))} onChange={() => toggleSet(setSelectedCompetitions, selectedCompetitions, String(competition.slug))} className="mt-0.5 h-4 w-4 accent-primary" />
+                <span className="min-w-0">
+                  <span className="block truncate font-semibold text-white">{competition.title || competition.slug}</span>
+                  <span className="block break-all font-mono text-xs text-white/55">/competitions/{competition.slug}</span>
+                </span>
+              </label>
+            ))}
+            {!loading && competitions.length === 0 ? <p className="text-sm text-white/60">No eligible competition URLs found.</p> : null}
+          </div>
+        </AdminPanel>
+      </div>
+      <AdminPanel className="mt-4" title="Google priority list" description="Copied from the Vite SEO centre helper list." actions={<Button variant="outline" onClick={() => copyText(googleList, "Google priority list")}><Copy className="h-4 w-4" /> Copy list</Button>}>
+        <textarea readOnly value={googleList} className="min-h-48 w-full rounded-lg border border-white/10 bg-black/20 p-3 font-mono text-xs text-white/75 outline-none" />
+      </AdminPanel>
+    </div>
+  );
 }
 
 function DynamicContentPage() {
