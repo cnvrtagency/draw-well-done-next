@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { MiniCartTrigger } from "@/components/MiniCart";
 import { useAuth } from "@/hooks/useAuth";
+import { WalletPill } from "@/components/WalletPill";
 
 const promo = ["Live competitions open now", "18+ only", "Free postal entry route", "Winners published", "Entry caps shown upfront", "UK prize competitions"];
 const navItems = [
@@ -61,6 +62,7 @@ export function Header() {
           {navItems.map((n) => <Link key={n.to} href={n.to} className={linkCls(n.to)}>{n.label}</Link>)}
         </nav>
         <div className="flex items-center gap-2">
+          <WalletPill />
           <MiniCartTrigger />
           {!loading && user ? (
             <>

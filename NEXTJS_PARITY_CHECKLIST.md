@@ -60,6 +60,7 @@
 - [x] Vite-compatible basket provider and MiniCart drawer
 - [x] Fixed basket provider localStorage/custom-event feedback loop that could stall global clicks
 - [x] Header auth state switches from login to account/admin controls after session/role load
+- [x] Header wallet balance pill matches Vite `wallets.balance` query and links to `/account/wallet`
 - [x] Next sitemap route for public pages and public competition/guide records
 - [x] Next robots route with private/auth/checkout/admin disallows and Sitemap line
 - [x] Closed MiniCart drawer no longer receives pointer events

@@ -370,6 +370,7 @@ Auth:
 - Register.
 - Login.
 - Header switches from Log in to Account after login without full refresh.
+- Header wallet pill appears for signed-in users at the same breakpoint as Vite, reads `wallets.balance` through RLS and links to `/account/wallet`.
 - Admin user sees the Admin header button only after role check completes.
 - Non-admin user never sees the Admin header button.
 - Mobile menu shows the same logged-out/logged-in/admin states.
