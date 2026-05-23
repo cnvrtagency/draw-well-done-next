@@ -131,39 +131,72 @@ Implemented:
 - Transactions and wallet ledger views.
 - Wallet balance, lifetime earned/spent and recent activity.
 - Profile edit form writing to `profiles` with the same public fields.
+- Profile DOB lock, 18+ validation, phone/postcode validation and verified-profile reset warning.
+- Account verification panel with current status states, document file validation, `account-verification` storage upload, `account_verification_documents` insert and `submit_account_verification` RPC submission.
 - Security password update and logout.
-- Wins display.
+- Wins display with fallback lookup by winning entries.
+- Prize claim dialog with profile-prefilled delivery fields, cash alternative choice and `submit_prize_claim` RPC submission.
 - Responsible play self-exclusion status and `create_self_exclusion` RPC flow.
 
 Still differs:
-- Prize claim dialog is not fully ported; claimable wins instruct users to contact support.
-- Account verification/document upload panel is not fully ported.
-- Profile DOB lock/verification reset confirmation is simplified and still needs manual parity review.
 - Account mobile/desktop pixel review is still required.
+- Account verification and prize claim submission still depend on the existing Supabase RPCs/storage policies being present and allowing the authenticated customer action; no schema/RLS bypass was added.
 
 Manual tests required:
 - Logged out `/account` redirects to `/login`.
 - Login then `/account` loads.
 - Entries, orders, transactions, wallet, profile, security, wins and responsible play load under the test user.
 - Profile update writes through RLS.
+- Verification panel displays the correct status.
+- Document upload either submits through storage/RLS or reports the exact Supabase policy/RPC error.
+- Prize claim dialog opens for `unclaimed`/`claim_started` wins.
+- Prize claim submission either succeeds through `submit_prize_claim` or reports the exact backend error.
 - Password update works.
 - Self-exclusion RPC works for an eligible account.
+- Modal close buttons remove the overlay and return page clicks.
+- No hydration error on account pages.
 - Mobile account nav scroll behavior.
 
 ## Admin Status
 
-Not launch-ready. The Vite AdminLayout and route map were audited, but operational admin screens were not ported in this pass.
+Not launch-ready. This pass ports the guarded admin shell, noindex/nofollow metadata, dashboard counts and safe read-only route views. Mutation-heavy operational flows remain in Vite until they can be ported and tested against the existing RLS/RPC/Edge Function contracts.
 
-Required before launch:
-- Admin role guard.
-- Admin layout/nav.
-- Dashboard.
-- Competition list and form.
-- Image upload/regeneration.
-- Hero banners.
-- Customers, entries, payments, draws, winners, reviews, discount codes, wallet settings, postal entries, emails, FAQs, guides, content and SEO.
+Implemented in Next:
+- Vite-compatible admin guard through `useAuth`/`user_roles` admin role. Logged-out users are redirected to `/login`; non-admin users see the same admin-only block.
+- Admin layout/nav/sidebar, active states and public/sign-out controls.
+- Admin `robots: noindex,nofollow` metadata.
+- Dashboard stat cards for live competitions, entries, revenue, postal entries, awaiting draws and unpublished winners.
+- Required route map for `/admin`, competitions, hero banners, customers, entries, orders, payments, draws, winners, reviews, discount codes, wallet settings, postal entries, emails, FAQs, guides, content library and SEO centre.
+- Read-only list views for competitions, hero banners, customers/users, entries, payments/orders, draws, winners, reviews, wallet settings, postal entries, email templates, FAQs, guides and SEO source review.
 
-Do not launch admin until all mutations are tested against RLS and existing Edge Functions.
+Still incomplete:
+- Competition create/edit form, status controls, duplicate/archive/delete, discount tiers, image upload and generated variant regeneration.
+- Hero banner create/edit/toggle/scheduling/upload/preview.
+- Customer detail drawer and wallet grant/adjust flows.
+- Entry void/refund/archive/delete flows.
+- Payment cancel/refund flows.
+- Draw execution and winner publishing/proof upload/status editing.
+- Review/FAQ/guide/email/content/SEO create/edit/delete flows.
+- Discount code admin function UI.
+- Content library storage list/upload/delete.
+
+Do not launch admin until all mutations are ported and tested against RLS and existing Edge Functions.
+
+Manual admin tests required:
+- Logged out `/admin` redirects to `/login` in a browser.
+- Non-admin user is blocked from `/admin`.
+- Admin user can load `/admin`.
+- Admin nav works on desktop/mobile.
+- Competitions list loads.
+- Create competition route loads and clearly reports incomplete form status.
+- Edit competition route loads and clearly reports incomplete form status.
+- Image upload/regenerate route state clearly reports incomplete status; no fake upload URL is produced.
+- Hero banners admin loads.
+- Customers/entries/orders/payments load.
+- Draws/winners routes load.
+- Reviews/discount codes/wallet/postal entries load.
+- FAQs/guides/content/SEO routes load.
+- No console errors, hydration errors, or global click issues.
 
 ## Data Mutation Status
 

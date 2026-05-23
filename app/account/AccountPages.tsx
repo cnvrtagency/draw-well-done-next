@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, AlertTriangle, Archive, ArrowDownCircle, ArrowRight, ArrowUpCircle, Calendar, CheckCircle2, Coins, ExternalLink, Gift, LifeBuoy, LogOut, Mail, MapPin, Phone, Receipt, RotateCcw, ShieldAlert, ShieldCheck, ShoppingBag, Sparkles, Ticket as TicketIcon, Trophy, User, UserCog, Wallet as WalletIcon } from "lucide-react";
+import { Activity, AlertTriangle, Archive, ArrowDownCircle, ArrowRight, ArrowUpCircle, Calendar, CheckCircle2, Coins, ExternalLink, FileCheck2, Gift, Info as InfoIcon, LifeBuoy, Loader2, LogOut, Mail, MapPin, Phone, Receipt, RotateCcw, ShieldAlert, ShieldCheck, ShoppingBag, Sparkles, Ticket as TicketIcon, Trophy, Upload, User, UserCog, Wallet as WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Panel } from "@/components/Panel";
 import { EmptyState } from "@/components/EmptyState";
 import { SafePrizeImage } from "@/components/SafePrizeImage";
@@ -33,6 +34,40 @@ type CompetitionLite = { id: string; title: string; slug: string; status: string
 type PaymentRow = { id: string; created_at: string; amount: number; status: string; quantity: number | null; competition_id: string | null; subtotal_amount: number | null; discount_amount: number | null; discount_percentage: number | null; wallet_amount_used: number | null; refund_status: string | null; refunded_amount: number | null; is_multiline: boolean | null; pricing_snapshot: Record<string, any> | null };
 type LineRow = { payment_id: string; competition_id: string; quantity: number | null; line_total: number | null };
 type Txn = { id: string; delta: number; balance_after: number; kind: string; note: string | null; created_at: string; expires_at: string | null; reference_type?: string | null; reference_id?: string | null };
+type ProfileForm = {
+  full_name: string;
+  phone: string;
+  date_of_birth: string;
+  address_line_1: string;
+  address_line_2: string;
+  town_city: string;
+  county: string;
+  postcode: string;
+  country: string;
+  marketing_consent: boolean;
+};
+type WinnerRow = {
+  id: string;
+  prize_title: string | null;
+  winning_ticket_number: number | null;
+  draw_date: string;
+  proof_url: string | null;
+  is_published: boolean;
+  competition_id: string;
+  display_name: string | null;
+  display_location: string | null;
+  image_url: string | null;
+  entry_id: string | null;
+  claim_status: string;
+  claim_submitted_at: string | null;
+  claim_verified_at: string | null;
+  dispatched_at: string | null;
+  delivered_at: string | null;
+  prize_choice: string | null;
+  delivery_courier: string | null;
+  delivery_tracking_url: string | null;
+  competition?: { title: string | null; slug: string | null; main_image_url: string | null; cash_alternative: number | null } | null;
+};
 
 function useSupabaseUser() {
   const supabase = createSupabaseBrowserClient();
@@ -58,6 +93,23 @@ function paymentStatus(p: Pick<PaymentRow, "status" | "refund_status">) {
   if (p.status === "succeeded") return { label: "Paid", status: "paid" };
   if (p.status === "allocation_failed") return { label: "Allocation issue", status: "allocation_failed" };
   return { label: p.status, status: p.status };
+}
+
+function friendlyError(error: unknown) {
+  const msg = (error as any)?.message ?? String(error ?? "");
+  if (/row-level security|new row violates/i.test(msg)) return "You don't have permission to do that.";
+  if (/jwt|unauthor/i.test(msg)) return "You need to be signed in to do that.";
+  if (/network|failed to fetch/i.test(msg)) return "Network error, please check your connection and try again.";
+  return msg || "Something went wrong. Please try again.";
+}
+
+function isUnder18(dob: string): boolean {
+  if (!dob) return false;
+  const d = new Date(dob);
+  if (Number.isNaN(d.getTime())) return true;
+  const now = new Date();
+  const eighteen = new Date(now.getFullYear() - 18, now.getMonth(), now.getDate());
+  return d > eighteen;
 }
 
 function snapshotLines(snap: Record<string, any> | null): { competition_id?: string; title?: string; quantity?: number; line_total?: number }[] {
@@ -313,21 +365,118 @@ function WalletTxnRow({ txn: t }: { txn: Txn }) {
   return <Panel variant="glass" className="p-3 md:p-4"><div className="flex items-start gap-3"><div className={`mt-0.5 grid h-9 w-9 place-items-center rounded-lg bg-white/5 ${meta.tone}`}><Icon className="h-4 w-4" /></div><div className="min-w-0 flex-1"><div className="text-sm font-semibold text-white">{meta.label}</div><div className="mt-0.5 text-[11px] text-white/55">{new Date(t.created_at).toLocaleString()}</div>{t.note ? <div className="mt-1 text-xs text-white/60">{t.note}</div> : null}{t.expires_at ? <div className="mt-1 text-[11px] text-warning">Expires {fmtDate(t.expires_at)}</div> : null}</div><div className="shrink-0 text-right"><div className={`font-mono-num font-bold ${Number(t.delta) < 0 ? "text-warning" : "text-success"}`}>{Number(t.delta) < 0 ? "-" : "+"}{formatMoney(Math.abs(Number(t.delta)))}</div><div className="font-mono-num text-[11px] text-white/50">Bal {formatMoney(Number(t.balance_after))}</div></div></div></Panel>;
 }
 
+const EMPTY_PROFILE: ProfileForm = {
+  full_name: "",
+  phone: "",
+  date_of_birth: "",
+  address_line_1: "",
+  address_line_2: "",
+  town_city: "",
+  county: "",
+  postcode: "",
+  country: "United Kingdom",
+  marketing_consent: false,
+};
+
 export function AccountProfilePage() {
   const { supabase, user } = useSupabaseUser();
-  const [form, setForm] = useState<any>({ full_name: "", phone: "", date_of_birth: "", address_line_1: "", address_line_2: "", town_city: "", county: "", postcode: "", country: "United Kingdom", marketing_consent: false });
+  const [form, setForm] = useState<ProfileForm>(EMPTY_PROFILE);
+  const [original, setOriginal] = useState<ProfileForm>(EMPTY_PROFILE);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dobLocked, setDobLocked] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  useEffect(() => { if (!supabase || !user) return; supabase.from("profiles").select("email,full_name,phone,date_of_birth,address_line_1,address_line_2,town_city,county,postcode,country,marketing_consent,verification_status").eq("id", user.id).maybeSingle().then(({ data }: any) => { if (data) { setEmail(data.email || user.email || ""); setForm({ full_name: data.full_name || "", phone: data.phone || "", date_of_birth: data.date_of_birth || "", address_line_1: data.address_line_1 || "", address_line_2: data.address_line_2 || "", town_city: data.town_city || "", county: data.county || "", postcode: data.postcode || "", country: data.country || "United Kingdom", marketing_consent: !!data.marketing_consent, verification_status: data.verification_status }); } else setEmail(user.email || ""); setLoading(false); }); }, [supabase, user]);
-  async function save(e: React.FormEvent) { e.preventDefault(); if (!supabase || !user) return; if (!form.full_name.trim()) return setMessage("Please enter your full name"); setSaving(true); const payload = { full_name: form.full_name.trim(), phone: form.phone.trim() || null, date_of_birth: form.date_of_birth || null, address_line_1: form.address_line_1.trim() || null, address_line_2: form.address_line_2.trim() || null, town_city: form.town_city.trim() || null, county: form.county.trim() || null, postcode: form.postcode.trim() || null, country: form.country.trim() || "United Kingdom", marketing_consent: form.marketing_consent }; const { error } = await supabase.from("profiles").update(payload).eq("id", user.id); setSaving(false); setMessage(error ? error.message : "Profile updated"); }
-  const update = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
-  return <div className="space-y-6"><PageTitle icon={<UserCog className="h-5 w-5 text-primary" />} title="Profile details" body="Keep your details up to date so we can verify your account and contact you if you win." />{loading ? <p className="text-white/60">Loading...</p> : <form onSubmit={save} className="space-y-5"><Panel variant="glass" className="p-5 md:p-6"><div className="eyebrow mb-3">Personal details</div><div className="grid gap-4 sm:grid-cols-2"><Field label="Full name"><Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} required /></Field><Field label="Login email" hint="Email is read-only here. Use Login & security to request a change."><Input value={email} readOnly disabled /></Field><Field label="Date of birth"><Input type="date" value={form.date_of_birth} onChange={(e) => update("date_of_birth", e.target.value)} /></Field></div></Panel><Panel variant="glass" className="border-primary/20 bg-[linear-gradient(135deg,hsl(222_28%_12%/0.86),hsl(222_32%_8%/0.78))] p-5 md:p-6"><div className="eyebrow mb-3">Contact and delivery details</div><div className="grid gap-4 sm:grid-cols-2">{["phone","address_line_1","address_line_2","town_city","county","postcode","country"].map((k) => <Field key={k} label={k.replaceAll("_", " ")}><Input value={form[k] || ""} onChange={(e) => update(k, e.target.value)} /></Field>)}</div></Panel><Panel variant="glass" className="p-5 md:p-6"><div className="eyebrow mb-3">Marketing preferences</div><label className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={form.marketing_consent} onChange={(e) => update("marketing_consent", e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" /><span className="text-sm text-white/80">Email me occasional updates about new competitions, winners and free entry routes. You can opt out at any time.</span></label></Panel>{message ? <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">{message}</div> : null}<Button type="submit" disabled={saving} className="bg-primary font-bold uppercase tracking-wider hover:bg-primary/90">{saving ? "Saving..." : "Save changes"}</Button></form>}</div>;
-}
+  const [verification, setVerification] = useState({ status: "unverified", verified_at: null as string | null, rejection_reason: null as string | null, required_reason: null as string | null });
 
-function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
-  return <div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-white/60">{label}</label>{children}{hint ? <p className="text-[11px] text-white/45">{hint}</p> : null}</div>;
+  const reload = useCallback(async () => {
+    if (!supabase || !user) return;
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("email,full_name,phone,date_of_birth,address_line_1,address_line_2,town_city,county,postcode,country,marketing_consent,dob_locked_at,verification_status,verification_verified_at,verification_rejection_reason,verification_required_reason")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error) {
+      setMessage("Could not load your profile");
+      return;
+    }
+    if (data) {
+      setEmail(data.email || user.email || "");
+      const next: ProfileForm = {
+        full_name: data.full_name || "",
+        phone: data.phone || "",
+        date_of_birth: data.date_of_birth || "",
+        address_line_1: data.address_line_1 || "",
+        address_line_2: data.address_line_2 || "",
+        town_city: data.town_city || "",
+        county: data.county || "",
+        postcode: data.postcode || "",
+        country: data.country || "United Kingdom",
+        marketing_consent: !!data.marketing_consent,
+      };
+      setForm(next);
+      setOriginal(next);
+      setDobLocked(Boolean(data.dob_locked_at) || Boolean(data.date_of_birth));
+      setVerification({
+        status: data.verification_status ?? "unverified",
+        verified_at: data.verification_verified_at ?? null,
+        rejection_reason: data.verification_rejection_reason ?? null,
+        required_reason: data.verification_required_reason ?? null,
+      });
+    } else {
+      setEmail(user.email || "");
+    }
+  }, [supabase, user]);
+
+  useEffect(() => {
+    if (!supabase || !user) return;
+    let cancelled = false;
+    (async () => {
+      await reload();
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [reload, supabase, user]);
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase || !user) return;
+    setMessage(null);
+    if (!form.full_name.trim()) return setMessage("Please enter your full name");
+    if (form.address_line_1.trim() && !form.postcode.trim()) return setMessage("Please enter a postcode for your address");
+    if (form.phone.trim() && form.phone.replace(/\D/g, "").length < 7) return setMessage("Please enter a valid phone number");
+    if (form.date_of_birth && isUnder18(form.date_of_birth)) return setMessage("You must be 18 or over");
+    if (dobLocked && form.date_of_birth !== original.date_of_birth) return setMessage("Date of birth cannot be changed once set. Contact support.");
+    if (verification.status === "verified") {
+      const fields: (keyof ProfileForm)[] = ["full_name", "address_line_1", "address_line_2", "town_city", "county", "postcode", "country"];
+      const willReset = fields.some((k) => (form[k] || "") !== (original[k] || ""));
+      if (willReset && !window.confirm("Changing your name or address will remove your verified status until your documents are reviewed again. Continue?")) return;
+    }
+    setSaving(true);
+    const payload = { full_name: form.full_name.trim(), phone: form.phone.trim() || null, date_of_birth: form.date_of_birth || null, address_line_1: form.address_line_1.trim() || null, address_line_2: form.address_line_2.trim() || null, town_city: form.town_city.trim() || null, county: form.county.trim() || null, postcode: form.postcode.trim() || null, country: form.country.trim() || "United Kingdom", marketing_consent: form.marketing_consent };
+    const { error } = await supabase.from("profiles").update(payload).eq("id", user.id);
+    setSaving(false);
+    if (error) return setMessage(error.message || "Could not save your profile");
+    setMessage("Profile updated");
+    await reload();
+  }
+
+  const update = (k: keyof ProfileForm, v: any) => setForm((f) => ({ ...f, [k]: v }));
+  return (
+    <div className="space-y-6">
+      <PageTitle icon={<UserCog className="h-5 w-5 text-primary" />} title="Profile details" body="Keep your details up to date so we can verify your account and contact you if you win." />
+      {loading ? <p className="text-white/60">Loading...</p> : <>
+        <AccountVerificationPanel status={verification.status} verifiedAt={verification.verified_at} rejectionReason={verification.rejection_reason} requiredReason={verification.required_reason} onChanged={reload} />
+        <form onSubmit={save} className="space-y-5">
+          <Panel variant="glass" className="p-5 md:p-6"><div className="eyebrow mb-3">Personal details</div><div className="grid gap-4 sm:grid-cols-2"><Field label="Full name"><Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} required /></Field><Field label="Login email" hint="Email is read-only here. Use Login & security to request a change."><Input value={email} readOnly disabled /></Field><Field label="Date of birth" hint={dobLocked ? "Date of birth cannot be changed after it has been saved. Contact support if this is incorrect." : "You must be 18 or over to enter. This can only be set once."}><Input type="date" value={form.date_of_birth} onChange={(e) => update("date_of_birth", e.target.value)} readOnly={dobLocked} disabled={dobLocked} /></Field></div></Panel>
+          <Panel variant="glass" className="border-primary/20 bg-[linear-gradient(135deg,hsl(222_28%_12%/0.86),hsl(222_32%_8%/0.78))] p-5 md:p-6"><div className="eyebrow mb-3">Contact and delivery details</div><p className="mb-4 max-w-2xl text-sm leading-relaxed text-white/60">Add your phone number and address when you are ready. These details help speed up verification and prize claims.</p><div className="grid gap-4 sm:grid-cols-2"><Field label="Phone" hint="Optional until prize claim or account verification."><Input value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="07..." /></Field><div className="hidden sm:block" />{(["address_line_1", "address_line_2", "town_city", "county", "postcode", "country"] as const).map((k) => <Field key={k} label={k === "town_city" ? "Town / city" : k.replaceAll("_", " ")}><Input value={form[k] || ""} onChange={(e) => update(k, e.target.value)} /></Field>)}</div></Panel>
+          <Panel variant="glass" className="p-5 md:p-6"><div className="eyebrow mb-3">Marketing preferences</div><label className="flex cursor-pointer items-start gap-3"><input type="checkbox" checked={form.marketing_consent} onChange={(e) => update("marketing_consent", e.target.checked)} className="mt-0.5 h-4 w-4 accent-primary" /><span className="text-sm text-white/80">Email me occasional updates about new competitions, winners and free entry routes. You can opt out at any time.</span></label></Panel>
+          {message ? <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">{message}</div> : null}
+          <Button type="submit" disabled={saving} className="bg-primary font-bold uppercase tracking-wider hover:bg-primary/90">{saving ? "Saving..." : "Save changes"}</Button>
+        </form>
+      </>}
+    </div>
+  );
 }
 
 export function AccountSecurityPage() {
@@ -348,12 +497,230 @@ function Info({ label, value }: { label: string; value: string }) {
   return <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3"><dt className="text-[11px] font-bold uppercase tracking-wider text-white/50">{label}</dt><dd className="mt-0.5 break-all text-white">{value}</dd></div>;
 }
 
+type VerificationDoc = { id: string; document_type: "proof_of_id" | "proof_of_address"; status: string; uploaded_at: string; original_filename: string | null };
+const ALLOWED_MIMES = ["image/jpeg", "image/png", "application/pdf"];
+const MAX_BYTES = 10 * 1024 * 1024;
+
+function extOf(file: File): string {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  if (fromName && /^[a-z0-9]{1,5}$/.test(fromName)) return fromName;
+  if (file.type === "image/jpeg") return "jpg";
+  if (file.type === "image/png") return "png";
+  if (file.type === "application/pdf") return "pdf";
+  return "bin";
+}
+
+function AccountVerificationPanel({ status, verifiedAt, rejectionReason, requiredReason, onChanged }: { status: string; verifiedAt: string | null; rejectionReason: string | null; requiredReason: string | null; onChanged?: () => void }) {
+  const { supabase, user } = useSupabaseUser();
+  const [docs, setDocs] = useState<VerificationDoc[]>([]);
+  const [idFile, setIdFile] = useState<File | null>(null);
+  const [addrFile, setAddrFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const loadDocs = useCallback(async () => {
+    if (!supabase || !user) return;
+    const { data } = await supabase.from("account_verification_documents").select("id,document_type,status,uploaded_at,original_filename").eq("user_id", user.id).order("uploaded_at", { ascending: false });
+    setDocs((data as VerificationDoc[]) ?? []);
+  }, [supabase, user]);
+
+  useEffect(() => { loadDocs(); }, [loadDocs, status]);
+
+  const validate = (file: File | null, label: string) => {
+    if (!file) { setMessage(`Please choose a ${label} file`); return false; }
+    if (!ALLOWED_MIMES.includes(file.type)) { setMessage(`${label}: only JPG, PNG or PDF allowed`); return false; }
+    if (file.size > MAX_BYTES) { setMessage(`${label}: must be 10MB or smaller`); return false; }
+    return true;
+  };
+
+  const upload = async (file: File, kind: "proof_of_id" | "proof_of_address") => {
+    if (!supabase || !user) return;
+    const path = `${user.id}/${kind}/${crypto.randomUUID()}.${extOf(file)}`;
+    const { error: upErr } = await supabase.storage.from("account-verification").upload(path, file, { contentType: file.type, upsert: false });
+    if (upErr) throw upErr;
+    const { error: insErr } = await supabase.from("account_verification_documents").insert({ user_id: user.id, document_type: kind, storage_path: path, original_filename: file.name, mime_type: file.type, file_size_bytes: file.size, status: "uploaded" });
+    if (insErr) throw insErr;
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !user) return;
+    setMessage(null);
+    if (!validate(idFile, "proof of ID") || !validate(addrFile, "proof of address")) return;
+    setBusy(true);
+    try {
+      await upload(idFile!, "proof_of_id");
+      await upload(addrFile!, "proof_of_address");
+      const { error } = await supabase.rpc("submit_account_verification");
+      if (error) throw error;
+      setMessage("Documents submitted for review");
+      setIdFile(null);
+      setAddrFile(null);
+      await loadDocs();
+      onChanged?.();
+    } catch (error) {
+      setMessage(friendlyError(error) || "Could not submit verification");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (status === "verified") {
+    return <Panel variant="glass" tone="primary" className="p-5"><div className="flex items-start gap-3"><ShieldCheck className="mt-0.5 h-5 w-5 text-info" /><div className="flex-1"><div className="flex items-center gap-2"><div className="font-semibold text-white">Account verified</div><VerifiedBadge size="sm" /></div>{verifiedAt ? <div className="mt-1 text-xs text-white/60">Verified on {fmtDate(verifiedAt)}</div> : null}<p className="mt-2 text-sm text-white/70">Your identity and address have been confirmed. No further action is needed.</p></div></div></Panel>;
+  }
+
+  if (status === "pending") {
+    const uploaded = docs.filter((d) => d.status === "uploaded");
+    return <Panel variant="glass" className="p-5"><div className="flex items-start gap-3"><Loader2 className="mt-0.5 h-5 w-5 animate-spin text-info" /><div className="flex-1"><div className="font-semibold text-white">Verification under review</div><p className="mt-1 text-sm text-white/70">An admin will review your documents shortly. We&apos;ll email you when it&apos;s done.</p>{uploaded.length > 0 ? <ul className="mt-3 space-y-1 text-sm text-white/70">{uploaded.map((d) => <li key={d.id} className="flex items-center gap-2"><FileCheck2 className="h-4 w-4 text-info" />{d.document_type === "proof_of_id" ? "Proof of ID" : "Proof of address"}<span className="text-xs text-white/45">· uploaded {fmtDate(d.uploaded_at)}</span></li>)}</ul> : null}</div></div></Panel>;
+  }
+
+  const isRejected = status === "rejected";
+  return (
+    <div className={`account-panel ${isRejected ? "" : "account-panel-blue"} relative overflow-hidden p-5 md:p-6`}>
+      <div className="pointer-events-none absolute inset-x-0 -top-20 h-40 bg-[radial-gradient(50%_60%_at_50%_50%,hsl(204_100%_55%/0.16),transparent_75%)]" />
+      <div className="relative flex items-start gap-3">
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${isRejected ? "border-destructive/40 bg-destructive/15 text-destructive" : "border-primary/40 bg-primary/15 text-primary"}`}>{isRejected ? <ShieldAlert className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}</div>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-display text-lg font-bold tracking-tight text-white md:text-xl">{isRejected ? "Verification rejected" : "Prize claim verification"}</h3>
+          {!isRejected ? <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary"><InfoIcon className="h-3 w-3" /> Verification is not required right now</div> : null}
+          {isRejected && rejectionReason ? <div className="mt-2 text-sm text-destructive">Reason: {rejectionReason}</div> : null}
+          {!isRejected && requiredReason ? <div className="mt-2 text-sm text-white/75">{requiredReason}</div> : null}
+          <div className="mt-3 space-y-2 text-sm leading-relaxed text-white/75"><p>{isRejected ? "Re-upload clear copies of your photo ID and a recent proof of address. JPG, PNG or PDF, up to 10MB each." : "We only ask for verification documents if you win a prize or if we need to review your account. You do not need to upload these now."}</p>{!isRejected ? <p>If you win, we may ask for photo ID and proof of address before releasing the prize.</p> : null}</div>
+          <form onSubmit={onSubmit} className="mt-5 space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">{([{ id: "id", label: "Proof of ID", file: idFile, set: setIdFile }, { id: "addr", label: "Proof of address", file: addrFile, set: setAddrFile }] as const).map((slot) => <div key={slot.id} className="rounded-xl border border-white/10 bg-white/[0.04] p-3.5 transition hover:border-primary/40 focus-within:border-primary/60 focus-within:shadow-[0_0_0_3px_hsl(var(--primary)/0.18)]"><label className="text-[11px] font-bold uppercase tracking-wider text-white/60">{slot.label}</label><input type="file" accept="image/jpeg,image/png,application/pdf" onChange={(e) => slot.set(e.target.files?.[0] ?? null)} className="mt-2 block w-full text-sm text-white/80 file:mr-3 file:rounded-md file:border-0 file:bg-primary/20 file:px-3 file:py-1.5 file:font-semibold file:text-white hover:file:bg-primary/30" />{slot.file ? <p className="mt-1.5 truncate text-[11px] text-white/55">{slot.file.name}</p> : null}</div>)}</div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><p className="text-xs text-white/55">{idFile && addrFile ? "Documents are stored securely and only reviewed if verification is needed." : "Choose both files to submit for review."}</p><Button type="submit" disabled={busy || !idFile || !addrFile} className={`font-bold uppercase tracking-wider transition ${idFile && addrFile ? "btn-primary-glow text-white" : "cursor-not-allowed border border-white/15 bg-white/[0.07] text-white/70 hover:bg-white/[0.07]"}`}>{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}{busy ? "Uploading..." : "Submit documents for review"}</Button></div>
+            {message ? <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">{message}</div> : null}
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+  return <div className="space-y-1.5"><label className="text-xs font-bold uppercase tracking-wider text-white/60">{label}</label>{children}{hint ? <p className="text-[11px] text-white/45">{hint}</p> : null}</div>;
+}
+
+const CLAIM_ERR: Record<string, string> = {
+  not_authenticated: "You need to be signed in.",
+  not_authorized: "You can't claim this prize.",
+  claim_already_submitted: "This claim has already been submitted.",
+  full_name_required: "Full name is required.",
+  phone_required: "Phone number is required.",
+  address_line_1_required: "Address line 1 is required.",
+  town_city_required: "Town/city is required.",
+  postcode_required: "Postcode is required.",
+  country_required: "Country is required.",
+  invalid_prize_choice: "Invalid prize choice.",
+  cash_alternative_not_available: "Cash alternative is not available for this prize.",
+  winner_not_found: "Winner record not found.",
+};
+
+function ClaimPrizeDialog({ open, onOpenChange, winnerId, prizeTitle, cashAlternative, onSubmitted }: { open: boolean; onOpenChange: (open: boolean) => void; winnerId: string; prizeTitle: string; cashAlternative: number | null; onSubmitted: () => void }) {
+  const { supabase, user } = useSupabaseUser();
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [form, setForm] = useState({ full_name: "", phone: "", address_line_1: "", address_line_2: "", town_city: "", county: "", postcode: "", country: "United Kingdom" });
+  const [choice, setChoice] = useState<"prize" | "cash_alternative">("prize");
+  const hasCash = typeof cashAlternative === "number" && cashAlternative > 0;
+
+  useEffect(() => {
+    if (!open || !supabase || !user) return;
+    setLoading(true);
+    setMessage(null);
+    supabase.from("profiles").select("full_name,phone,address_line_1,address_line_2,town_city,county,postcode,country").eq("id", user.id).maybeSingle().then(({ data }: any) => {
+      if (data) {
+        setForm((current) => ({
+          full_name: data.full_name || current.full_name,
+          phone: data.phone || current.phone,
+          address_line_1: data.address_line_1 || current.address_line_1,
+          address_line_2: data.address_line_2 || current.address_line_2,
+          town_city: data.town_city || current.town_city,
+          county: data.county || current.county,
+          postcode: data.postcode || current.postcode,
+          country: data.country || current.country,
+        }));
+      }
+      setLoading(false);
+    });
+  }, [open, supabase, user]);
+
+  function set<K extends keyof typeof form>(key: K, value: string) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!supabase) return;
+    setSubmitting(true);
+    setMessage(null);
+    const { error } = await supabase.rpc("submit_prize_claim", {
+      p_winner_id: winnerId,
+      p_claim_full_name: form.full_name,
+      p_claim_phone: form.phone,
+      p_claim_address_line_1: form.address_line_1,
+      p_claim_address_line_2: form.address_line_2,
+      p_claim_town_city: form.town_city,
+      p_claim_county: form.county,
+      p_claim_postcode: form.postcode,
+      p_claim_country: form.country,
+      p_prize_choice: hasCash ? choice : "prize",
+    });
+    setSubmitting(false);
+    if (error) {
+      const code = (error.message || "").trim();
+      setMessage(CLAIM_ERR[code] || friendlyError(error) || "Could not submit claim");
+      return;
+    }
+    setMessage("Claim submitted");
+    onSubmitted();
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border border-white/10 bg-[linear-gradient(180deg,hsl(222_28%_12%/0.96),hsl(222_34%_7%/0.96))] text-white shadow-[0_30px_80px_-40px_hsl(204_100%_45%/0.6)]">
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl font-bold tracking-tight text-white">Claim your prize</DialogTitle>
+          <DialogDescription className="text-white/70">Confirm your delivery details for <span className="font-semibold text-white">{prizeTitle}</span>. We&apos;ll review and arrange delivery.</DialogDescription>
+        </DialogHeader>
+        {loading ? <p className="py-6 text-sm text-white/60">Loading your details...</p> : (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {hasCash ? <div className="space-y-2 rounded-xl border border-primary/30 bg-primary/10 p-3"><div className="text-[11px] font-bold uppercase tracking-wider text-primary">Choose your prize</div><label className="flex cursor-pointer items-start gap-2 text-sm text-white"><input type="radio" name="choice" checked={choice === "prize"} onChange={() => setChoice("prize")} className="mt-1" /><span>Receive the prize</span></label><label className="flex cursor-pointer items-start gap-2 text-sm text-white"><input type="radio" name="choice" checked={choice === "cash_alternative"} onChange={() => setChoice("cash_alternative")} className="mt-1" /><span>Take the cash alternative (£{Number(cashAlternative).toLocaleString()})</span></label></div> : null}
+            <div className="grid gap-3 sm:grid-cols-2">{([{ k: "full_name", label: "Full name", full: false, max: 120, req: true }, { k: "phone", label: "Phone", full: false, max: 40, req: true }, { k: "address_line_1", label: "Address line 1", full: true, max: 200, req: true }, { k: "address_line_2", label: "Address line 2", full: true, max: 200, req: false }, { k: "town_city", label: "Town/city", full: false, max: 100, req: true }, { k: "county", label: "County", full: false, max: 100, req: false }, { k: "postcode", label: "Postcode", full: false, max: 20, req: true }, { k: "country", label: "Country", full: false, max: 80, req: true }] as const).map((field) => <div key={field.k} className={field.full ? "sm:col-span-2" : ""}><label className="text-[11px] font-bold uppercase tracking-wider text-white/60">{field.label}</label><input className="account-input mt-1.5" value={form[field.k]} onChange={(e) => set(field.k, e.target.value)} required={field.req} maxLength={field.max} /></div>)}</div>
+            {message ? <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/80">{message}</div> : null}
+            <DialogFooter className="gap-2 pt-2">
+              <button type="button" className="account-secondary-button" onClick={() => onOpenChange(false)} disabled={submitting}>Cancel</button>
+              <Button type="submit" disabled={submitting} className="btn-primary-glow font-bold uppercase tracking-wider text-white">{submitting ? "Submitting..." : "Submit claim"}</Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AccountWinsPage() {
   const { supabase, user } = useSupabaseUser();
-  const [rows, setRows] = useState<any[] | null>(null);
-  const load = useCallback(async () => { if (!supabase || !user) return; const { data } = await supabase.from("winners").select("id,prize_title,winning_ticket_number,draw_date,proof_url,is_published,competition_id,display_name,display_location,image_url,entry_id,claim_status,claim_submitted_at,claim_verified_at,dispatched_at,delivered_at,prize_choice,delivery_courier,delivery_tracking_url,competition:competitions(title,slug,main_image_url,cash_alternative)").eq("user_id", user.id).order("draw_date", { ascending: false }); setRows((data ?? []).map((w: any) => ({ ...w, competition: Array.isArray(w.competition) ? w.competition[0] : w.competition }))); }, [supabase, user]);
+  const [rows, setRows] = useState<WinnerRow[] | null>(null);
+  const [claimFor, setClaimFor] = useState<WinnerRow | null>(null);
+  const select = "id,prize_title,winning_ticket_number,draw_date,proof_url,is_published,competition_id,display_name,display_location,image_url,entry_id,claim_status,claim_submitted_at,claim_verified_at,dispatched_at,delivered_at,prize_choice,delivery_courier,delivery_tracking_url,competition:competitions(title,slug,main_image_url,cash_alternative)";
+  const load = useCallback(async () => {
+    if (!supabase || !user) return;
+    const { data: own } = await supabase.from("winners").select(select).eq("user_id", user.id).order("draw_date", { ascending: false });
+    const map = new Map<string, WinnerRow>();
+    for (const w of (own || []) as any[]) map.set(w.id, { ...w, competition: Array.isArray(w.competition) ? w.competition[0] : w.competition });
+    const { data: entries } = await supabase.from("entries").select("id").eq("user_id", user.id).eq("is_winner", true);
+    const entryIds = (entries || []).map((e: any) => e.id);
+    if (entryIds.length) {
+      const { data: extra } = await supabase.from("winners").select(select).in("entry_id", entryIds);
+      for (const w of (extra || []) as any[]) if (!map.has(w.id)) map.set(w.id, { ...w, competition: Array.isArray(w.competition) ? w.competition[0] : w.competition });
+    }
+    setRows(Array.from(map.values()).sort((a, b) => new Date(b.draw_date).getTime() - new Date(a.draw_date).getTime()));
+  }, [supabase, user]);
   useEffect(() => { load(); }, [load]);
-  return <div><PageTitle title="My wins" />{rows === null ? <p className="text-white/60">Loading...</p> : rows.length === 0 ? <EmptyState title="No wins yet" body="When you win, your prize and winning ticket will appear here. Good luck!" action={<Button asChild><Link href="/competitions">Browse competitions</Link></Button>} /> : <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{rows.map((w) => <li key={w.id} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-card"><SafePrizeImage url={w.competition?.main_image_url ?? w.image_url ?? null} alt={w.prize_title || "Prize"} aspect="aspect-square" width={560} height={560} /><div className="flex flex-1 flex-col p-4"><div className="flex items-center justify-between gap-2"><StatusBadge status={w.is_published ? "published" : "pending"} /><span className="font-mono text-xs text-white">#{w.winning_ticket_number}</span></div><div className="mt-2 font-semibold text-white">{w.competition?.title || w.prize_title}</div><div className="mt-1 text-xs text-white/60">Drawn {fmtDate(w.draw_date)}</div><div className="mt-3"><StatusBadge status={w.claim_status || "unclaimed"} /></div>{w.delivery_tracking_url ? <a href={w.delivery_tracking_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary">Track delivery</a> : null}{w.proof_url ? <a href={w.proof_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary">Draw proof</a> : null}<div className="mt-auto pt-3">{(w.claim_status === "unclaimed" || w.claim_status === "claim_started") ? <p className="text-xs text-white/60">Prize claim support is being ported. Contact support to claim this prize.</p> : null}</div></div></li>)}</ul>}</div>;
+  return <div><PageTitle title="My wins" />{rows === null ? <p className="text-white/60">Loading...</p> : rows.length === 0 ? <EmptyState title="No wins yet" body="When you win, your prize and winning ticket will appear here. Good luck!" action={<Button asChild><Link href="/competitions">Browse competitions</Link></Button>} /> : <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{rows.map((w) => { const canClaim = w.claim_status === "unclaimed" || w.claim_status === "claim_started"; return <li key={w.id} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-card"><SafePrizeImage url={w.competition?.main_image_url ?? w.image_url ?? null} alt={w.prize_title || "Prize"} aspect="aspect-square" width={560} height={560} /><div className="flex flex-1 flex-col p-4"><div className="flex items-center justify-between gap-2"><StatusBadge status={w.is_published ? "published" : "under_review"} /><span className="font-mono text-xs text-white">#{w.winning_ticket_number}</span></div><div className="mt-2 font-semibold text-white">{w.competition?.title || w.prize_title}</div><div className="mt-1 text-xs text-white/60">Drawn {fmtDate(w.draw_date)}</div><div className="mt-3 flex flex-wrap items-center gap-2"><StatusBadge status={w.claim_status === "verified" ? "claim_verified" : w.claim_status || "unclaimed"} />{w.prize_choice ? <span className="rounded border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/75">{w.prize_choice === "cash_alternative" ? "Cash alternative" : "Prize"}</span> : null}</div>{(w.claim_submitted_at || w.claim_verified_at || w.dispatched_at || w.delivered_at) ? <ul className="mt-3 space-y-0.5 text-xs text-white/60">{w.claim_submitted_at ? <li>Claim submitted {fmtDate(w.claim_submitted_at)}</li> : null}{w.claim_verified_at ? <li>Verified {fmtDate(w.claim_verified_at)}</li> : null}{w.dispatched_at ? <li>Dispatched {fmtDate(w.dispatched_at)}{w.delivery_courier ? ` · ${w.delivery_courier}` : ""}</li> : null}{w.delivered_at ? <li>Delivered {fmtDate(w.delivered_at)}</li> : null}</ul> : null}{w.delivery_tracking_url ? <a href={w.delivery_tracking_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary">Track delivery</a> : null}{w.is_published && w.proof_url ? <a href={w.proof_url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary">Draw proof</a> : null}<div className="mt-auto pt-3">{canClaim ? <Button size="sm" className="w-full" onClick={() => setClaimFor(w)}>Claim prize</Button> : w.claim_status === "claim_submitted" ? <p className="text-xs italic text-white/60">We&apos;ve received your claim and will be in touch before arranging delivery.</p> : null}</div></div></li>; })}</ul>}{claimFor ? <ClaimPrizeDialog open={!!claimFor} onOpenChange={(open) => !open && setClaimFor(null)} winnerId={claimFor.id} prizeTitle={claimFor.competition?.title || claimFor.prize_title || "your prize"} cashAlternative={claimFor.competition?.cash_alternative ?? null} onSubmitted={load} /> : null}</div>;
 }
 
 export function AccountResponsiblePlayPage() {

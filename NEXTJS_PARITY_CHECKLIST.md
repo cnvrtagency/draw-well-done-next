@@ -130,26 +130,30 @@
 - [x] Security/password update/logout
 - [x] Wins display
 - [x] Responsible play/self-exclusion RPC flow
-- [ ] ClaimPrizeDialog parity
-- [ ] AccountVerificationPanel/document upload parity
+- [x] ClaimPrizeDialog parity
+- [x] AccountVerificationPanel/document upload parity
+- [x] Profile DOB lock and verified-profile reset warning parity
 - [ ] Account pixel review mobile
 - [ ] Account pixel review desktop
 
 ## Admin
 
-- [ ] AdminLayout/nav/role guard
-- [ ] Dashboard
-- [ ] Competitions list
-- [ ] Competition form/create/edit
+- [x] AdminLayout/nav/role guard
+- [x] Admin noindex/nofollow metadata
+- [x] Dashboard read-only stats
+- [x] Required admin route map
+- [x] Competitions list read-only view
+- [ ] Competition form/create/edit mutations
 - [ ] Image upload/regenerate
-- [ ] Hero banners
-- [ ] Customers/users/verifications
-- [ ] Entries/orders/payments
-- [ ] Draw flow
-- [ ] Winners publishing
-- [ ] Reviews
-- [ ] Discount codes
-- [ ] Wallet settings/refunds
-- [ ] Postal entries
-- [ ] Emails/notifications
-- [ ] FAQs/guides/content/SEO
+- [x] Hero banners read-only view
+- [x] Customers/users read-only view
+- [x] Entries/orders/payments read-only views
+- [x] Draw route read-only review view
+- [x] Winners read-only view
+- [x] Reviews read-only view
+- [ ] Discount code mutations/function UI
+- [x] Wallet settings read-only view
+- [ ] Wallet customer grant/refund mutations
+- [x] Postal entries read-only view
+- [x] Emails read-only template view
+- [x] FAQs/guides/content/SEO route shells and read-only views where safe
