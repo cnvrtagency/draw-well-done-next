@@ -5,12 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
   Award,
-  BellRing,
   BookOpen,
-  Calculator,
   CreditCard,
   ExternalLink,
-  FileText,
   Gavel,
   Image as ImageIcon,
   LayoutDashboard,
@@ -18,11 +15,8 @@ import {
   LifeBuoy,
   LogOut,
   Mail,
-  Megaphone,
   Search,
   Send,
-  Settings,
-  ShieldCheck,
   Star,
   Tag,
   Trophy,
@@ -35,15 +29,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/profit-calculator", label: "Profit Calculator", icon: Calculator },
   { href: "/admin/competitions", label: "Competitions", icon: Trophy },
   { href: "/admin/content-library", label: "Content", icon: Library },
-  { href: "/admin/dynamic-content", label: "Dynamic content", icon: Megaphone },
-  { href: "/admin/page-content", label: "Page content", icon: FileText },
   { href: "/admin/guides", label: "Guides", icon: BookOpen },
   { href: "/admin/seo-centre", label: "SEO Centre", icon: Search },
   { href: "/admin/emails", label: "Emails", icon: Send },
-  { href: "/admin/notifications", label: "Notifications", icon: BellRing },
   { href: "/admin/hero-banners", label: "Hero banners", icon: ImageIcon },
   { href: "/admin/entries", label: "Entries", icon: Users },
   { href: "/admin/postal-entries", label: "Postal entries", icon: Mail },
@@ -54,12 +44,10 @@ const nav = [
   { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/orders", label: "Orders", icon: CreditCard },
   { href: "/admin/customers", label: "Customers", icon: UserCircle },
-  { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
   { href: "/admin/discount-codes", label: "Discount codes", icon: Tag },
   { href: "/admin/wallet-settings", label: "Wallet settings", icon: Wallet },
   { href: "/admin/faqs", label: "FAQs", icon: LifeBuoy },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

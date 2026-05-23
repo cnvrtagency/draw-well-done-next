@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { memo, useState } from "react";
+import { memo } from "react";
 import type { Competition } from "@/types/db";
 import { effectiveRemaining, effectiveSoldCount, formatMoney, publicEntryPercent } from "@/lib/format";
 import { SafePrizeImage } from "@/components/SafePrizeImage";
@@ -9,14 +9,13 @@ import { formatCashAlternative } from "@/lib/cashAlternative";
 import { CountdownPill } from "@/components/ui/CountdownPill";
 import { CountdownStrip } from "@/components/ui/CountdownStrip";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { BellRing, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { competitionCardImageUrl } from "@/lib/competitionImages";
 import { useMounted } from "@/hooks/useMounted";
 
 interface Props { c: Competition; badge?: string; tone?: "red" | "blue" | "purple" | "gold"; maxDiscountPct?: number; priority?: boolean; }
 
 function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority }: Props) {
-  const [notifyOpen, setNotifyOpen] = useState(false);
   const mounted = useMounted();
   const effectiveSold = effectiveSoldCount(c.current_entries, c.manual_reserved_entries, c.max_entries);
   const remaining = effectiveRemaining(c.current_entries, c.manual_reserved_entries, c.max_entries);
@@ -127,9 +126,9 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
             <ProgressBar value={sold} tone={lowStock ? "warning" : "primary"} thickness="sm" showShimmer={isLiveEnterable} className="mt-0.5" />
           </div>
           {isComingSoon ? (
-            <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNotifyOpen(true); }} className="mt-auto w-full inline-flex items-center justify-center gap-1.5 font-extrabold uppercase tracking-wider text-xs h-10 rounded-lg transition bg-info/15 text-info border border-info/40 hover:bg-info/25 shadow-[0_0_18px_-6px_hsl(var(--info)/0.6)]">
-              <BellRing className="w-3.5 h-3.5" /> Tell me when it&apos;s live
-            </button>
+            <div className="mt-auto w-full inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-info/40 bg-info/15 text-xs font-extrabold uppercase tracking-wider text-info shadow-[0_0_18px_-6px_hsl(var(--info)/0.6)]">
+              Coming soon
+            </div>
           ) : (
             <button className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-extrabold uppercase tracking-wider text-xs h-10 rounded-lg transition ${isDrawn ? "btn-ghost-rim border-gold/40 text-gold" : isSoldOut ? "btn-ghost-rim text-silver" : c.status === "closed" || closesInPast ? "btn-ghost-rim text-white/70" : isFree ? "btn-free-glow" : "btn-primary-glow"}`}>
               {ctaLabel}{isLiveEnterable && <ChevronRight className="w-3.5 h-3.5" />}
@@ -137,13 +136,6 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
           )}
         </div>
       </Link>
-      {notifyOpen && (
-        <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-xl border border-info/40 bg-[hsl(222_45%_4%)] p-4 text-sm text-white shadow-deep">
-          <div className="font-display text-base font-bold uppercase">Notification placeholder</div>
-          <p className="mt-1 text-white/70">Notify-me capture is out of scope for Phase 1.</p>
-          <button className="btn-primary-glow mt-3 h-9 rounded-lg px-4 text-xs font-bold uppercase" onClick={() => setNotifyOpen(false)}>Close</button>
-        </div>
-      )}
     </>
   );
 }

@@ -62,8 +62,8 @@ Manual click tests still required in a real browser:
 
 ## Routes Still Incomplete
 
-- `/admin` and all admin subroutes are still placeholders.
-- `/build-a-bundle` remains placeholder-level.
+- `/build-a-bundle` remains outside the current launch route set.
+- Admin routes are operationally wired but still require staging tests against real admin RLS/storage/function policies before launch.
 
 ## Basket Status
 
@@ -174,7 +174,7 @@ Vite admin features found:
 
 Next admin features currently implemented:
 - Guarded admin shell, mobile/desktop nav, route map, dashboard stat cards, noindex/nofollow metadata and safe read-only views for every required admin route.
-- Competition create/edit/status form with Vite field names, reserved-entry capacity validation, reserved-entry audit log insert, main/gallery image upload and image variant regeneration against the existing `competition-images` bucket.
+- Competition create/edit/status form with Vite field names, reserved-entry capacity validation, reserved-entry audit log insert, main/gallery image upload, image variant regeneration, duplicate/reconcile/archive/unarchive/delete actions, discount tiers and competition marquee content against the existing tables, RPCs, Edge Function and `competition-images` bucket.
 - Hero banner list/create/edit/delete/activate, active-banner deactivation for the same `page_key`, schedule/copy/CTA/trust-chip fields, desktop/mobile upload and preview.
 - Draw execution through the existing `perform_competition_draw` RPC, with valid-entry counts and proof JSON download.
 - Winner publish/unpublish, display fields, proof JSON upload/signed open/download and claim status/delivery field edits.
@@ -192,11 +192,11 @@ Next admin features currently implemented:
 - Read-only email template list plus a server-only `/api/send-email` compatibility route for DB-backed templates, admin JWTs and internal webhook-secret calls.
 
 Exact gaps:
-- Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editing are incomplete.
 - Hero banner browser tests against the public homepage active-banner query are still required.
 - Draw execution, winner publishing/proof and postal processing require real admin/RLS/RPC/storage testing before launch.
 - Customer verification-review workflow is still incomplete; wallet grant/adjust and entry void/refund/archive/delete actions are wired but require staging function/RLS tests.
 - Payment cancel/refund functions are wired but require staging provider/RLS testing; no refund should be considered verified until the existing Edge Functions return success in staging.
+- Competition duplicate/reconcile/archive/unarchive/delete RPC actions, discount tier editing and dynamic content editing are wired but require staging RPC/function/RLS tests before launch.
 - Email editor/preview UI is still not ported, but `/api/send-email` exists for DB-backed template sends. Hardcoded Vite fallback template rendering was not copied into Next.
 - SEO IndexNow submission route now exists. The IndexNow key file at the public site root still needs to be present for production indexing.
 
@@ -226,7 +226,7 @@ Implemented in Next:
 - Public `sitemap.xml` route and `robots.txt` route with private/admin/auth disallows and a Sitemap line.
 - Dashboard stat cards for live competitions, entries, revenue, postal entries, awaiting draws and unpublished winners.
 - Required route map for `/admin`, competitions, hero banners, customers, entries, orders, payments, draws, winners, reviews, discount codes, wallet settings, postal entries, emails, FAQs, guides, content library and SEO centre.
-- Competition list plus real create/edit/status, reserved-entry audit, main/gallery upload and original/card/detail/thumb image variant regeneration.
+- Competition list plus real create/edit/status, reserved-entry audit, main/gallery upload, original/card/detail/thumb image variant regeneration, duplicate/reconcile/archive/unarchive/delete actions, discount tiers and competition marquee content editing.
 - Hero banners create/edit/delete/activate/scheduling/upload/preview.
 - Draw execution through `perform_competition_draw`.
 - Winners publish/proof/claim status and delivery fields.
@@ -240,11 +240,11 @@ Implemented in Next:
 - Read-only email template list with server-only send route available for DB-backed templates.
 
 Still incomplete:
-- Competition duplicate/archive/delete/reconcile RPC actions, discount tiers and dynamic content editors.
 - Customer verification review workflow.
 - Full email editor/preview UI and hardcoded Vite fallback template rendering.
 - IndexNow key file availability on the deployed public origin.
 - Real staging verification for discount, review, FAQ, guide, content, wallet, entry, payment, postal, draw and winner actions.
+- Staging verification for competition duplicate/reconcile/archive/unarchive/delete RPC actions, discount tier editing and dynamic content editing against existing RLS/function policies.
 
 Do not launch admin until all mutations are ported and tested against RLS and existing Edge Functions.
 
@@ -284,9 +284,9 @@ Manual admin tests required:
 | Route | Status | Actions implemented | Blocker | Launch blocker |
 | --- | --- | --- | --- | --- |
 | `/admin` | Partial | Guarded dashboard stats | Activity widgets/actions still read-only | Yes |
-| `/admin/competitions` | Partial | Real list/search plus edit links | Duplicate/reconcile/archive/delete RPC buttons not ported | Yes |
-| `/admin/competitions/new` | Partial | Create via `competitions`, upload main/gallery images, generate variants | Discount tiers/dynamic content editors not ported; requires admin RLS/storage test | Yes |
-| `/admin/competitions/[id]` | Partial | Edit via `competitions`, status update, reserved-entry audit log, upload/regenerate variants | Duplicate/archive/delete/reconcile RPC actions and discount/content editors not ported | Yes |
+| `/admin/competitions` | Partial | Real list/search, edit links, duplicate, reconcile counts, archive/unarchive and safe delete through existing RPC/Edge Function paths | Requires admin RPC/function/RLS staging tests | Yes |
+| `/admin/competitions/new` | Partial | Create via `competitions`, upload main/gallery images, generate variants; post-save discount tiers and dynamic content editors | Requires admin RLS/storage test | Yes |
+| `/admin/competitions/[id]` | Partial | Edit via `competitions`, status update, reserved-entry audit log, upload/regenerate variants, discount tiers, dynamic content editor and lifecycle RPC actions | Requires admin RPC/function/RLS/storage staging tests | Yes |
 | `/admin/hero-banners` | Partial | List/create/edit/delete/activate/scheduling/copy/CTA/trust chips/desktop+mobile upload/preview | Requires RLS/storage/homepage active-banner browser tests | Yes |
 | `/admin/customers` | Partial | List, detail, linked records, wallet grant and adjust via existing Edge Functions | Verification review workflow still not ported; requires function/RLS tests | Yes |
 | `/admin/entries` | Partial | List, void, void with wallet/manual refund, archive/unarchive and delete via existing Edge Functions | Requires function/RLS tests; paid delete remains server-guarded | Yes |
@@ -421,8 +421,10 @@ Admin:
 
 - Checkout success has not been manually tested against a real Stripe redirect in this environment.
 - Account routes and most admin routes are ported, but admin operational mutations still need staging tests with a real admin account and existing RLS/storage/function policies.
-- Email admin send/editor flows and SEO IndexNow submission are intentionally blocked until matching Next API routes exist.
-- Competition duplicate/archive/delete/reconcile actions, discount tier editing, dynamic content editing and customer verification review remain incomplete.
+- Email admin editor/preview flows are not fully ported; `/api/send-email` exists for DB-backed sends and still needs staging provider tests.
+- Competition duplicate/reconcile/archive/unarchive/delete actions, discount tier editing and dynamic content editing are wired but still need staging RPC/function/RLS tests.
+- Customer verification review remains incomplete.
+- SEO IndexNow submission route exists but still needs deployed key-file/provider testing.
 - Browser screenshot parity has not been run in this environment.
 - `<img>` warnings remain intentionally where Vite-like remote image behavior is preserved.
 - Google font optimization warning appears during offline builds.

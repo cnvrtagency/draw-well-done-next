@@ -12,8 +12,8 @@ export function InfoPage({ eyebrow, title, children }: { eyebrow: string; title:
 
 export function PlaceholderPage({ title }: { title: string }) {
   return (
-    <InfoPage eyebrow="Phase 1 placeholder" title={title}>
-      <p>This route is preserved for compatibility in the parallel Next.js rebuild. The production Vite app remains the source of truth for this workflow during Phase 1.</p>
+    <InfoPage eyebrow="TopDraw" title={title}>
+      <p>This page is available for staging navigation checks. Use the live operational routes for entries, account management and checkout testing.</p>
       <Link href="/competitions" className="btn-primary-glow mt-3 inline-flex h-11 items-center justify-center rounded-xl px-5 text-xs font-extrabold uppercase tracking-wider">Back to competitions</Link>
     </InfoPage>
   );

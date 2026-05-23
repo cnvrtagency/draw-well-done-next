@@ -149,8 +149,8 @@
 - [x] Competitions list view
 - [x] Competition form/create/edit mutations
 - [x] Competition image upload/regenerate
-- [ ] Competition duplicate/reconcile/archive/delete RPC actions
-- [ ] Competition discount tiers/dynamic content editors
+- [x] Competition duplicate/reconcile/archive/delete RPC actions
+- [x] Competition discount tiers/dynamic content editors
 - [x] Hero banners list/create/edit/delete/activate/upload/preview
 - [x] Customers/users list, detail and wallet grant/adjust actions
 - [x] Entries list plus void/refund/archive/delete function actions

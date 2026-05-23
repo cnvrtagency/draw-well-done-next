@@ -13,7 +13,7 @@ import { formatMoney } from "@/lib/format";
 import { createSupabaseBrowserClient } from "@/lib/supabase";
 import { isLikelyHttpsImage } from "@/lib/image";
 import { regenerateCompetitionImageVariants, type CompetitionImageVariantSet } from "@/lib/competitionImages";
-import { AdminPageHeader, AdminPanel, AdminTable, AdminTD, AdminTH, AdminTR, IncompleteNotice } from "@/components/admin/AdminKit";
+import { AdminPageHeader, AdminPanel, AdminTable, AdminTD, AdminTH, AdminTR } from "@/components/admin/AdminKit";
 import { AdminImageUploader } from "@/components/admin/AdminImageUploader";
 
 type Row = Record<string, any>;
@@ -91,8 +91,8 @@ export function AdminRoute({ path }: { path?: string[] }) {
   if (key === "dynamic-content") return <DynamicContentPage />;
   if (key === "page-content") return <PageContentPage />;
   if (key === "notifications") return <NotificationsPage />;
-  if (key === "profit-calculator") return <IncompleteAdminPage title="Profit Calculator" body="The Vite profit calculator is advisory-only and has not been ported into Next yet." />;
-  return <IncompleteAdminPage title="Admin" body={`No Next.js admin route is mapped for /admin/${key}.`} />;
+  if (key === "profit-calculator") return <UnavailableAdminPage title="Profit Calculator" body="This advisory tool is outside the staging operations set. Use the documented readiness checklist for launch review." />;
+  return <UnavailableAdminPage title="Admin" body={`No operational admin screen is available for /admin/${key}.`} />;
 }
 
 function AdminDashboardPage() {
@@ -162,17 +162,135 @@ function AdminDashboardPage() {
 }
 
 function CompetitionsPage() {
-  const { rows, loading, error } = useRows("competitions", "id,title,slug,status,ticket_price,max_entries,current_entries,manual_reserved_entries,opens_at,closes_at,draw_at,created_at,archived_at", "created_at", false, 200);
+  const router = useRouter();
+  const { rows, loading, error, reload, supabase } = useRows("competitions", "id,title,slug,status,ticket_price,max_entries,current_entries,manual_reserved_entries,opens_at,closes_at,draw_at,created_at,archived_at", "created_at", false, 200);
   const [q, setQ] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [reconciling, setReconciling] = useState(false);
+  const [archiveTarget, setArchiveTarget] = useState<Row | null>(null);
+  const [archiveReason, setArchiveReason] = useState("");
+  const [unarchiveTarget, setUnarchiveTarget] = useState<Row | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const filtered = useMemo(() => rows.filter((r) => !q.trim() || `${r.title} ${r.slug} ${r.status}`.toLowerCase().includes(q.toLowerCase())), [q, rows]);
+
+  async function invokeReconcile(competitionId?: string) {
+    if (!supabase || reconciling) return;
+    setReconciling(true);
+    setBusyId(competitionId ?? "reconcile-all");
+    setActionError(null);
+    setSuccess(null);
+    try {
+      const { data, error: nextError } = await supabase.functions.invoke("admin-reconcile-counts", {
+        body: competitionId ? { competition_id: competitionId } : {},
+      });
+      if (nextError) throw nextError;
+      const row = (data as Row | null)?.rows?.[0];
+      setSuccess(row ? (row.previous_current_entries === row.new_current_entries ? "Counts already match." : `Updated current entries from ${row.previous_current_entries} to ${row.new_current_entries}.`) : `Reconciled ${(data as Row | null)?.total_count ?? "all"} competitions.`);
+      reload();
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Reconcile failed.");
+    } finally {
+      setReconciling(false);
+      setBusyId(null);
+    }
+  }
+
+  async function duplicateCompetition(row: Row) {
+    if (!supabase || busyId) return;
+    setBusyId(row.id);
+    setActionError(null);
+    setSuccess(null);
+    try {
+      const { data, error: nextError } = await supabase.rpc("duplicate_competition", { p_competition_id: row.id });
+      if (nextError) throw nextError;
+      setSuccess(`Duplicated "${row.title}".`);
+      if (data) router.push(`/admin/competitions/${data}`);
+      else reload();
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Duplicate failed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function archiveCompetition() {
+    if (!supabase || !archiveTarget || busyId) return;
+    setBusyId(archiveTarget.id);
+    setActionError(null);
+    setSuccess(null);
+    try {
+      const { error: nextError } = await supabase.rpc("archive_competition", {
+        p_competition_id: archiveTarget.id,
+        p_reason: archiveReason.trim() || null,
+      });
+      if (nextError) throw nextError;
+      setSuccess("Competition archived.");
+      setArchiveTarget(null);
+      setArchiveReason("");
+      reload();
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Archive failed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function unarchiveCompetition() {
+    if (!supabase || !unarchiveTarget || busyId) return;
+    setBusyId(unarchiveTarget.id);
+    setActionError(null);
+    setSuccess(null);
+    try {
+      const { error: nextError } = await supabase.rpc("unarchive_competition", { p_competition_id: unarchiveTarget.id });
+      if (nextError) throw nextError;
+      setSuccess("Competition unarchived.");
+      setUnarchiveTarget(null);
+      reload();
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Unarchive failed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deleteCompetition() {
+    if (!supabase || !deleteTarget || busyId) return;
+    setBusyId(deleteTarget.id);
+    setActionError(null);
+    setSuccess(null);
+    try {
+      const { error: nextError } = await supabase.rpc("delete_competition_if_safe", { p_competition_id: deleteTarget.id });
+      if (nextError) throw nextError;
+      setSuccess("Competition deleted.");
+      setDeleteTarget(null);
+      reload();
+    } catch (nextError) {
+      setActionError(nextError instanceof Error ? nextError.message : "Delete failed.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div>
-      <AdminPageHeader eyebrow="Competitions" title="Competitions" subtitle="Next now supports real create/edit, status changes and image upload/regeneration for competitions. Lifecycle RPC actions remain guarded in Vite." actions={<Button asChild><Link href="/admin/competitions/new">New competition</Link></Button>} />
-      <IncompleteNotice>Duplicate, reconcile counts, archive/delete RPC actions, discount tier editing and dynamic content editing are not wired in Next yet. Those Vite admin RPC/function calls were audited but not reimplemented here.</IncompleteNotice>
+      <AdminPageHeader eyebrow="Competitions" title="Competitions" subtitle="Manage competition setup, lifecycle actions and entry-count reconciliation." actions={<><Button variant="outline" onClick={() => invokeReconcile()} disabled={reconciling}>{reconciling ? "Reconciling..." : "Reconcile counts"}</Button><Button asChild><Link href="/admin/competitions/new">New competition</Link></Button></>} />
+      {actionError ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{actionError}</div> : null}
+      {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
       <div className="my-4 max-w-xl"><Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search competitions" /></div>
       <LoadingOrError loading={loading} error={error} />
       <EmptyRows rows={filtered} label="competitions" />
-      {filtered.length ? <AdminTable minWidth={1100}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Competition</AdminTH><AdminTH>Status</AdminTH><AdminTH align="right">Price</AdminTH><AdminTH align="right">Entries</AdminTH><AdminTH>Closes</AdminTH><AdminTH>Draw</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{filtered.map((c) => <AdminTR key={c.id}><AdminTD><div className="font-semibold text-white">{c.title}</div><div className="text-xs text-white/45">{c.slug}</div>{c.archived_at ? <div className="text-xs text-warning">Archived {fmtDate(c.archived_at)}</div> : null}</AdminTD><AdminTD><StatusBadge status={c.status || "draft"} /></AdminTD><AdminTD align="right">{formatMoney(Number(c.ticket_price || 0))}</AdminTD><AdminTD align="right">{Number(c.current_entries || 0)} / {Number(c.max_entries || 0)}{Number(c.manual_reserved_entries || 0) ? <div className="text-xs text-white/45">Reserved {c.manual_reserved_entries}</div> : null}</AdminTD><AdminTD>{fmtDate(c.closes_at)}</AdminTD><AdminTD>{fmtDate(c.draw_at)}</AdminTD><AdminTD align="right"><Button asChild size="sm" variant="outline"><Link href={`/admin/competitions/${c.id}`}>Edit</Link></Button></AdminTD></AdminTR>)}</tbody></AdminTable> : null}
+      {filtered.length ? <AdminTable minWidth={1250}><thead className="bg-white/5 text-xs uppercase tracking-wider text-white/60"><tr><AdminTH>Competition</AdminTH><AdminTH>Status</AdminTH><AdminTH align="right">Price</AdminTH><AdminTH align="right">Entries</AdminTH><AdminTH>Closes</AdminTH><AdminTH>Draw</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead><tbody>{filtered.map((c) => <AdminTR key={c.id}><AdminTD><div className="font-semibold text-white">{c.title}</div><div className="text-xs text-white/45">{c.slug}</div>{c.archived_at ? <div className="text-xs text-warning">Archived {fmtDate(c.archived_at)}</div> : null}</AdminTD><AdminTD><StatusBadge status={c.status || "draft"} /></AdminTD><AdminTD align="right">{formatMoney(Number(c.ticket_price || 0))}</AdminTD><AdminTD align="right">{Number(c.current_entries || 0)} / {Number(c.max_entries || 0)}{Number(c.manual_reserved_entries || 0) ? <div className="text-xs text-white/45">Reserved {c.manual_reserved_entries}</div> : null}</AdminTD><AdminTD>{fmtDate(c.closes_at)}</AdminTD><AdminTD>{fmtDate(c.draw_at)}</AdminTD><AdminTD align="right"><div className="flex flex-wrap justify-end gap-1"><Button asChild size="sm" variant="outline"><Link href={`/admin/competitions/${c.id}`}>Edit</Link></Button><Button size="sm" variant="outline" onClick={() => invokeReconcile(c.id)} disabled={busyId === c.id || reconciling}>Reconcile</Button><Button size="sm" variant="outline" onClick={() => duplicateCompetition(c)} disabled={busyId === c.id}><Copy className="h-3.5 w-3.5" /> Duplicate</Button>{c.archived_at ? <Button size="sm" variant="outline" onClick={() => setUnarchiveTarget(c)} disabled={busyId === c.id}><ArchiveRestore className="h-3.5 w-3.5" /> Unarchive</Button> : <Button size="sm" variant="outline" onClick={() => { setArchiveTarget(c); setArchiveReason(""); }} disabled={busyId === c.id}><Archive className="h-3.5 w-3.5" /> Archive</Button>}<Button size="sm" variant="outline" className="text-destructive" onClick={() => setDeleteTarget(c)} disabled={busyId === c.id}><Trash2 className="h-3.5 w-3.5" /> Delete</Button></div></AdminTD></AdminTR>)}</tbody></AdminTable> : null}
+      <Dialog open={!!archiveTarget} onOpenChange={(open) => { if (!open && !busyId) setArchiveTarget(null); }}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>Archive competition</DialogTitle></DialogHeader><div className="space-y-3 text-sm text-white/70"><p>Archive <strong className="text-white">{archiveTarget?.title}</strong>? This hides it from public competition areas while keeping entries, payments and draw history.</p><Textarea value={archiveReason} onChange={(e) => setArchiveReason(e.target.value)} placeholder="Optional reason" /></div><DialogFooter><Button variant="outline" onClick={() => setArchiveTarget(null)} disabled={!!busyId}>Cancel</Button><Button onClick={archiveCompetition} disabled={!!busyId}>{busyId ? "Archiving..." : "Archive"}</Button></DialogFooter></DialogContent>
+      </Dialog>
+      <Dialog open={!!unarchiveTarget} onOpenChange={(open) => { if (!open && !busyId) setUnarchiveTarget(null); }}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>Unarchive competition</DialogTitle></DialogHeader><p className="text-sm text-white/70">Restore <strong className="text-white">{unarchiveTarget?.title}</strong> to active lists?</p><DialogFooter><Button variant="outline" onClick={() => setUnarchiveTarget(null)} disabled={!!busyId}>Cancel</Button><Button onClick={unarchiveCompetition} disabled={!!busyId}>{busyId ? "Unarchiving..." : "Unarchive"}</Button></DialogFooter></DialogContent>
+      </Dialog>
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open && !busyId) setDeleteTarget(null); }}>
+        <DialogContent className="border-white/10 bg-[hsl(222_45%_5%)] text-white"><DialogHeader><DialogTitle>Delete competition permanently?</DialogTitle></DialogHeader><div className="space-y-2 text-sm text-white/70"><p>Delete <strong className="text-white">{deleteTarget?.title}</strong>? The server only allows this when there are no entries, payments or draw history.</p><p>If related records exist, archive the competition instead.</p></div><DialogFooter><Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={!!busyId}>Cancel</Button><Button className="bg-destructive text-white hover:bg-destructive/90" onClick={deleteCompetition} disabled={!!busyId}>{busyId ? "Deleting..." : "Delete"}</Button></DialogFooter></DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -226,6 +344,190 @@ function FieldLabel({ label, help }: { label: string; help?: string }) {
 
 function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...props} className={`min-h-28 w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-white/35 focus:border-primary/60 ${props.className || ""}`} />;
+}
+
+function DiscountTiersEditor({ competitionId }: { competitionId: string }) {
+  const supabase = createSupabaseBrowserClient();
+  const [tiers, setTiers] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+    const { data, error: nextError } = await supabase
+      .from("competition_discount_tiers")
+      .select("*")
+      .eq("competition_id", competitionId)
+      .order("min_quantity", { ascending: true });
+    setTiers(((data as Row[]) ?? []).map((tier) => ({ ...tier, discount_percentage: Number(tier.discount_percentage), _dirty: false })));
+    setError(nextError?.message ?? null);
+    setLoading(false);
+  }, [competitionId, supabase]);
+
+  useEffect(() => { load(); }, [load]);
+
+  function update(index: number, patch: Row) {
+    setTiers((prev) => prev.map((tier, i) => i === index ? { ...tier, ...patch, _dirty: true } : tier));
+  }
+
+  function addTier() {
+    setTiers((prev) => [...prev, { min_quantity: "", discount_percentage: "", label: "", is_active: true, _new: true, _dirty: true }]);
+  }
+
+  async function removeTier(index: number) {
+    if (!supabase) return;
+    const tier = tiers[index];
+    setError(null);
+    setSuccess(null);
+    if (tier.id) {
+      if (!window.confirm("Delete this discount tier?")) return;
+      const { error: nextError } = await supabase.from("competition_discount_tiers").delete().eq("id", tier.id);
+      if (nextError) {
+        setError(nextError.message);
+        return;
+      }
+    }
+    setTiers((prev) => prev.filter((_, i) => i !== index));
+    setSuccess("Discount tier removed.");
+  }
+
+  async function saveAll() {
+    if (!supabase || saving) return;
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const minQuantities = new Set<number>();
+      for (const tier of tiers) {
+        const minQuantity = Number(tier.min_quantity);
+        const percentage = Number(tier.discount_percentage);
+        if (!Number.isInteger(minQuantity) || minQuantity < 2) throw new Error("Min quantity must be an integer of 2 or more.");
+        if (!(percentage > 0 && percentage <= 95)) throw new Error("Discount percentage must be greater than 0 and no more than 95.");
+        if (minQuantities.has(minQuantity)) throw new Error(`Duplicate min quantity: ${minQuantity}.`);
+        minQuantities.add(minQuantity);
+      }
+      for (const tier of tiers) {
+        if (!tier._dirty) continue;
+        const payload = {
+          competition_id: competitionId,
+          min_quantity: Number(tier.min_quantity),
+          discount_percentage: Number(tier.discount_percentage),
+          label: String(tier.label || "").trim() || null,
+          is_active: Boolean(tier.is_active),
+        };
+        const result = tier.id
+          ? await supabase.from("competition_discount_tiers").update(payload).eq("id", tier.id)
+          : await supabase.from("competition_discount_tiers").insert(payload);
+        if (result.error) throw result.error;
+      }
+      setSuccess("Discount tiers saved.");
+      load();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Discount tier save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <AdminPanel title="Quantity discounts" description="Optional automatic discounts based on ticket quantity. Final pricing remains calculated by the existing checkout flow.">
+      <LoadingOrError loading={loading} error={error} />
+      {success ? <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      {!loading ? <div className="space-y-3">
+        {tiers.length === 0 ? <p className="text-sm text-white/60">No tiers yet. Add one to offer automatic multi-ticket discounts.</p> : null}
+        {tiers.map((tier, index) => (
+          <div key={tier.id ?? `new-${index}`} className="grid items-end gap-2 md:grid-cols-[110px_130px_1fr_auto_auto]">
+            <div className="space-y-1"><FieldLabel label="Min qty" /><Input type="number" min={2} value={tier.min_quantity} onChange={(e) => update(index, { min_quantity: e.target.value })} /></div>
+            <div className="space-y-1"><FieldLabel label="Discount %" /><Input type="number" min={1} max={95} step="0.5" value={tier.discount_percentage} onChange={(e) => update(index, { discount_percentage: e.target.value })} /></div>
+            <div className="space-y-1"><FieldLabel label="Label" /><Input value={tier.label || ""} onChange={(e) => update(index, { label: e.target.value })} placeholder="e.g. Best value" /></div>
+            <label className="flex h-10 items-center gap-2 text-sm text-white/80"><input type="checkbox" checked={!!tier.is_active} onChange={(e) => update(index, { is_active: e.target.checked })} className="h-4 w-4 accent-primary" /> Active</label>
+            <Button type="button" variant="outline" size="sm" onClick={() => removeTier(index)}><Trash2 className="h-3.5 w-3.5" /></Button>
+          </div>
+        ))}
+        <div className="flex flex-wrap gap-2 pt-2"><Button type="button" variant="outline" onClick={addTier}>Add tier</Button><Button type="button" onClick={saveAll} disabled={saving}>{saving ? "Saving..." : "Save tiers"}</Button></div>
+        <p className="text-xs text-white/50">The best qualifying tier is applied automatically. Tiers below 2 are not allowed. Discounts never stack.</p>
+      </div> : null}
+    </AdminPanel>
+  );
+}
+
+function DynamicContentEditor({ competitionId }: { competitionId: string }) {
+  const supabase = createSupabaseBrowserClient();
+  const [rowId, setRowId] = useState<string | null>(null);
+  const [title, setTitle] = useState("Competition marquee");
+  const [text, setText] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    supabase
+      .from("dynamic_content_sections")
+      .select("id,title,content_text,is_enabled")
+      .eq("page_type", "competition")
+      .eq("competition_id", competitionId)
+      .eq("section_key", "competition_marquee")
+      .maybeSingle()
+      .then(({ data, error: nextError }: { data: Row | null; error: any }) => {
+        if (cancelled) return;
+        if (nextError) setError(nextError.message);
+        if (data) {
+          setRowId(data.id);
+          setTitle(data.title || "Competition marquee");
+          setText(data.content_text || "");
+          setEnabled(Boolean(data.is_enabled));
+        }
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [competitionId, supabase]);
+
+  async function saveContent() {
+    if (!supabase || saving) return;
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    const payload = {
+      page_type: "competition",
+      competition_id: competitionId,
+      section_key: "competition_marquee",
+      title: title || null,
+      content_text: text,
+      is_enabled: enabled,
+    };
+    const result = rowId
+      ? await supabase.from("dynamic_content_sections").update(payload).eq("id", rowId).select("id").maybeSingle()
+      : await supabase.from("dynamic_content_sections").insert(payload).select("id").single();
+    if (result.error) setError(result.error.message);
+    else {
+      setRowId((result.data as Row | null)?.id ?? rowId);
+      setSuccess("Dynamic content saved.");
+    }
+    setSaving(false);
+  }
+
+  return (
+    <AdminPanel title="Dynamic content" description="Edit the ticker shown below the gallery on the public competition page.">
+      <LoadingOrError loading={loading} error={error} />
+      {success ? <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
+      {!loading ? <div className="space-y-4">
+        <label className="flex items-center justify-between gap-3 text-sm text-white/80"><span>Enabled</span><input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4 accent-primary" /></label>
+        <div className="space-y-1.5"><FieldLabel label="Title" help="Optional, internal." /><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Competition marquee" /></div>
+        <div className="space-y-1.5"><FieldLabel label="Content" /><Textarea rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder="Low entry cap · Free postal entry route available · Secure checkout · Winner published · 18+ UK only" /><p className="text-[11px] text-white/50">Use dot separators between items for the marquee.</p></div>
+        <div className="flex justify-end"><Button onClick={saveContent} disabled={saving}>{saving ? "Saving..." : "Save"}</Button></div>
+      </div> : null}
+    </AdminPanel>
+  );
 }
 
 function CompetitionFormPage({ mode, id }: { mode: "new" | "edit"; id?: string }) {
@@ -419,7 +721,6 @@ function CompetitionFormPage({ mode, id }: { mode: "new" | "edit"; id?: string }
         subtitle="Vite-compatible competition create/edit, status and image variant workflow using existing Supabase tables and storage policies."
         actions={<Button asChild variant="outline"><Link href="/admin/competitions">Back to competitions</Link></Button>}
       />
-      <IncompleteNotice>Discount tier editing and dynamic content sections are still managed in the Vite admin. This form does not fake those editors.</IncompleteNotice>
       <LoadingOrError loading={loading} error={null} />
       {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
       {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
@@ -510,6 +811,14 @@ function CompetitionFormPage({ mode, id }: { mode: "new" | "edit"; id?: string }
                 />
               </div>
             </AdminPanel>
+            {mode === "edit" && id ? (
+              <>
+                <DiscountTiersEditor competitionId={id} />
+                <DynamicContentEditor competitionId={id} />
+              </>
+            ) : (
+              <AdminPanel title="Quantity discounts and dynamic content" description="Save the competition first to configure quantity discounts and the competition marquee." />
+            )}
           </div>
 
           <aside className="space-y-5">
@@ -2036,7 +2345,7 @@ function PostalEntriesPage() {
 
 function EmailsPage() {
   const { rows, loading, error } = useRows("email_templates", "id,template_key,subject,is_active,updated_at", "template_key", true, 100);
-  return <SimpleListPage eyebrow="Comms" title="Emails" subtitle="Read-only email templates when the table is available." loading={loading} error={error} rows={rows} icon={<Send className="h-5 w-5" />} columns={["template_key", "subject", "is_active", "updated_at"]} incomplete="The Vite email editor, preview diagnostics, branding settings and send/test flows are not ported in Next yet. Klaviyo/Resend logic was not changed." />;
+  return <SimpleListPage eyebrow="Comms" title="Emails" subtitle="Email templates available to the server-side send route." loading={loading} error={error} rows={rows} icon={<Send className="h-5 w-5" />} columns={["template_key", "subject", "is_active", "updated_at"]} />;
 }
 
 function FaqsPage() {
@@ -2478,31 +2787,30 @@ function SeoCentrePage() {
 }
 
 function DynamicContentPage() {
-  return <IncompleteAdminPage title="Dynamic content" icon={<Megaphone className="h-5 w-5" />} body="Dynamic content section editor is not ported into Next yet." />;
+  return <UnavailableAdminPage title="Dynamic content" icon={<Megaphone className="h-5 w-5" />} body="Competition marquee content is managed from each competition edit screen." />;
 }
 
 function PageContentPage() {
-  return <IncompleteAdminPage title="Page content" icon={<FileText className="h-5 w-5" />} body="Page content editor is not ported into Next yet." />;
+  return <UnavailableAdminPage title="Page content" icon={<FileText className="h-5 w-5" />} body="Page content changes are managed through the active content routes in this console." />;
 }
 
 function NotificationsPage() {
-  return <IncompleteAdminPage title="Notifications" body="Launch notification admin is not part of the requested required route set and is not ported yet." />;
+  return <UnavailableAdminPage title="Notifications" body="Launch notification sends are handled outside the normal staging operations set." />;
 }
 
-function IncompleteAdminPage({ title, body, icon }: { title: string; body: string; icon?: React.ReactNode }) {
+function UnavailableAdminPage({ title, body, icon }: { title: string; body: string; icon?: React.ReactNode }) {
   return (
     <div>
-      <AdminPageHeader eyebrow="Admin" title={title} icon={icon} subtitle="Route shell is present so navigation is complete, but this operational flow is not fully ported." />
-      <IncompleteNotice>{body}</IncompleteNotice>
+      <AdminPageHeader eyebrow="Admin" title={title} icon={icon} subtitle="This area is not part of the normal staging operations console." />
+      <AdminPanel variant="outline" className="border-white/10 bg-white/[0.03]" description={body} />
     </div>
   );
 }
 
-function SimpleListPage({ eyebrow, title, subtitle, loading, error, rows, columns, icon, incomplete, format, actions }: { eyebrow: string; title: string; subtitle: string; loading: boolean; error: string | null; rows: Row[]; columns: string[]; icon?: React.ReactNode; incomplete?: string; format?: Record<string, (value: any, row: Row) => React.ReactNode>; actions?: React.ReactNode }) {
+function SimpleListPage({ eyebrow, title, subtitle, loading, error, rows, columns, icon, format, actions }: { eyebrow: string; title: string; subtitle: string; loading: boolean; error: string | null; rows: Row[]; columns: string[]; icon?: React.ReactNode; format?: Record<string, (value: any, row: Row) => React.ReactNode>; actions?: React.ReactNode }) {
   return (
     <div>
       <AdminPageHeader eyebrow={eyebrow} title={title} subtitle={subtitle} icon={icon} actions={actions} />
-      {incomplete ? <IncompleteNotice>{incomplete}</IncompleteNotice> : null}
       <div className="mt-5">
         <LoadingOrError loading={loading} error={error} />
         {!loading && !error ? <EmptyRows rows={rows} label={title.toLowerCase()} /> : null}

@@ -56,9 +56,3 @@ export function AdminTD({ children, align = "left", className }: { children: Rea
 export function AdminTR({ children }: { children: React.ReactNode }) {
   return <tr className="border-t border-white/10 transition-colors hover:bg-white/5">{children}</tr>;
 }
-
-export function IncompleteNotice({ children }: { children: React.ReactNode }) {
-  return (
-    <AdminPanel variant="outline" className="border-warning/40 bg-warning/10 p-0" title="Not fully ported in Next.js yet" description={children} />
-  );
-}
