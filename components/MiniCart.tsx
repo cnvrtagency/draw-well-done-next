@@ -129,7 +129,7 @@ export function MiniCart() {
     <>
       {isOpen && <button type="button" aria-label="Close basket" onClick={close} className="fixed inset-0 z-50 bg-black/60" />}
       <aside
-        className={`fixed right-0 top-0 z-50 theme-dark h-[100dvh] w-full max-w-[440px] transform border-l border-white/10 !bg-[hsl(222_45%_6%/0.96)] text-white shadow-[0_0_60px_-10px_hsl(var(--primary)/0.35)] backdrop-blur-xl transition-transform duration-300 ${isOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}`}
+        className={`fixed right-0 top-0 z-50 theme-dark h-[100dvh] w-full max-w-[440px] transform border-l border-white/10 !bg-[hsl(222_45%_6%/0.96)] text-white backdrop-blur-xl transition-[transform,opacity,box-shadow] duration-300 will-change-transform ${isOpen ? "translate-x-0 opacity-100 pointer-events-auto shadow-[0_0_60px_-10px_hsl(var(--primary)/0.35)]" : "translate-x-full opacity-0 pointer-events-none shadow-none"}`}
         aria-hidden={!isOpen}
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />

@@ -545,6 +545,13 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip;
+    background: hsl(222 45% 3%);
+  }
+
   body {
     @apply bg-background text-foreground;
   }
