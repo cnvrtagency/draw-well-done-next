@@ -577,7 +577,7 @@ function AccountVerificationPanel({ status, verifiedAt, rejectionReason, require
   const isRejected = status === "rejected";
   return (
     <div className={`account-panel ${isRejected ? "" : "account-panel-blue"} relative overflow-hidden p-5 md:p-6`}>
-      <div className="pointer-events-none absolute inset-x-0 -top-20 h-40 bg-[radial-gradient(50%_60%_at_50%_50%,hsl(204_100%_55%/0.16),transparent_75%)]" />
+      <div className="account-verification-glow pointer-events-none absolute inset-x-0 -top-20 h-40" />
       <div className="relative flex items-start gap-3">
         <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${isRejected ? "border-destructive/40 bg-destructive/15 text-destructive" : "border-primary/40 bg-primary/15 text-primary"}`}>{isRejected ? <ShieldAlert className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}</div>
         <div className="min-w-0 flex-1">

@@ -41,7 +41,7 @@ export function CompetitionImageGallery({ mainImageUrl, galleryImageUrls, title,
 
   return (
     <div className={cn("w-full max-w-[620px]", className)}>
-      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-deep bg-black">
+      <div className="td-gallery-frame relative overflow-hidden rounded-2xl border shadow-deep">
         <div key={imgKey} className="animate-fade-in-img">
           <SafePrizeImage url={activeUrl} alt={title} aspect="aspect-square" priority={priority} width={1200} height={1200} />
         </div>
@@ -57,7 +57,7 @@ export function CompetitionImageGallery({ mainImageUrl, galleryImageUrls, title,
                 type="button"
                 onClick={() => { setActive(i); setImgKey((k) => k + 1); }}
                 aria-label={`View image ${i + 1} of ${images.length}`}
-                className="relative w-full aspect-square rounded-lg overflow-hidden border border-white/10 opacity-80 hover:opacity-100 hover:border-white/30 transition"
+                className="td-gallery-thumb relative aspect-square w-full overflow-hidden rounded-lg border opacity-80 transition hover:opacity-100"
               >
                 <SafePrizeImage url={u} alt="" aspect="aspect-square" width={160} height={160} />
                 {showMore && <span className="absolute inset-0 grid place-items-center bg-black/55 text-white text-sm font-extrabold">+{extraCount}</span>}

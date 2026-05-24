@@ -87,8 +87,8 @@ export default {
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
-        glow: "0 0 0 1px hsl(204 100% 55% / 0.4), 0 10px 40px -10px hsl(204 100% 55% / 0.55)",
-        "glow-soft": "0 8px 30px -12px hsl(204 100% 55% / 0.45)",
+        glow: "var(--glow-blue)",
+        "glow-soft": "var(--td-glow-soft)",
         "elev-1": "0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 6px 16px -8px hsl(222 60% 0% / 0.6)",
         "elev-2": "0 1px 0 hsl(0 0% 100% / 0.05) inset, 0 18px 50px -18px hsl(222 60% 0% / 0.75)",
         "deep": "0 1px 0 hsl(0 0% 100% / 0.06) inset, 0 30px 80px -20px hsl(204 100% 30% / 0.45), 0 8px 30px -10px hsl(0 0% 0% / 0.6)",

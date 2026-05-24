@@ -110,9 +110,26 @@ The first admin light-mode cleanup pass is implemented for shared surfaces only:
 - `AdminImageUploader` dropzone, drag-over state, title and helper text now use admin theme tokens.
 - Shared admin helper labels, textareas, loading messages and empty states in `AdminPages.tsx` now use admin theme classes.
 - Repeated admin table headers, native selects and dialog shells were moved away from hard-coded dark HSL/white utility styling.
+- Dense admin table contrast has been strengthened for light mode: table headers, primary row text, secondary metadata, timestamps, borders and outline/destructive action buttons now use admin-specific foreground, border and action tokens.
+- `/admin/entries` now applies the dense-table classes directly to the rendered ticket, competition, customer, type, created-date and row-action elements so the route is not dependent on broad compatibility overrides.
 - Admin business logic, role guard behavior, queries, mutations, RPC/Edge Function calls, uploads and validation were not changed.
 
-Launch note: admin light mode is more readable at the shared-surface level, but route-level admin content still needs conversion and browser QA before production sign-off.
+Launch note: admin light mode is more readable at the shared-surface and dense-table level, but route-level admin content still needs conversion and browser QA before production sign-off.
+
+## Theme Strict Light Palette - 2026-05-24
+
+The strict light-mode visual rules pass is implemented:
+
+- Light-mode tokens now use the supplied colour direction for page backgrounds, panels, text, borders, blue/cyan accents and semantic states.
+- Light mode keeps the visible theme toggle for staging/testing.
+- Light mode disables text glow via `.glow-text`, dampens `shadow-glow`/`shadow-glow-soft`, and stops `animate-glow-pulse` scaling so text and small UI states render crisply.
+- Light-mode `bg-radial-glow`, `bg-aurora`, `bg-hero-mesh`, `home-bg`, `home-bg-layer`, account verification glow and account background glow now use subtle silver/cyan ambience instead of dark blue blobs.
+- Admin route-level compatibility now maps remaining `text-white/*`, `bg-white/*`, `border-white/*`, `bg-black` and `bg-black/20` classes inside `.admin-shell` to readable admin tokens, while preserving white text on intended primary/destructive/status surfaces.
+- Competition image gallery frames now use theme-aware gallery frame/thumb utilities.
+- `/admin/content-library` now uses explicit admin section, field-label, helper-text, upload-title and media-card classes, so Upload/Files headings, Target folder labels, helper copy, search/select controls, previews, file names, folders, file sizes and copy/delete actions are readable without changing storage/upload/delete logic.
+- Checkout order summary, checkout rows, total panel and success ticket pills now have light-mode-specific contrast overrides; `btn-primary-glow` keeps a strong blue CTA but removes the messy blue glow in light mode.
+
+Launch note: dark mode should remain visually close to the existing TopDraw baseline. Light mode still requires real-browser screenshot QA across public, checkout, account and admin routes before production sign-off.
 
 ## Full Parity Audit - 2026-05-23
 

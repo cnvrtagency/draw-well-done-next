@@ -24,8 +24,8 @@ export function AdminPanel({ title, description, actions, children, className, b
       {hasHeader ? (
         <div className="flex flex-col gap-2 px-5 pt-5 sm:flex-row sm:items-start sm:justify-between md:px-6 md:pt-6">
           <div className="min-w-0">
-            {title ? <h2 className="font-display text-base font-bold tracking-tight admin-value md:text-lg">{title}</h2> : null}
-            {description ? <p className="mt-1 text-xs admin-muted md:text-sm">{description}</p> : null}
+            {title ? <h2 className="font-display text-base font-bold tracking-tight admin-section-title md:text-lg">{title}</h2> : null}
+            {description ? <p className="admin-helper-text mt-1 text-xs md:text-sm">{description}</p> : null}
           </div>
           {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
         </div>
@@ -46,11 +46,11 @@ export function AdminTable({ children, minWidth = 920 }: { children: React.React
 }
 
 export function AdminTH({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" | "center" }) {
-  return <th className={cn("p-3 font-semibold", align === "right" && "text-right", align === "center" && "text-center", align === "left" && "text-left")}>{children}</th>;
+  return <th className={cn("admin-table-head p-3 font-semibold", align === "right" && "text-right", align === "center" && "text-center", align === "left" && "text-left")}>{children}</th>;
 }
 
 export function AdminTD({ children, align = "left", className }: { children: React.ReactNode; align?: "left" | "right" | "center"; className?: string }) {
-  return <td className={cn("p-3 align-top", align === "right" && "text-right", align === "center" && "text-center", className)}>{children}</td>;
+  return <td className={cn("admin-table-cell p-3 align-top", align === "right" && "text-right", align === "center" && "text-center", className)}>{children}</td>;
 }
 
 export function AdminTR({ children }: { children: React.ReactNode }) {

@@ -67,6 +67,11 @@ Admin shared-surface implementation status:
 - `AdminImageUploader` now uses tokenized dropzone, drag-over and helper text classes.
 - Shared admin helpers in `AdminPages.tsx` now use tokenized labels, textareas, loading and empty states.
 - Repeated admin table headers, select controls and dialog shells were moved to admin token classes.
+- Admin light-mode contrast tokens were strengthened for dense tables: headers, primary row text, secondary text, timestamps, borders, outline actions and destructive action buttons now use admin-specific foreground/border/action variables instead of the softer general public tokens.
+- The `/admin/entries` table now uses those classes on the actual rendered cells/buttons instead of relying only on broad descendant overrides, so ticket, competition, customer, type, date and row actions are explicitly theme-aware.
+- Strict light-mode palette pass applied the supplied fixed colours to the light tokens, disabled light-mode text glow, dampened light-mode glow shadows/pulses, softened light-mode aurora/mesh backgrounds, and added route-level admin compatibility for remaining dark utility classes.
+- The `/admin/content-library` page now uses explicit admin section, field-label, helper-text, upload-title and media-card classes for readable Upload/Files headings, Target folder labels, helper copy, controls, full-colour previews, strong file names, readable folder/size metadata and visible action buttons.
+- Checkout light mode now uses scoped summary/row/total overrides to keep order titles, prices, subtotal/discount rows, wallet/discount helper text and ticket pills crisp without changing checkout logic.
 - Admin route-level content in `AdminPages.tsx` still needs follow-up conversion and browser QA.
 
 ## 2. Current Theme Architecture

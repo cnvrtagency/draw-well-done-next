@@ -1,11 +1,21 @@
 # TopDraw Next.js Light Mode Gap Audit
 
 Date: 2026-05-24  
-Scope: audit/update after the admin shared-surface cleanup pass in `~/Desktop/draw-well-done-next`.
+Scope: audit/update after the admin entries/table contrast cleanup pass in `~/Desktop/draw-well-done-next`.
 
 ## 1. Executive Verdict
 
-Dark mode remains the visual baseline. Light mode is now exposed through the header/mobile toggle and is staging-testable across public, checkout, auth and account surfaces. Admin light mode is improved, but not production-signed-off.
+Dark mode remains the visual baseline. Light mode is exposed through the header/mobile toggle and is staging-testable across public, checkout, auth, account and admin surfaces. A strict light-mode palette pass has now been applied using the supplied colours for backgrounds, panels, text, borders, primary blue/cyan and semantic states. Admin light mode is improved, but not production-signed-off until browser QA.
+
+Strict palette/contrast follow-up:
+
+- Light-mode tokens now use the fixed target palette: `#F4F8FC`, `#EEF4FA`, `#FFFFFF`, `#F8FBFF`, `#07111F`, `#314158`, `#64748B`, `#7C8AA0`, `#C9D7E8`, `#DCE7F3`, `#AFC4DA`, `#008BFF`, `#00B8FF`, `#138A4B`, `#A16207` and `#C0362C`.
+- `.glow-text` is disabled in light mode, `shadow-glow`/`shadow-glow-soft` are dampened, and `animate-glow-pulse` is made static in light mode.
+- Dark aurora/hero/home background utilities now have light-mode-specific silver/cyan ambience.
+- Admin light mode now has broad route-level compatibility for remaining `text-white/*`, `bg-white/*`, `border-white/*`, `bg-black` and `bg-black/20` classes inside `.admin-shell`.
+- Competition image gallery frames and account verification glow are now theme-aware.
+- `/admin/content-library` now uses explicit section, field-label, helper-text, upload-title and media-card classes so Upload/Files headings, Target folder labels, helper copy, search/select controls, previews, file names, folders and file sizes are readable.
+- Checkout light mode now has checkout-specific summary/row/total overrides so functional order text is darker, financial metadata is readable, ticket pills are crisper and primary CTA glow is restrained instead of blurred.
 
 This pass converted shared admin surfaces only:
 
@@ -14,6 +24,9 @@ This pass converted shared admin surfaces only:
 - `AdminImageUploader` dropzone, drag-over state, title and hint text now use admin theme tokens.
 - Shared admin helper `FieldLabel`, `Textarea`, `LoadingOrError` and `EmptyRows` in `AdminPages.tsx` now use admin theme classes.
 - Repeated admin table header, select and `DialogContent` dark classes were moved to shared admin token classes.
+- Admin table contrast follow-up is implemented: shared admin tokens now distinguish strong row text, readable muted text, table header text, visible row borders and stronger outline/destructive action buttons in light mode.
+- `/admin/entries` now applies those classes directly to the rendered table cells and row action buttons: ticket and competition use `admin-table-primary`, customer/type use `admin-table-secondary`, created dates use `admin-table-date`, and Void/archive/delete buttons use `admin-action-button`.
+- `/admin/content-library` now applies `admin-content-library`, `admin-section-title`, `admin-field-label`, `admin-helper-text`, `admin-upload-title`, `admin-media-card`, `admin-media-image`, `admin-media-title`, `admin-media-meta` and `admin-action-button` directly to the rendered section/cards instead of relying on faded dark-glass utilities.
 
 Source search after this pass:
 
@@ -28,7 +41,7 @@ Current production verdict:
 
 - Dark mode: staging-testable.
 - Light mode public/checkout/auth/account: staging-testable with browser QA required.
-- Light mode admin: shared surfaces improved; route-level conversion and browser QA still required before production sign-off.
+- Light mode admin: shared surfaces, `/admin/entries` dense-table contrast and route-level compatibility are improved; browser QA and targeted route cleanup are still required before production sign-off.
 - Visible toggle: implemented and should remain enabled for staging QA.
 
 ## 2. Route-By-Route Gap List
@@ -45,9 +58,9 @@ Current production verdict:
 | `/account` | Improved | Account-specific light background layers now replace the previous strong generic `bg-hero-mesh` glow; needs logged-in browser QA for nav, dense cards and mobile layout. | Medium | Browser QA |
 | `/account/profile` | Improved | File input, verification panel and form messages need browser QA. | Medium | Browser QA |
 | `/account/wallet` | Improved | Wallet rows and positive/negative amounts need browser QA. | Medium | Browser QA |
-| `/admin` | Improved, not signed off | Shared shell/kit are tokenized; route/dashboard content still needs browser QA and route-level cleanup. | High | Browser QA + route cleanup |
-| `/admin/competitions` | Partial | Shared table/dialog/select surfaces are improved; image panels, helper panels and inline table copy still have route-level dark classes. | High | Yes |
-| `/admin/hero-banners` | Partial | Dialog shell/selects are improved; preview/helper panels and image cards still need route-level cleanup. | High | Yes |
+| `/admin` | Improved, not signed off | Shared shell/kit and table contrast are tokenized; route/dashboard content still needs browser QA and route-level cleanup. | High | Browser QA + route cleanup |
+| `/admin/competitions` | Partial | Shared table/dialog/select surfaces and action-button contrast are improved; image panels, helper panels and inline route copy still have dark classes. | High | Yes |
+| `/admin/hero-banners` | Partial | Dialog shell/selects/table contrast are improved; preview/helper panels and image cards still need route-level cleanup. | High | Yes |
 | `/free-entry` | Improved | Light mode is tokenized; legal placeholder content remains a separate production content blocker. | Low | Browser QA |
 | `/contact` | Improved | Light mode is tokenized; postal placeholder remains a separate production content blocker. | Low | Browser QA |
 | Legal/static pages | Improved | Needs long-form text readability QA on mobile and desktop. | Low | Browser QA |
@@ -67,12 +80,12 @@ Current production verdict:
 | `CheckoutSuccessClient` | `app/checkout/success/CheckoutSuccessClient.tsx` | Improved; needs multi-state QA. | Medium | QA before edits. | Low |
 | `AccountPages` | `app/account/AccountPages.tsx` | Improved; remaining white text is mostly active/CTA states. | Medium | Browser QA. | Low |
 | `AdminShell` | `components/admin/AdminShell.tsx` | Shared shell now tokenized. | Medium | Browser QA active nav, guard, loading and buttons. | Low |
-| `AdminKit` | `components/admin/AdminKit.tsx` | Shared headers, panels and tables now tokenized. | Medium | Browser QA dense table hierarchy. | Low |
+| `AdminKit` | `components/admin/AdminKit.tsx` | Shared headers, panels, tables, rows and action-button contrast now tokenized. | Medium | Browser QA dense table hierarchy. | Low |
 | `AdminImageUploader` | `components/admin/AdminImageUploader.tsx` | Shared dropzone now tokenized. | Medium | Browser QA idle, drag-over and busy states. | Low |
-| `AdminPages` | `app/admin/AdminPages.tsx` | Largest remaining hotspot: route-level previews, helper cards, content panels, file cards and inline table cell text. | High | Convert by route group. | High |
+| `AdminPages` | `app/admin/AdminPages.tsx` | Largest remaining hotspot: route-level previews, helper cards, content panels and inline table cell text. Content library file cards now have a targeted media-card fix. | High | Convert remaining route groups. | High |
 | Forms/selects/textareas | Admin shared + route-specific | Repeated selects and shared textarea are tokenized; route-specific wrappers remain. | Medium | Convert per admin route group. | Medium |
 | Dialogs/modals | `app/admin/AdminPages.tsx` | Repeated dialog shells are tokenized; nested dark body content remains in places. | High | Convert nested dialog content per route group. | Medium |
-| Tables | `AdminKit` + `AdminPages` | Shared wrappers/heads/rows are improved; route cell copy remains mixed. | High | Convert route table cell content by domain. | Medium |
+| Tables | `AdminKit` + `AdminPages` | Shared wrappers/heads/rows now have stronger light-mode foreground, muted, border and action button tokens; route cell copy remains mixed. | Medium | Convert remaining route-specific helper panels by domain. | Medium |
 
 ## 4. Hard-Coded Class Hotspots
 
@@ -108,7 +121,7 @@ Blocker/high risks:
 
 - Route-level admin white text on light surfaces outside tokenized table/dialog wrappers.
 - Route-level admin `bg-white/[0.03]`, `bg-white/5` and `border-white/10` helper panels.
-- Admin image/file cards in content library, guide editor, hero banner helper panels and SEO centre.
+- Admin image/file cards in guide editor, hero banner helper panels and SEO centre. Content library file cards now have a targeted fix and need browser QA.
 - Nested admin dialog body content that still uses dark utility classes.
 - `CompetitionImageGallery` dark frame/borders on public detail pages.
 
@@ -134,7 +147,7 @@ Account is substantially improved. The light-mode background glow issue found on
 
 ### Admin
 
-Admin shared surfaces are improved. Remaining admin work should be route-group cleanup, not more shared primitive work.
+Admin shared surfaces are improved, including the `/admin/entries`-style dense table contrast issue where header, row, date/customer and outline action text looked washed out in light mode. Remaining admin work should be route-group cleanup and browser QA, not more shared primitive work.
 
 Recommended admin approach:
 

@@ -157,10 +157,10 @@ export function AdminImageUploader({
         )}
       >
         {busy ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Upload className="h-5 w-5 text-primary" />}
-        <div className="font-medium admin-value">
+        <div className="admin-upload-title font-medium">
           {busy ? `Uploading ${progress?.done ?? 0} / ${progress?.total ?? 0}...` : multiple ? "Click or drop images" : "Click or drop an image"}
         </div>
-        <div className="text-xs admin-muted">{hint || "JPG, PNG, WebP, AVIF - max 8 MB each"}</div>
+        <div className="admin-helper-text text-xs">{hint || "JPG, PNG, WebP, AVIF - max 8 MB each"}</div>
       </div>
       <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={busy}>
         {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}

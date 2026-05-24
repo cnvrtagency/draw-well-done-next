@@ -195,7 +195,7 @@ export function HeroCarousel({ items, loading }: Props) {
   return (
     <section className="relative overflow-hidden">
       <div className="relative container mx-auto px-4 pt-5 md:pt-8">
-        <div className="relative min-h-[620px] overflow-hidden rounded-[26px] border border-primary/20 bg-[hsl(222_40%_5%/0.78)] shadow-[0_34px_110px_-58px_hsl(var(--primary)/0.70),inset_0_1px_0_hsl(0_0%_100%/0.08)] sm:min-h-[660px] md:min-h-0 md:rounded-[34px]">
+        <div className="relative mx-auto max-w-7xl min-h-[620px] overflow-hidden rounded-[26px] border border-primary/20 bg-[hsl(222_40%_5%/0.78)] shadow-[0_34px_110px_-58px_hsl(var(--primary)/0.70),inset_0_1px_0_hsl(0_0%_100%/0.08)] sm:min-h-[660px] md:min-h-0 md:rounded-[34px]">
           <picture className="pointer-events-none absolute inset-0 block h-full w-full">
             <source media="(max-width: 767px)" srcSet={isDefaultMobile ? "/media/playstation-comp-mobile-900.webp 900w" : mobileSrc} sizes="100vw" />
             <source media="(min-width: 768px)" type={isDefaultHero ? "image/webp" : undefined} srcSet={isDefaultHero ? "/media/playstation-comp-1600.webp 1600w, /media/playstation-comp-2200.webp 2200w" : desktopSrc} sizes="(min-width: 1280px) 1280px, calc(100vw - 32px)" />
