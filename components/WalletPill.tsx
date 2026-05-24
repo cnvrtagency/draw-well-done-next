@@ -35,7 +35,7 @@ export function WalletPill() {
     <Link
       href="/account/wallet"
       aria-label={`Wallet balance ${balance != null ? formatMoney(balance) : ""}`}
-      className="td-wallet-pill hidden h-9 items-center gap-1.5 rounded-md px-2.5 sm:inline-flex"
+      className="td-wallet-pill td-header-control hidden h-10 items-center gap-1.5 rounded-xl px-3 sm:inline-flex"
     >
       <Wallet className="h-4 w-4 text-primary" />
       <span className="font-mono-num text-xs font-bold tracking-tight">

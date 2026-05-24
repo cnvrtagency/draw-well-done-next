@@ -35,7 +35,7 @@ export function MiniCartTrigger() {
       type="button"
       aria-label={`Basket (${count} items)`}
       onClick={openDrawer}
-      className="td-icon-button relative w-10 h-10 grid place-items-center rounded-md focus-visible:ring-2 focus-visible:ring-primary/60"
+      className="td-header-control td-icon-button relative grid h-10 w-10 place-items-center rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60"
     >
       <ShoppingBag className="w-5 h-5" />
       {count > 0 && (

@@ -97,6 +97,9 @@
 - [x] Strict light-mode palette/contrast pass applied supplied colours, disabled light-mode text glow, dampened light-mode glows/pulses, softened light-mode aurora/mesh backgrounds and tokenized gallery/verification glow surfaces
 - [x] Content library light-mode section cleanup for readable Upload/Files headings, field labels, helper text, search/select controls, full-colour previews, file names/folders/sizes and stronger copy/delete action buttons
 - [x] Checkout summary light-mode contrast cleanup for order rows, summary metadata, total panel, ticket pills and reduced primary CTA glow
+- [x] Account entries light-mode contrast cleanup for entry cards, competition title hierarchy, ticket-count metadata, draw dates, ticket pills and visible light-mode card borders using scoped account entry classes
+- [x] Related account orders, transactions and wallet metadata cleanup so functional secondary text is readable in light mode without globally strengthening `td-soft`/`td-muted`
+- [x] Header/navigation premium glass redesign for desktop and mobile using scoped header shell/nav/control classes while preserving logo, nav, wallet pill, MiniCart trigger, theme toggle and account/admin/login behavior
 - [x] Emergency shared light-mode glow reset for text glow, CTA/free button glow, rim glow, auth/account/admin background glows, MiniCart shadows, account panels, progress/arbitrary glow selectors and glow pulse animation
 - [ ] Checkout/auth browser contrast QA
 - [ ] Account browser contrast QA

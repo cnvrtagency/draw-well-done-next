@@ -3,6 +3,8 @@
 Date: 2026-05-24  
 Scope: audit/update after the admin entries/table contrast cleanup pass in `~/Desktop/draw-well-done-next`.
 
+Update: account entries light-mode contrast follow-up applied in `app/account/AccountPages.tsx` and `app/globals.css`. No business logic, auth, queries, mutations, Supabase, checkout, basket, payment, allocation, draw, pricing, Klaviyo or Resend code was changed.
+
 ## 1. Executive Verdict
 
 Dark mode remains the visual baseline. Light mode is exposed through the header/mobile toggle and is staging-testable across public, checkout, auth, account and admin surfaces. A strict light-mode palette pass has now been applied using the supplied colours for backgrounds, panels, text, borders, primary blue/cyan and semantic states. Admin light mode is improved, but not production-signed-off until browser QA.
@@ -16,6 +18,9 @@ Strict palette/contrast follow-up:
 - Competition image gallery frames and account verification glow are now theme-aware.
 - `/admin/content-library` now uses explicit section, field-label, helper-text, upload-title and media-card classes so Upload/Files headings, Target folder labels, helper copy, search/select controls, previews, file names, folders and file sizes are readable.
 - Checkout light mode now has checkout-specific summary/row/total overrides so functional order text is darker, financial metadata is readable, ticket pills are crisper and primary CTA glow is restrained instead of blurred.
+- Account entries light mode now uses scoped `account-entry-card`, `account-entry-title`, `account-entry-meta`, `account-entry-date`, `account-ticket-pill` and `account-ticket-pill-active` utilities so competition titles, ticket counts, draw dates, ticket pills and card surfaces are readable without changing global `td-soft`/`td-muted`.
+- Related account order, wallet and transaction rows now use scoped account metadata utilities for dates, entry counts, ledger notes and subdued balance text instead of relying on the softest generic text tokens.
+- Header/navigation now uses a scoped premium glass command-bar pass: the main header shell, desktop nav tabs, active state, wallet/basket/theme/account/admin controls and mobile drawer links were moved onto semantic header classes so light mode stays crisp and readable without dark glow bleed.
 - Emergency shared glow reset is implemented in `app/globals.css`: light mode now strips text glow, disables glow pulse animation, flattens `rim-glow`, neutralises major shared panel/background glows, and turns `btn-primary-glow`/`btn-free-glow` into crisp filled CTAs with restrained neutral shadows.
 
 This pass converted shared admin surfaces only:
@@ -51,6 +56,7 @@ Current production verdict:
 | Route | Current light-mode status | Main issues | Severity | Safe to fix now |
 | --- | --- | --- | --- | --- |
 | `/` | Mostly improved | Hero remains intentionally dark-image-led; needs screenshot QA for light surroundings. | Medium | Yes |
+| Header/navigation | Improved | Premium glass shell and nav controls are now tokenized; still needs browser QA across logged-out, customer, admin and mobile states. | Medium | Browser QA |
 | `/competitions` | Improved | Listing/card hierarchy needs browser QA. | Medium | Yes |
 | `/competitions/[real slug]` | Partial | `CompetitionImageGallery` still uses dark frame/thumb borders. | High | Yes |
 | `/build-a-bundle` | Mostly improved | Needs browser QA for active row glow and summary hierarchy. | Medium | Yes |
@@ -58,7 +64,10 @@ Current production verdict:
 | `/checkout` | Improved | Needs stateful QA for validation, stale basket, wallet and discount. | Medium | Browser QA |
 | `/checkout/success` | Improved | Needs QA for success, pending, failed, cancelled and allocation states. | Medium | Browser QA |
 | `/account` | Improved | Account-specific light background layers now replace the previous strong generic `bg-hero-mesh` glow; needs logged-in browser QA for nav, dense cards and mobile layout. | Medium | Browser QA |
+| `/account/entries` | Improved | Entry cards now use scoped account entry contrast classes; still needs browser QA for active winner pills, expanded ticket lists and mobile wrapping. | Medium | Browser QA |
 | `/account/profile` | Improved | File input, verification panel and form messages need browser QA. | Medium | Browser QA |
+| `/account/orders` | Improved | Order headers and competition metadata are stronger; still needs browser QA for multiline orders and refund chips. | Medium | Browser QA |
+| `/account/transactions` | Improved | Payment rows and wallet metadata are stronger; still needs browser QA for mixed wallet/payment lists. | Medium | Browser QA |
 | `/account/wallet` | Improved | Wallet rows and positive/negative amounts need browser QA. | Medium | Browser QA |
 | `/admin` | Improved, not signed off | Shared shell/kit and table contrast are tokenized; route/dashboard content still needs browser QA and route-level cleanup. | High | Browser QA + route cleanup |
 | `/admin/competitions` | Partial | Shared table/dialog/select surfaces and action-button contrast are improved; image panels, helper panels and inline route copy still have dark classes. | High | Yes |
@@ -145,7 +154,7 @@ Low risks:
 
 ### Account
 
-Account is substantially improved. The light-mode background glow issue found on `/account/entries` was traced to `app/account/layout.tsx`, where a high-opacity generic `bg-hero-mesh` layer and an inline primary radial gradient sat behind all account content. Those layers now use account-specific `account-bg-mesh` and `account-bg-glow` utilities with softer light-mode gradients. Remaining work is browser QA for authenticated states, file inputs, wallet ledger rows, active tabs and prize claim/verification dialogs.
+Account is substantially improved. The light-mode background glow issue found on `/account/entries` was traced to `app/account/layout.tsx`, where a high-opacity generic `bg-hero-mesh` layer and an inline primary radial gradient sat behind all account content. Those layers now use account-specific `account-bg-mesh` and `account-bg-glow` utilities with softer light-mode gradients. A follow-up contrast pass now scopes account entry rendering away from generic `td-soft`/`td-muted`: entry cards use dedicated account-entry classes for card surfaces, competition titles, ticket-count metadata, draw dates and ticket pills, while orders/wallet/transactions use account-specific metadata utilities for functional secondary text. Remaining work is browser QA for authenticated states, file inputs, wallet ledger rows, active tabs and prize claim/verification dialogs.
 
 ### Admin
 
