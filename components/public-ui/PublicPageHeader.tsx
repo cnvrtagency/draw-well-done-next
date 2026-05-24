@@ -8,8 +8,8 @@ export function PublicPageHeader({ eyebrow, title, description, children, align 
         <span>{eyebrow}</span>
         <span aria-hidden className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-primary/60 to-transparent" />
       </div>
-      <h1 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight mt-3 uppercase">{title}</h1>
-      {description ? <p className={`text-white/85 text-sm md:text-base leading-relaxed mt-3 max-w-2xl ${isCenter ? "mx-auto" : ""}`}>{description}</p> : null}
+      <h1 className="font-display text-3xl md:text-4xl font-bold td-text tracking-tight mt-3 uppercase">{title}</h1>
+      {description ? <p className={`td-muted text-sm md:text-base leading-relaxed mt-3 max-w-2xl ${isCenter ? "mx-auto" : ""}`}>{description}</p> : null}
       {children ? <div className="mt-5 md:mt-6">{children}</div> : null}
     </header>
   );

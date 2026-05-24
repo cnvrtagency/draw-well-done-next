@@ -53,9 +53,9 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
     <>
       <Link
         href={`/competitions/${c.slug}`}
-        className="group relative flex flex-col glass-panel rim-glow overflow-hidden rounded-xl border border-white/[0.06] shadow-elev-2 md:hover:-translate-y-1 md:hover:border-white/15 md:hover:shadow-deep transition-transform duration-300 will-change-transform"
+        className="group relative flex flex-col td-public-card rim-glow overflow-hidden rounded-xl md:hover:-translate-y-1 md:hover:shadow-deep transition-transform duration-300 will-change-transform"
       >
-        <div className="relative overflow-hidden ring-1 ring-inset ring-white/5">
+        <div className="relative overflow-hidden ring-1 ring-inset ring-[color:var(--td-border-subtle)]">
           <SafePrizeImage
             url={competitionCardImageUrl(c)}
             alt={c.title}
@@ -81,19 +81,19 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
           )}
           {showBanner && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-3">
-              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/45" />
-              <div className={`relative w-[92%] rounded-lg border backdrop-blur-md px-3 py-2 text-center shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6)] ${isComingSoon ? "bg-info/15 border-info/40 ring-1 ring-info/20" : isDrawn ? "bg-gold/10 border-gold/40 ring-1 ring-gold/15" : "bg-white/10 border-white/30 ring-1 ring-white/15"}`}>
+              <div className="td-image-overlay absolute inset-0" />
+              <div className={`relative w-[92%] rounded-lg border backdrop-blur-md px-3 py-2 text-center shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6)] ${isComingSoon ? "bg-info/15 border-info/40 ring-1 ring-info/20" : isDrawn ? "bg-gold/10 border-gold/40 ring-1 ring-gold/15" : "bg-[color:var(--td-surface-hover)] border-[color:var(--td-border-strong)] ring-1 ring-[color:var(--td-border-muted)]"}`}>
                 <div className={`font-display font-extrabold uppercase tracking-[0.18em] text-[12px] sm:text-sm leading-tight whitespace-nowrap ${isComingSoon ? "text-info" : isDrawn ? "text-gold" : "text-silver"}`}>{bannerTitle}</div>
-                <div className="mt-0.5 text-[10px] sm:text-[11px] uppercase tracking-wider text-white/80 whitespace-nowrap">{bannerSub}</div>
+                <div className="mt-0.5 text-[10px] sm:text-[11px] uppercase tracking-wider text-[color:var(--td-text-muted)] whitespace-nowrap">{bannerSub}</div>
               </div>
             </div>
           )}
         </div>
-        <div className="relative p-4 flex-1 flex flex-col gap-3 border-t border-white/5">
+        <div className="td-public-card-section relative p-4 flex-1 flex flex-col gap-3">
           <div className="min-h-[1.1rem] text-[10px] font-extrabold uppercase tracking-[0.14em] text-gold/90 truncate">
-            {cashAlt ? <>CASH ALT: <span className="font-mono-num text-white">{cashAlt}</span></> : <span className="text-white/30">No cash alternative</span>}
+            {cashAlt ? <>CASH ALT: <span className="font-mono-num text-[color:var(--td-text)]">{cashAlt}</span></> : <span className="text-[color:var(--td-text-faint)]">No cash alternative</span>}
           </div>
-          <h3 className="font-display font-bold text-white text-[15px] leading-snug line-clamp-2 min-h-[2.6rem] tracking-tight">{c.title}</h3>
+          <h3 className="font-display font-bold text-[color:var(--td-text)] text-[15px] leading-snug line-clamp-2 min-h-[2.6rem] tracking-tight">{c.title}</h3>
           {isDrawn ? (
             <div className="flex flex-col gap-1">
               <div className="text-left text-[10px] font-extrabold uppercase tracking-[0.18em] text-gold/90">Result</div>
@@ -110,18 +110,18 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
               </div>
             </div>
           ) : <CountdownStrip closesAt={c.closes_at} label="Closes in" />}
-          <div className="rounded-lg border border-info/25 bg-white/[0.03] shadow-[0_0_0_1px_hsl(var(--info)/0.08),0_0_12px_-4px_hsl(var(--info)/0.45)] px-2.5 sm:px-3 py-2.5 min-w-0 overflow-hidden flex flex-col gap-1 sm:gap-1.5">
+          <div className="td-stat-panel rounded-lg shadow-[0_0_0_1px_hsl(var(--info)/0.08),0_0_12px_-4px_hsl(var(--info)/0.45)] px-2.5 sm:px-3 py-2.5 min-w-0 overflow-hidden flex flex-col gap-1 sm:gap-1.5">
             <div className="flex items-center justify-between gap-2 min-w-0">
               <span className="font-bold uppercase tracking-wide sm:tracking-wider text-info/80 text-[10px] sm:text-[11px] truncate min-w-0"><span className="sm:hidden">Ticket</span><span className="hidden sm:inline">Ticket price</span></span>
-              <span className="font-mono-num font-extrabold text-white text-[11px] sm:text-[12px] shrink-0 whitespace-nowrap">{isFree ? "Free" : formatMoney(c.ticket_price)}</span>
+              <span className="font-mono-num font-extrabold text-[color:var(--td-text)] text-[11px] sm:text-[12px] shrink-0 whitespace-nowrap">{isFree ? "Free" : formatMoney(c.ticket_price)}</span>
             </div>
             <div className="flex items-center justify-between gap-2 min-w-0">
               <span className={`font-bold uppercase tracking-wide sm:tracking-wider text-[10px] sm:text-[11px] truncate min-w-0 ${lowStock ? "text-warning/90" : "text-info/80"}`}>Tickets sold</span>
-              <span className={`font-mono-num font-extrabold text-[11px] sm:text-[12px] shrink-0 whitespace-nowrap ${lowStock ? "text-warning" : "text-white"}`}>{soldLabel}</span>
+              <span className={`font-mono-num font-extrabold text-[11px] sm:text-[12px] shrink-0 whitespace-nowrap ${lowStock ? "text-warning" : "text-[color:var(--td-text)]"}`}>{soldLabel}</span>
             </div>
             <div className="flex items-center justify-between gap-2 min-w-0 pt-0.5">
               <span className="font-bold uppercase tracking-wide sm:tracking-wider text-info/70 text-[10px] sm:text-[11px] truncate min-w-0">Max tickets</span>
-              <span className="font-mono-num font-extrabold text-white/90 text-[10px] sm:text-[11px] shrink-0 whitespace-nowrap">{Number(c.max_entries || 0).toLocaleString()}</span>
+              <span className="font-mono-num font-extrabold text-[color:var(--td-text-muted)] text-[10px] sm:text-[11px] shrink-0 whitespace-nowrap">{Number(c.max_entries || 0).toLocaleString()}</span>
             </div>
             <ProgressBar value={sold} tone={lowStock ? "warning" : "primary"} thickness="sm" showShimmer={isLiveEnterable} className="mt-0.5" />
           </div>
@@ -130,7 +130,7 @@ function CompetitionCardBase({ c, badge, tone = "red", maxDiscountPct, priority 
               Coming soon
             </div>
           ) : (
-            <button className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-extrabold uppercase tracking-wider text-xs h-10 rounded-lg transition ${isDrawn ? "btn-ghost-rim border-gold/40 text-gold" : isSoldOut ? "btn-ghost-rim text-silver" : c.status === "closed" || closesInPast ? "btn-ghost-rim text-white/70" : isFree ? "btn-free-glow" : "btn-primary-glow"}`}>
+            <button className={`mt-auto w-full inline-flex items-center justify-center gap-1.5 font-extrabold uppercase tracking-wider text-xs h-10 rounded-lg transition ${isDrawn ? "btn-ghost-rim border-gold/40 text-gold" : isSoldOut ? "btn-ghost-rim text-silver" : c.status === "closed" || closesInPast ? "btn-ghost-rim td-muted" : isFree ? "btn-free-glow" : "btn-primary-glow"}`}>
               {ctaLabel}{isLiveEnterable && <ChevronRight className="w-3.5 h-3.5" />}
             </button>
           )}

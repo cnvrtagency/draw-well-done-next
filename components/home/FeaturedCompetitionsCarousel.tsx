@@ -89,17 +89,17 @@ export function FeaturedCompetitionsCarousel({ items, loading }: Props) {
                 <span className="eyebrow">Featured prizes</span>
                 <span aria-hidden className="h-px max-w-[80px] flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
               </div>
-              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
+              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight td-text md:text-4xl">
                 Live right now
               </h2>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => <div key={i} className="glass-panel aspect-[3/4] animate-pulse" />)}
+            {Array.from({ length: 4 }).map((_, i) => <div key={i} className="td-public-card aspect-[3/4] animate-pulse rounded-2xl" />)}
           </div>
         </div>
       ) : items.length === 0 ? (
-        <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-card/60 p-10 text-center text-white/60 backdrop-blur">
+        <div className="td-public-card mx-auto max-w-2xl rounded-2xl p-10 text-center td-soft backdrop-blur">
           Featured competitions coming soon.
         </div>
       ) : (
@@ -110,11 +110,11 @@ export function FeaturedCompetitionsCarousel({ items, loading }: Props) {
                 <span className="eyebrow">Featured prizes</span>
                 <span aria-hidden className="h-px max-w-[80px] flex-1 bg-gradient-to-r from-primary/60 to-transparent" />
               </div>
-              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-white md:text-4xl">
+              <h2 className="mt-3 font-display text-3xl font-bold tracking-tight td-text md:text-4xl">
                 Live right now
               </h2>
             </div>
-            <Link href="/competitions" className="hidden items-center gap-1 text-xs font-bold uppercase tracking-wider text-white/70 hover:text-white sm:inline-flex">
+            <Link href="/competitions" className="hidden items-center gap-1 text-xs font-bold uppercase tracking-wider td-muted hover:text-[color:var(--td-text)] sm:inline-flex">
               View all <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -138,14 +138,14 @@ export function FeaturedCompetitionsCarousel({ items, loading }: Props) {
                       aria-label={`Show ${t.title}`}
                       onClick={() => api?.scrollTo(i)}
                       style={{ flex: "0 0 calc((100% - 24px) / 4)" }}
-                      className={cn("aspect-square snap-start overflow-hidden rounded-md border-2 transition", i === index ? "border-primary opacity-100 ring-2 ring-primary/40" : "border-white/10 opacity-60")}
+                      className={cn("aspect-square snap-start overflow-hidden rounded-md border-2 transition", i === index ? "border-primary opacity-100 ring-2 ring-primary/40" : "td-border opacity-60")}
                     >
                       <SafePrizeImage url={t.url} alt="" aspect="aspect-square" width={96} height={96} />
                     </button>
                   ))}
                 </div>
                 {count > 1 ? (
-                  <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(((index + 1) / count) * 100)} aria-label="Carousel position" className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                  <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(((index + 1) / count) * 100)} aria-label="Carousel position" className="td-progress-track mt-3 h-1 w-full overflow-hidden rounded-full">
                     <div className="h-full rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)] transition-[width] duration-300 ease-out" style={{ width: `${Math.max(8, ((index + 1) / count) * 100)}%` }} />
                   </div>
                 ) : null}
@@ -154,7 +154,7 @@ export function FeaturedCompetitionsCarousel({ items, loading }: Props) {
             {!isMobile && count > 1 ? (
               <div className="mt-5 flex justify-center gap-2">
                 {Array.from({ length: count }).map((_, i) => (
-                  <button key={i} aria-label={`Go to slide ${i + 1}`} onClick={() => api?.scrollTo(i)} className={`h-1.5 rounded-full transition-all ${i === index ? "w-10 bg-primary shadow-glow-soft" : "w-4 bg-white/25 hover:bg-white/45"}`} />
+                  <button key={i} aria-label={`Go to slide ${i + 1}`} onClick={() => api?.scrollTo(i)} className={`h-1.5 rounded-full transition-all ${i === index ? "w-10 bg-primary shadow-glow-soft" : "w-4 bg-[color:var(--td-surface-hover)] hover:bg-[color:var(--td-border-strong)]"}`} />
                 ))}
               </div>
             ) : null}

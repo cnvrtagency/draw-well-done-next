@@ -84,7 +84,11 @@
 - [x] Button/card utility classes copied
 - [x] Phase 1 theme-mode infrastructure added: `html[data-theme]`, dark default, pre-paint init script, custom `ThemeProvider`, persisted preference support and light token scaffold
 - [x] Phase 2 shared theme primitives converted: `Panel`, `Button`, `Input`, `Dialog`, `StatusBadge`, `EmptyState`, `WalletPill` and `MiniCart`
-- [ ] Phase 3 public shell/theme conversion for Header, Footer, competition cards, detail, Bundle Builder and winners
+- [x] Phase 3 public shell/theme conversion for Header, Footer, competition cards, detail, Bundle Builder and winners
+- [x] Light-mode logo asset wired for Header/Footer via CSS `data-theme` switching; dark logo remains unchanged
+- [x] First visible public/static/marketing light-mode cleanup pass for static/legal/help pages, FAQs, guides, PrizeDrops, Bundle FAQ, reviews/marquees and featured carousel controls
+- [ ] Checkout/auth light-mode conversion and contrast QA
+- [ ] Account/admin light-mode conversion and contrast QA
 - [ ] Visible theme toggle after dark/light public, account and admin QA
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present

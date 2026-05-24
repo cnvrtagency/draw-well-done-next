@@ -36,6 +36,28 @@ Phase 2 of the light/dark mode system is implemented for shared primitives only:
 
 Launch note: dark remains the default and should remain visually equivalent. Light mode is still not production-ready until page-level surfaces and high-risk account/admin components are converted and manually contrast-tested.
 
+## Theme Public Shell And High-Traffic Components - 2026-05-24
+
+Phase 3 of the light/dark mode system is implemented for the public shell and the highest-traffic public components:
+
+- `Header` and `Footer` now use semantic theme-aware navigation, surface, border and text utilities while preserving the existing auth/account/admin/wallet/MiniCart behavior.
+- `CompetitionCard`, `WinnerCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `CountdownPill`, `CountdownStrip` and `ProgressBar` now use token-backed public-card, quantity, countdown, progress and text utilities where safe.
+- Image overlays, gold chips, primary CTA treatments and winner/closed-state overlays intentionally keep white text where they sit on dark imagery or brand gradients.
+- No visible theme toggle was added, and no checkout, basket, auth, account, admin, Supabase, schema/RLS, payment, draw, allocation or pricing logic was changed.
+
+Launch note: dark mode should remain visually equivalent. Light mode is more readable across public commerce surfaces, but it is still not production-ready until the lower-priority public sections plus account/admin pages are converted and manually contrast-tested.
+
+## Theme Public Static And Marketing Cleanup - 2026-05-24
+
+First visible light-mode cleanup pass for public/marketing surfaces is implemented:
+
+- `Header` and `Footer` now swap the logo with CSS under `html[data-theme="light"]`: dark mode keeps `/assets/topdraw-logo.png`, light mode uses `/assets/topdraw-logo-light-mode.png`.
+- `StaticPages`, `InfoPage`, `FAQClient`, `FreeEntryNotice`, public route headers, guide list/detail pages, competition/winner route panels, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel` and category/tab controls now use theme-aware text, panel, border, edge-fade and tab utilities where safe.
+- Image-backed hero copy and selected primary/gold/brand badges intentionally keep white text on dark image or brand-gradient backgrounds for contrast.
+- No visible theme toggle was added, and no checkout, basket, auth, account, admin, Supabase, schema/RLS, payment, draw, allocation or pricing logic was changed.
+
+Launch note: hidden light mode is now substantially more readable on public/static/marketing pages. It is still not launch-ready until checkout/auth/account/admin surfaces are converted and browser contrast-tested at mobile and desktop widths.
+
 ## Full Parity Audit - 2026-05-23
 
 Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.

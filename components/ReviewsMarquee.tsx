@@ -20,16 +20,16 @@ export async function ReviewsMarquee() {
   return (
     <section className="container mx-auto px-4 pt-2 pb-6 sm:px-6 md:pt-3 md:pb-8 lg:px-8" aria-label="Customer reviews">
       <div className="relative mx-auto max-w-7xl overflow-hidden">
-        <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[hsl(222_46%_4%/0.72)] via-[hsl(222_42%_5%/0.34)] to-transparent z-10 pointer-events-none sm:w-14" />
-        <div className="absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[hsl(222_46%_4%/0.72)] via-[hsl(222_42%_5%/0.34)] to-transparent z-10 pointer-events-none sm:w-14" />
+        <div className="td-edge-fade-left absolute inset-y-0 left-0 w-10 z-10 pointer-events-none sm:w-14" />
+        <div className="td-edge-fade-right absolute inset-y-0 right-0 w-10 z-10 pointer-events-none sm:w-14" />
         <div className="animate-marquee-slow flex gap-3 whitespace-nowrap">
           {loop.map((r, i) => (
-            <article key={`${r.id}-${i}`} className="shrink-0 w-[260px] sm:w-[280px] rounded-lg border border-primary/20 bg-card-2/80 px-3.5 py-3 whitespace-normal shadow-[0_0_0_1px_hsl(var(--primary)/0.06)]">
+            <article key={`${r.id}-${i}`} className="td-public-card shrink-0 w-[260px] sm:w-[280px] rounded-lg border-primary/20 px-3.5 py-3 whitespace-normal shadow-[0_0_0_1px_hsl(var(--primary)/0.06)]">
               <div className="flex items-center justify-between gap-2 mb-1.5">
-                <span className="text-[12.5px] font-bold text-white truncate min-w-0">{r.reviewer_name}{r.location ? <span className="text-white/55 font-medium"> · {r.location}</span> : null}</span>
-                <span className="text-[11px] font-bold tracking-wider text-primary" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}<span className="text-white/20">{"★".repeat(5 - r.rating)}</span></span>
+                <span className="text-[12.5px] font-bold td-text truncate min-w-0">{r.reviewer_name}{r.location ? <span className="td-soft font-medium"> · {r.location}</span> : null}</span>
+                <span className="text-[11px] font-bold tracking-wider text-primary" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}<span className="td-faint">{"★".repeat(5 - r.rating)}</span></span>
               </div>
-              <p className="text-[12.5px] text-white/75 leading-snug line-clamp-3">&quot;{truncate(r.review_text, 140)}&quot;</p>
+              <p className="text-[12.5px] td-muted leading-snug line-clamp-3">&quot;{truncate(r.review_text, 140)}&quot;</p>
             </article>
           ))}
         </div>

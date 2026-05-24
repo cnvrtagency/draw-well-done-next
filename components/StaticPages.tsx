@@ -21,13 +21,13 @@ function LegalShell({
   seoTitle?: string;
 }) {
   return (
-    <div className={`container mx-auto py-10 ${wide ? "max-w-4xl" : "max-w-3xl"} text-white`}>
+    <div className={`container mx-auto py-10 ${wide ? "max-w-4xl" : "max-w-3xl"} td-text`}>
       {eyebrow && (
         <div className="text-[11px] font-extrabold uppercase tracking-wider text-primary">{eyebrow}</div>
       )}
       <h1 className="text-3xl md:text-4xl font-black mt-1 mb-4">{title}</h1>
-      <p className="text-xs text-white/55 mb-4">Last updated: [Insert date]</p>
-      <div className="space-y-4 text-white/80 leading-relaxed text-[15px]">{children}</div>
+      <p className="text-xs td-soft mb-4">Last updated: [Insert date]</p>
+      <div className="space-y-4 td-static-body leading-relaxed text-[15px]">{children}</div>
     </div>
   );
 }
@@ -36,7 +36,7 @@ function H2({ id, children }: { id?: string; children: ReactNode }) {
   return (
     <h2
       id={id}
-      className="text-xl md:text-2xl font-bold text-white mt-10 pt-4 border-t border-white/10 scroll-mt-24"
+      className="text-xl md:text-2xl font-bold td-text mt-10 pt-4 border-t td-border scroll-mt-24"
     >
       {children}
     </h2>
@@ -44,16 +44,16 @@ function H2({ id, children }: { id?: string; children: ReactNode }) {
 }
 
 function H3({ children }: { children: ReactNode }) {
-  return <h3 className="text-base font-semibold text-white mt-5">{children}</h3>;
+  return <h3 className="text-base font-semibold td-text mt-5">{children}</h3>;
 }
 
 function P({ children }: { children: ReactNode }) {
-  return <p className="text-white/75">{children}</p>;
+  return <p className="td-static-body">{children}</p>;
 }
 
 function Clause({ n, children }: { n: string; children: ReactNode }) {
   return (
-    <p className="text-white/75 flex gap-3">
+    <p className="td-static-body flex gap-3">
       <span className="font-mono-num text-primary font-bold shrink-0 min-w-[2.5rem]">{n}</span>
       <span>{children}</span>
     </p>
@@ -61,18 +61,18 @@ function Clause({ n, children }: { n: string; children: ReactNode }) {
 }
 
 function UL({ children }: { children: ReactNode }) {
-  return <ul className="list-disc list-outside pl-6 space-y-1.5 text-white/75">{children}</ul>;
+  return <ul className="list-disc list-outside pl-6 space-y-1.5 td-static-body">{children}</ul>;
 }
 
 function Sub({ children }: { children: ReactNode }) {
   // sub-clauses like (a), (b)
-  return <div className="pl-6 space-y-1.5 text-white/75">{children}</div>;
+  return <div className="pl-6 space-y-1.5 td-static-body">{children}</div>;
 }
 
 function SubItem({ k, children }: { k: string; children: ReactNode }) {
   return (
     <p className="flex gap-2">
-      <span className="text-white/55 shrink-0">({k})</span>
+      <span className="td-soft shrink-0">({k})</span>
       <span>{children}</span>
     </p>
   );
@@ -125,19 +125,19 @@ export function Terms() {
       path="/terms-and-conditions"
       wide
     >
-      <p className="text-white/70">
+      <p className="td-muted">
         Prepared for: Daniel Lyons trading as TopDraw. Website: {SITE_DOMAIN}. Email: {SUPPORT_EMAIL}.
       </p>
-      <p className="text-white/70">
+      <p className="td-muted">
         Promoter address: [Placeholder address to be replaced before launch].
       </p>
 
       <div className="grid lg:grid-cols-[220px_1fr] gap-8 mt-6">
         <aside className="hidden lg:block">
           <div className="sticky top-24 text-xs space-y-1.5">
-            <div className="font-bold text-white uppercase tracking-wider mb-2">Contents</div>
+            <div className="font-bold td-text uppercase tracking-wider mb-2">Contents</div>
             {termsSections.map((s) => (
-              <a key={s.id} href={`#${s.id}`} className="block text-white/55 hover:text-white">
+              <a key={s.id} href={`#${s.id}`} className="block td-soft hover:text-[color:var(--td-text)]">
                 {s.title}
               </a>
             ))}
@@ -299,7 +299,7 @@ export function Terms() {
           <H2 id="free-postal">7. Free Postal Entry Route</H2>
           <Clause n="7.1">Every paid competition will have a free postal entry route.</Clause>
           <Clause n="7.2">To enter for free by post, send a postcard or letter to:</Clause>
-          <pre className="whitespace-pre-line bg-card border border-white/10 p-3 rounded text-white/80 text-sm ml-12">
+          <pre className="whitespace-pre-line td-surface-soft border td-border p-3 rounded td-static-body text-sm ml-12">
             {`TopDraw Free Entry\n[Insert postal address]`}
           </pre>
           <Clause n="7.3">Each free postal entry must include:</Clause>
@@ -641,7 +641,7 @@ export function Terms() {
             professional advisers, technology providers, fraud-prevention services, regulators or authorities where
             reasonably necessary.
           </Clause>
-          <Clause n="23.4">More details are set out in our <Link href="/privacy-policy" className="underline text-white">Privacy Policy</Link>.</Clause>
+          <Clause n="23.4">More details are set out in our <Link href="/privacy-policy" className="underline td-text">Privacy Policy</Link>.</Clause>
 
           <H2 id="platform">24. Platform Availability and Technical Issues</H2>
           <Clause n="24.1">
@@ -733,7 +733,7 @@ export function Terms() {
 
           <H2 id="contact">30. Contact</H2>
           <P>For questions about these Terms and Conditions, please contact:</P>
-          <div className="rounded-xl border border-white/10 bg-card p-4 text-sm space-y-1 text-white/80">
+          <div className="rounded-xl border td-border td-surface-soft p-4 text-sm space-y-1 td-static-body">
             <div>Daniel Lyons trading as TopDraw</div>
             <div>Email: {SUPPORT_EMAIL}</div>
             <div>Website: {SITE_DOMAIN}</div>
@@ -751,14 +751,14 @@ export function Terms() {
 
 export function FreeEntry() {
   return (
-    <div className="container mx-auto py-8 text-white">
+    <div className="container mx-auto py-8 td-text">
       
       <PublicPageHeader
         eyebrow="Free Postal Entry"
         title="Free Postal Entry"
         description="Every paid TopDraw competition includes a free postal entry route. Follow the instructions carefully so your entry can be processed and added to the correct draw."
       />
-      <div className="space-y-4 text-white/80 leading-relaxed text-[15px]">
+      <div className="space-y-4 td-static-body leading-relaxed text-[15px]">
       <H2>Free Postal Entry Route</H2>
       <P>You can enter TopDraw paid competitions for free by post.</P>
       <P>
@@ -768,7 +768,7 @@ export function FreeEntry() {
 
       <H2>How to Enter for Free</H2>
       <P>Send a postcard or letter to:</P>
-      <pre className="whitespace-pre-line bg-card border border-white/10 p-3 rounded text-white/80 text-sm">
+      <pre className="whitespace-pre-line td-surface-soft border td-border p-3 rounded td-static-body text-sm">
         {`TopDraw Free Entry\n[Insert postal address]`}
       </pre>
       <P>Your postal entry must include:</P>
@@ -781,7 +781,7 @@ export function FreeEntry() {
         <li>your full postal address;</li>
         <li>
           a statement confirming that you are a UK resident aged 18 or over and that you agree to the TopDraw{" "}
-          <Link href="/terms-and-conditions" className="underline text-white">Terms and Conditions</Link>.
+          <Link href="/terms-and-conditions" className="underline td-text">Terms and Conditions</Link>.
         </li>
       </UL>
 
@@ -840,7 +840,7 @@ export function ResponsiblePlay() {
 
       <H2>Account Restrictions</H2>
       <P>If you feel you are spending too much, or you want your account restricted or closed, contact us at:</P>
-      <p className="text-white font-semibold">{SUPPORT_EMAIL}</p>
+      <p className="td-text font-semibold">{SUPPORT_EMAIL}</p>
       <P>
         We may also restrict or close accounts where we believe entry behaviour is harmful, excessive, fraudulent,
         irresponsible or otherwise inappropriate.
@@ -879,7 +879,7 @@ export function Privacy() {
     >
       <H2>1. Who We Are</H2>
       <P>This Privacy Policy explains how Daniel Lyons trading as TopDraw collects, uses and protects your personal data.</P>
-      <div className="rounded-xl border border-white/10 bg-card p-4 text-sm space-y-1 text-white/80">
+      <div className="rounded-xl border td-border td-surface-soft p-4 text-sm space-y-1 td-static-body">
         <div>Website: {SITE_DOMAIN}</div>
         <div>Email: {SUPPORT_EMAIL}</div>
         <div>Postal address: [insert postal address]</div>
@@ -966,7 +966,7 @@ export function Privacy() {
       <H2>8. Cookies and Analytics</H2>
       <P>
         We use cookies and similar technologies as explained in our{" "}
-        <Link href="/cookie-policy" className="underline text-white">Cookie Policy</Link>.
+        <Link href="/cookie-policy" className="underline td-text">Cookie Policy</Link>.
       </P>
 
       <H2>9. Data Retention</H2>
@@ -1067,16 +1067,16 @@ export function Cookies() {
 
 export function Contact() {
   return (
-    <div className="container mx-auto py-10 max-w-3xl text-white">
+    <div className="container mx-auto py-10 max-w-3xl td-text">
       
       <h1 className="text-3xl md:text-4xl font-black mt-1">Contact</h1>
-      <p className="mt-4 text-white/80">For support, get in touch using the details below.</p>
-      <div className="rounded-xl border border-white/10 bg-card p-4 text-sm space-y-2 mt-4">
-        <div><span className="font-bold text-white">Email:</span> {SUPPORT_EMAIL}</div>
-        <div><span className="font-bold text-white">Website:</span> {SITE_DOMAIN}</div>
-        <div><span className="font-bold text-white">Promoter:</span> Daniel Lyons trading as TopDraw</div>
-        <div><span className="font-bold text-white">Postal address:</span> [Placeholder address to be replaced before launch]</div>
-        <div className="pt-2 border-t border-white/10 text-xs text-white/60">
+      <p className="mt-4 td-static-body">For support, get in touch using the details below.</p>
+      <div className="rounded-xl border td-border td-surface-soft p-4 text-sm space-y-2 mt-4">
+        <div><span className="font-bold td-text">Email:</span> {SUPPORT_EMAIL}</div>
+        <div><span className="font-bold td-text">Website:</span> {SITE_DOMAIN}</div>
+        <div><span className="font-bold td-text">Promoter:</span> Daniel Lyons trading as TopDraw</div>
+        <div><span className="font-bold td-text">Postal address:</span> [Placeholder address to be replaced before launch]</div>
+        <div className="pt-2 border-t td-border text-xs td-soft">
           TopDraw is a trading name. TopDraw is not currently operated by a registered limited company.
         </div>
       </div>

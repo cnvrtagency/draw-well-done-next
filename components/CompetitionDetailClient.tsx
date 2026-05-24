@@ -116,10 +116,10 @@ export function CompetitionDetailClient({
   const notifyPanel = (
     <div className="flex flex-col gap-3 glass-panel-strong p-5 min-w-0">
       <div className="relative overflow-hidden rounded-xl border border-info/40 bg-gradient-to-br from-info/15 via-info/5 to-transparent p-5 shadow-[0_0_30px_-12px_hsl(var(--info)/0.6)]">
-        <div className="font-display text-xl sm:text-2xl font-extrabold text-white leading-tight uppercase tracking-wide">
+        <div className="font-display text-xl sm:text-2xl font-extrabold td-text leading-tight uppercase tracking-wide">
           Entries open soon
         </div>
-        <p className="mt-3 text-[14px] text-white/95 leading-[1.6]">
+        <p className="mt-3 text-[14px] td-text leading-[1.6]">
           This competition isn&apos;t open yet. Add your email and we&apos;ll send you one notification the moment it goes live.
         </p>
         {c.opens_at && <div className="mt-4 text-[12px] font-extrabold uppercase tracking-[0.14em] text-info">Opens {new Date(c.opens_at).toLocaleString()}</div>}
@@ -133,7 +133,7 @@ export function CompetitionDetailClient({
   const entryPanel = (
     <div className="flex flex-col gap-3 glass-panel-strong p-5 min-w-0">
       {c.status !== "live" && (
-        <div className="text-xs rounded-md border border-white/10 bg-white/5 text-white/80 p-2">
+        <div className="text-xs rounded-md border td-border bg-[color:var(--td-surface-muted)] td-muted p-2">
           {c.status === "drawn" ? "This competition has been drawn. Entries are closed." : c.status === "sold_out" ? "All entries have been sold. Entries are closed." : "Entries are closed for this competition."}
         </div>
       )}
@@ -143,7 +143,7 @@ export function CompetitionDetailClient({
           <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-info flex items-center gap-1.5">
             <ShieldCheck className="w-3 h-3" /> Capped ticket pool
           </div>
-          <div className="mt-1.5 font-display text-xl sm:text-2xl font-extrabold text-white leading-tight flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+          <div className="mt-1.5 font-display text-xl sm:text-2xl font-extrabold td-text leading-tight flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
             <span>ONLY</span>
             <span className="font-mono-num text-info">{Number(c.max_entries).toLocaleString()}</span>
             <span>TICKETS</span>
@@ -154,7 +154,7 @@ export function CompetitionDetailClient({
           </div>
           <div className="mt-3 space-y-1.5">
             <ProgressBar value={sold} thickness="sm" showShimmer={c.status === "live"} />
-            <div className="flex items-center justify-between gap-3 text-[13px] font-black uppercase tracking-[0.06em] text-white leading-tight">
+            <div className="flex items-center justify-between gap-3 text-[13px] font-black uppercase tracking-[0.06em] td-text leading-tight">
               <span><span className="font-mono-num">{effectiveSold.toLocaleString()}</span> sold from <span className="font-mono-num">{Number(c.max_entries).toLocaleString()}</span> ticket cap</span>
               <span className="font-mono-num text-info">{allocatedPctLabel}</span>
             </div>
@@ -179,66 +179,66 @@ export function CompetitionDetailClient({
       {added ? <div className="rounded-md border border-success/40 bg-success/10 p-2 text-xs font-bold text-success">Added to basket. Basket data is stored in the Vite-compatible localStorage format.</div> : null}
       <FreeEntryNotice compact />
 
-      <div className="mt-5 rounded-2xl border border-primary/20 bg-white/[0.03]">
+      <div className="mt-5 rounded-2xl border border-primary/20 bg-[color:var(--td-surface-soft)]">
         <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="cap" className="border-white/10">
-            <AccordionTrigger className="px-4 py-4 text-sm font-bold text-white hover:no-underline">
+          <AccordionItem value="cap" className="td-border">
+            <AccordionTrigger className="px-4 py-4 text-sm font-bold td-text hover:no-underline">
               <span className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-info" />Why ticket caps matter</span>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-5 pt-3 text-white">
+            <AccordionContent className="px-4 pb-5 pt-3 td-text">
               <div className="space-y-3">
-                <p className="text-[13px] leading-relaxed text-white/90">Every TopDraw competition shows the maximum ticket cap upfront, so you can see the size of the draw before you enter.</p>
+                <p className="text-[13px] leading-relaxed td-muted">Every TopDraw competition shows the maximum ticket cap upfront, so you can see the size of the draw before you enter.</p>
                 <div className="rounded-lg border border-info/25 bg-info/[0.06] px-3 py-2.5 flex items-center justify-between gap-3">
                   <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-info">This competition</span>
-                  <span className="flex items-baseline gap-1.5"><span className="font-mono-num font-extrabold text-white text-sm">{Number(c.max_entries).toLocaleString()}</span><span className="text-[12px] text-white/65">ticket cap</span></span>
+                  <span className="flex items-baseline gap-1.5"><span className="font-mono-num font-extrabold td-text text-sm">{Number(c.max_entries).toLocaleString()}</span><span className="text-[12px] td-soft">ticket cap</span></span>
                 </div>
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="how-to-play" className="border-white/10">
-            <AccordionTrigger className="px-4 py-4 text-sm font-bold text-white hover:no-underline">
+          <AccordionItem value="how-to-play" className="td-border">
+            <AccordionTrigger className="px-4 py-4 text-sm font-bold td-text hover:no-underline">
               <span className="flex items-center gap-2"><ListOrdered className="w-4 h-4 text-info" />How to play</span>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-5 pt-3 text-white">
+            <AccordionContent className="px-4 pb-5 pt-3 td-text">
               <div className="space-y-3">
-                <p className="text-[13px] leading-relaxed text-white/90">Choose how many tickets you want, add them to your basket and complete checkout securely. Your ticket numbers are issued after payment and saved to your account.</p>
+                <p className="text-[13px] leading-relaxed td-muted">Choose how many tickets you want, add them to your basket and complete checkout securely. Your ticket numbers are issued after payment and saved to your account.</p>
                 <ol className="rounded-lg border border-info/25 bg-info/[0.06] divide-y divide-white/5 overflow-hidden">
                   {["Pick your tickets", "Complete checkout", "Ticket numbers issued"].map((step, i) => (
                     <li key={step} className="flex items-center gap-3 px-3 py-2.5">
                       <span className="grid place-items-center w-5 h-5 rounded-full bg-info/20 border border-info/40 text-[10px] font-extrabold text-info shrink-0">{i + 1}</span>
-                      <span className="text-[13px] text-white/90">{step}</span>
+                      <span className="text-[13px] td-muted">{step}</span>
                     </li>
                   ))}
                 </ol>
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="chance" className="border-white/10">
-            <AccordionTrigger className="px-4 py-4 text-sm font-bold text-white hover:no-underline">
+          <AccordionItem value="chance" className="td-border">
+            <AccordionTrigger className="px-4 py-4 text-sm font-bold td-text hover:no-underline">
               <span className="flex items-center gap-2"><Target className="w-4 h-4 text-info" />How estimated chance works</span>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-5 pt-3 text-white">
+            <AccordionContent className="px-4 pb-5 pt-3 td-text">
               <div className="space-y-3">
-                <p className="text-[13px] leading-relaxed text-white/90">Estimated chance is based on your selected tickets and the maximum ticket cap. Final chances may vary depending on valid paid and free postal entries.</p>
+                <p className="text-[13px] leading-relaxed td-muted">Estimated chance is based on your selected tickets and the maximum ticket cap. Final chances may vary depending on valid paid and free postal entries.</p>
                 {qty > 0 && c.max_entries > 0 && (
-                  <div className="rounded-lg border border-white/10 bg-white/[0.035] px-3 py-2.5 flex items-center justify-between">
-                    <span className="text-[12px] text-white/70">Your current estimate</span>
-                    <span className="font-mono-num font-extrabold text-white text-sm">1 in {Math.ceil(c.max_entries / qty).toLocaleString()}</span>
+                  <div className="rounded-lg border td-border bg-[color:var(--td-surface-soft)] px-3 py-2.5 flex items-center justify-between">
+                    <span className="text-[12px] td-muted">Your current estimate</span>
+                    <span className="font-mono-num font-extrabold td-text text-sm">1 in {Math.ceil(c.max_entries / qty).toLocaleString()}</span>
                   </div>
                 )}
               </div>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="promise" className="border-b-0">
-            <AccordionTrigger className="px-4 py-4 text-sm font-bold text-white hover:no-underline">
+            <AccordionTrigger className="px-4 py-4 text-sm font-bold td-text hover:no-underline">
               <span className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-info" />The TopDraw Promise</span>
             </AccordionTrigger>
-            <AccordionContent className="px-4 pb-5 pt-3 text-white">
-              <ul className="rounded-lg border border-white/10 bg-white/[0.02] divide-y divide-white/5 overflow-hidden">
+            <AccordionContent className="px-4 pb-5 pt-3 td-text">
+              <ul className="rounded-lg border td-border bg-[color:var(--td-surface-soft)] divide-y divide-[color:var(--td-border-muted)] overflow-hidden">
                 {["Ticket caps shown upfront", "Free postal entry route", "Secure checkout", "Winners published", "18+ UK only"].map((label) => (
                   <li key={label} className="flex items-center gap-3 px-3 py-2.5">
                     <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <span className="text-[13px] text-white/90">{label}</span>
+                    <span className="text-[13px] td-muted">{label}</span>
                   </li>
                 ))}
               </ul>
@@ -252,21 +252,21 @@ export function CompetitionDetailClient({
   const winnerCard = c.status === "drawn" ? (
     <Panel variant="glass" tone="gold" as="section" className="p-5">
       <div className="eyebrow mb-1">Draw result</div>
-      <h2 className="text-xl font-bold text-white">Winner</h2>
+      <h2 className="text-xl font-bold td-text">Winner</h2>
       {winner ? (
         <div className="mt-3 flex items-start gap-4">
-          {winner.image_url && <img src={winner.image_url} alt="" decoding="async" className="w-20 h-20 rounded-lg object-cover border border-white/10" loading="lazy" />}
-          <div className="text-sm text-white/80 space-y-1">
-            <div className="font-bold text-white">{winner.display_name}</div>
-            {winner.display_location && <div className="text-white/60">{winner.display_location}</div>}
-            {winner.winning_ticket_number && <div className="text-white/70">Winning ticket #{winner.winning_ticket_number}</div>}
-            <div className="text-white/60">Drawn {new Date(winner.draw_date).toLocaleString()}</div>
-            {winner.testimonial && <p className="text-white/70 italic mt-2">“{winner.testimonial}”</p>}
+          {winner.image_url && <img src={winner.image_url} alt="" decoding="async" className="w-20 h-20 rounded-lg object-cover border td-border" loading="lazy" />}
+          <div className="text-sm td-muted space-y-1">
+            <div className="font-bold td-text">{winner.display_name}</div>
+            {winner.display_location && <div className="td-soft">{winner.display_location}</div>}
+            {winner.winning_ticket_number && <div className="td-muted">Winning ticket #{winner.winning_ticket_number}</div>}
+            <div className="td-soft">Drawn {new Date(winner.draw_date).toLocaleString()}</div>
+            {winner.testimonial && <p className="td-muted italic mt-2">“{winner.testimonial}”</p>}
             {winner.proof_url && <a href={winner.proof_url} target="_blank" rel="noreferrer" className="text-primary font-semibold inline-block mt-1">View draw proof →</a>}
           </div>
         </div>
       ) : (
-        <p className="text-sm text-white/70 mt-2">Draw completed. Winner under review.</p>
+        <p className="text-sm td-muted mt-2">Draw completed. Winner under review.</p>
       )}
     </Panel>
   ) : null;
@@ -274,20 +274,20 @@ export function CompetitionDetailClient({
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-10">
       <div className="flex items-center gap-3 flex-wrap text-xs mb-4">
-        <Link href="/competitions" className="inline-flex items-center gap-1 text-white/60 hover:text-white font-bold uppercase tracking-wider">
+        <Link href="/competitions" className="inline-flex items-center gap-1 td-soft hover:text-[color:var(--td-text)] font-bold uppercase tracking-wider">
           <ChevronLeft className="w-3.5 h-3.5" /> Competitions
         </Link>
-        <span className="text-white/20">·</span>
+        <span className="td-faint">·</span>
         <div className="eyebrow !mb-0">{c.category ?? "Prize competition"}</div>
       </div>
 
       <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(380px,0.85fr)] gap-6 xl:gap-8 items-start">
         <div className="xl:hidden order-first min-w-0">
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight text-balance leading-tight break-words max-w-full mb-4">{c.title}</h1>
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold td-text tracking-tight text-balance leading-tight break-words max-w-full mb-4">{c.title}</h1>
           {c.short_description && (
             <>
               <div className="h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
-              <p className="text-white/90 py-4 text-sm leading-relaxed text-balance">{c.short_description}</p>
+              <p className="td-muted py-4 text-sm leading-relaxed text-balance">{c.short_description}</p>
               <div className="h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
             </>
           )}
@@ -310,18 +310,18 @@ export function CompetitionDetailClient({
           {cleanDescription && (
             <Panel variant="glass" className="hidden xl:block p-5 mt-1">
               <div className="eyebrow mb-2 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> About this prize</div>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{cleanDescription}</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed td-muted">{cleanDescription}</p>
             </Panel>
           )}
         </div>
 
         <aside className="self-start min-w-0 flex flex-col gap-5">
           <div className="hidden xl:block">
-            <h1 className="font-display text-4xl 2xl:text-5xl font-bold text-white tracking-tight text-balance leading-tight break-words max-w-full mb-4">{c.title}</h1>
+            <h1 className="font-display text-4xl 2xl:text-5xl font-bold td-text tracking-tight text-balance leading-tight break-words max-w-full mb-4">{c.title}</h1>
             {c.short_description && (
               <>
                 <div className="h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
-                <p className="text-white/90 py-4 text-sm leading-relaxed">{c.short_description}</p>
+                <p className="td-muted py-4 text-sm leading-relaxed">{c.short_description}</p>
                 <div className="h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
               </>
             )}
@@ -334,13 +334,13 @@ export function CompetitionDetailClient({
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm overflow-hidden">
-            <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-y sm:divide-y-0 divide-white/10">
-              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider text-white/55">Prize value</div><div className="font-mono-num font-extrabold text-base sm:text-lg text-white mt-1 leading-none">{formatMoney(c.prize_value)}</div></div>
-              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider text-white/55">Ticket price</div><div className="font-mono-num font-extrabold text-base sm:text-lg text-white mt-1 leading-none">{formatMoney(c.ticket_price)}</div></div>
-              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider text-white/55">Cash alternative</div><div className="font-mono-num font-extrabold text-base sm:text-lg text-white mt-1 leading-none">{cashAlt ?? <span className="text-white/50 font-bold text-sm">Not available</span>}</div></div>
+          <div className="rounded-2xl border td-border bg-[color:var(--td-surface-soft)] backdrop-blur-sm overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-y sm:divide-y-0 divide-[color:var(--td-border-muted)]">
+              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider td-soft">Prize value</div><div className="font-mono-num font-extrabold text-base sm:text-lg td-text mt-1 leading-none">{formatMoney(c.prize_value)}</div></div>
+              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider td-soft">Ticket price</div><div className="font-mono-num font-extrabold text-base sm:text-lg td-text mt-1 leading-none">{formatMoney(c.ticket_price)}</div></div>
+              <div className="p-3 sm:p-4"><div className="text-[10px] font-extrabold uppercase tracking-wider td-soft">Cash alternative</div><div className="font-mono-num font-extrabold text-base sm:text-lg td-text mt-1 leading-none">{cashAlt ?? <span className="td-soft font-bold text-sm">Not available</span>}</div></div>
             </div>
-            <div className="relative border-t border-white/10 p-3 sm:p-4 overflow-hidden bg-gradient-to-r from-info/[0.08] via-transparent to-transparent">
+            <div className="relative border-t td-border p-3 sm:p-4 overflow-hidden bg-gradient-to-r from-info/[0.08] via-transparent to-transparent">
               <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-info/60 via-info/20 to-transparent" />
               <div className="flex items-center gap-1.5 mb-2">
                 <Timer className="w-3.5 h-3.5 text-info" />
@@ -350,12 +350,12 @@ export function CompetitionDetailClient({
                 <div className="flex items-stretch gap-2">
                   {drawCountdown.split(" ").map((p, i) => (
                     <div key={i} className="flex-1 rounded-md border border-info/30 bg-info/[0.08] px-1 py-2 text-center shadow-[inset_0_1px_0_hsl(var(--info)/0.15)]">
-                      <div className="font-mono-num font-extrabold text-[18px] sm:text-[22px] text-white leading-none glow-text">{p}</div>
+                      <div className="font-mono-num font-extrabold text-[18px] sm:text-[22px] td-text leading-none glow-text">{p}</div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="font-mono-num font-extrabold text-[24px] text-white/95 leading-none">{drawExpired ? "COMPETITION DRAWN" : "TBA"}</div>
+                <div className="font-mono-num font-extrabold text-[24px] td-text leading-none">{drawExpired ? "COMPETITION DRAWN" : "TBA"}</div>
               )}
             </div>
           </div>
@@ -370,7 +370,7 @@ export function CompetitionDetailClient({
           {cleanDescription && (
             <Panel variant="glass" className="xl:hidden p-5">
               <div className="eyebrow mb-2 flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> About this prize</div>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-white/85">{cleanDescription}</p>
+              <p className="whitespace-pre-line text-sm leading-relaxed td-muted">{cleanDescription}</p>
             </Panel>
           )}
         </aside>
@@ -379,7 +379,7 @@ export function CompetitionDetailClient({
       <section className="mt-10 lg:mt-12 space-y-6">
         {winnerCard}
         {c.status !== "live" && (
-          <Panel variant="outline" tone={c.status === "sold_out" ? "warning" : c.status === "drawn" ? "info" : "default"} className="p-3 text-sm text-white/85">
+          <Panel variant="outline" tone={c.status === "sold_out" ? "warning" : c.status === "drawn" ? "info" : "default"} className="p-3 text-sm td-muted">
             {c.status === "drawn" && "This competition has been drawn, see the result below."}
             {c.status === "sold_out" && "All entries for this competition have been sold."}
             {c.status === "closed" && "Entries are closed for this competition. The draw will be recorded shortly."}

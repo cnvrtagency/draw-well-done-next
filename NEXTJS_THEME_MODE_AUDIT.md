@@ -39,6 +39,17 @@ Phase 2 implementation status:
 - MiniCart still uses `pointer-events-none` while closed and keeps the drawer translated off-screen to avoid click blocking or right-edge glow bleed.
 - Header/Footer were audited but not converted in this pass because they are higher-risk public-shell components.
 
+Phase 3 implementation status:
+
+- Converted the public shell and high-traffic public components without adding a visible toggle.
+- `Header` and `Footer` now use theme-aware shell, navigation, text, border and mobile menu utilities.
+- `CompetitionCard`, `WinnerCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `CountdownPill`, `CountdownStrip` and `ProgressBar` now use semantic public-card, quantity, countdown, progress, border and text utilities where safe.
+- Image-backed overlays, gold winner chips and primary brand CTA text intentionally remain dark-image/brand-gradient safe instead of being forced into generic theme text.
+- Public/static and marketing cleanup has started: `StaticPages`, `InfoPage`, `FAQClient`, `FreeEntryNotice`, guide list/detail pages, public route panels, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel` and category/tabs now use theme-aware text, panel, border, edge-fade and tab utilities where safe.
+- `Header` and `Footer` now use the new `/assets/topdraw-logo-light-mode.png` only when `html[data-theme="light"]` is active; dark mode keeps the existing `/assets/topdraw-logo.png`.
+- `HeroCarousel` remains intentionally dark-image led in light mode where white text sits over media or brand-gradient treatments.
+- Dark remains the default; no public toggle has been exposed.
+
 ## 2. Current Theme Architecture
 
 Audited files:
@@ -495,19 +506,20 @@ Goal: major surfaces inherit readable color in both themes before page-level wor
 
 Convert:
 
-- `Header`
-- `Footer`
-- `HeroCarousel`
-- `CompetitionCard`
-- `CompetitionDetailClient`
-- `EntryQuantitySelector`
-- `BundleBuilder`
-- `WinnerCard`
-- `PrizeDrops`
-- `ReviewsMarquee`
-- `BundleFAQSection`
-- `StaticPages`
-- `InfoPage`
+- `Header` - converted in Phase 3
+- `Footer` - converted in Phase 3
+- `HeroCarousel` - partially converted; image-backed hero overlays intentionally remain dark
+- `CompetitionCard` - converted in Phase 3
+- `CompetitionDetailClient` - converted in Phase 3
+- `EntryQuantitySelector` - converted in Phase 3
+- `BundleBuilder` - converted in Phase 3
+- `WinnerCard` - converted in Phase 3
+- `PrizeDrops` - converted in public cleanup pass
+- `ReviewsMarquee` - converted in public cleanup pass
+- `BundleFAQSection` - converted in public cleanup pass
+- `StaticPages` - converted in public cleanup pass
+- `InfoPage` - converted in public cleanup pass
+- `FAQClient`, `FreeEntryNotice`, guide list/detail pages, route panels, tabs and marketing edge fades - converted in public cleanup pass
 
 Keep selected image-heavy panels dark where needed.
 

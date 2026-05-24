@@ -20,9 +20,9 @@ export default async function Winners() {
     <div className="container mx-auto py-8 px-4">
       <PublicPageHeader align="left" eyebrow="Winners" title="TopDraw Winners" description="View real TopDraw winners from completed draws, with display-safe names and rough locations only, so results stay transparent without exposing personal details." />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {[["Total winners", String(rows.length)], ["Latest draw", latest ? new Date(latest).toLocaleDateString() : "-"], ["Draw proof", "Published per draw"]].map(([k, v]) => <div key={k} className="rounded-xl border border-white/10 bg-card p-4"><div className="text-[11px] font-extrabold uppercase tracking-wider text-white/55">{k}</div><div className="font-mono-num text-xl font-black text-white mt-1">{v}</div></div>)}
+        {[["Total winners", String(rows.length)], ["Latest draw", latest ? new Date(latest).toLocaleDateString() : "-"], ["Draw proof", "Published per draw"]].map(([k, v]) => <div key={k} className="td-public-card rounded-xl p-4"><div className="text-[11px] font-extrabold uppercase tracking-wider td-soft">{k}</div><div className="font-mono-num text-xl font-black td-text mt-1">{v}</div></div>)}
       </div>
-      {rows.length === 0 ? <p className="mt-6 text-white/60">No winners published yet.</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">{rows.map((w) => <WinnerCard key={w.id} w={w} />)}</div>}
+      {rows.length === 0 ? <p className="mt-6 td-soft">No winners published yet.</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">{rows.map((w) => <WinnerCard key={w.id} w={w} />)}</div>}
     </div>
   );
 }

@@ -60,27 +60,27 @@ export function PrizeDrops() {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6 md:mb-8">
             <div>
               <div className="flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary"><span>In it to win it</span><span aria-hidden className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-primary/60 to-transparent" /></div>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight mt-3">Play to win</h2>
+              <h2 className="font-display text-3xl md:text-4xl font-bold td-text tracking-tight mt-3">Play to win</h2>
             </div>
-            <Link href="/competitions" className="hidden md:inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-white/80 hover:text-primary transition">View all <ArrowRight className="w-4 h-4" /></Link>
+            <Link href="/competitions" className="hidden md:inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider td-muted hover:text-primary transition">View all <ArrowRight className="w-4 h-4" /></Link>
           </div>
           <div className="-mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto mb-6 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            <div role="tablist" className="inline-flex gap-2 p-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-[0_1px_0_0_hsl(204_100%_55%/0.15)_inset]">
+            <div role="tablist" className="td-tab-list inline-flex gap-2 p-1 rounded-2xl backdrop-blur-xl">
               {TABS.map((t) => {
                 const isActive = active === t.key;
                 const count = data[t.key]?.length ?? 0;
-                return <button key={t.key} role="tab" aria-selected={isActive} onClick={() => setActive(t.key)} className={`relative inline-flex items-center gap-2 whitespace-nowrap px-4 h-10 rounded-xl font-display text-[12.5px] font-bold uppercase tracking-[0.06em] transition snap-start ${isActive ? "bg-primary/15 text-white border border-primary/40 shadow-[0_0_0_1px_hsl(204_100%_55%/0.2),0_0_24px_-6px_hsl(204_100%_55%/0.6)]" : "text-white/65 border border-transparent hover:text-white hover:bg-white/5"}`}><span>{t.label}</span>{count > 0 && <span className={`text-[10px] font-mono-num font-bold px-1.5 py-0.5 rounded-md ${isActive ? "bg-primary/30 text-white" : "bg-white/10 text-white/70"}`}>{count}</span>}</button>;
+                return <button key={t.key} role="tab" aria-selected={isActive} onClick={() => setActive(t.key)} className={`relative inline-flex items-center gap-2 whitespace-nowrap px-4 h-10 rounded-xl font-display text-[12.5px] font-bold uppercase tracking-[0.06em] transition snap-start ${isActive ? "td-tab-active" : "td-tab"}`}><span>{t.label}</span>{count > 0 && <span className={`text-[10px] font-mono-num font-bold px-1.5 py-0.5 rounded-md ${isActive ? "bg-primary/30 text-white" : "td-badge-muted"}`}>{count}</span>}</button>;
               })}
             </div>
           </div>
           {items === null ? (
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">{Array.from({ length: 10 }).map((_, i) => <div key={i} className="glass-panel aspect-[3/4] animate-pulse" />)}</div>
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">{Array.from({ length: 10 }).map((_, i) => <div key={i} className="td-public-card aspect-[3/4] animate-pulse rounded-2xl" />)}</div>
           ) : items.length === 0 ? <EmptyTab tab={active} /> : (
             <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {items.map((c) => <CompetitionCard key={c.id} c={c} tone={active === "ended" ? "purple" : active === "soon" ? "blue" : "red"} />)}
             </div>
           )}
-          <div className="mt-8 flex justify-center md:hidden"><Link href="/competitions" className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-white/80 hover:text-primary transition">View all competitions <ArrowRight className="w-4 h-4" /></Link></div>
+          <div className="mt-8 flex justify-center md:hidden"><Link href="/competitions" className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider td-muted hover:text-primary transition">View all competitions <ArrowRight className="w-4 h-4" /></Link></div>
         </div>
       </div>
     </section>
@@ -96,10 +96,10 @@ function EmptyTab({ tab }: { tab: TabKey }) {
   }[tab];
   const Icon = map.icon;
   return (
-    <div className="glass-panel rim-glow p-10 md:p-14 flex flex-col items-center text-center gap-4">
+    <div className="td-public-card rim-glow p-10 md:p-14 flex flex-col items-center text-center gap-4 rounded-2xl">
       <span className="w-12 h-12 grid place-items-center rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-glow-soft"><Icon className="w-5 h-5" /></span>
-      <h3 className="font-display text-lg md:text-xl font-bold text-white tracking-tight">{map.title}</h3>
-      <p className="text-sm text-white/70 max-w-md">{map.body}</p>
+      <h3 className="font-display text-lg md:text-xl font-bold td-text tracking-tight">{map.title}</h3>
+      <p className="text-sm td-muted max-w-md">{map.body}</p>
     </div>
   );
 }

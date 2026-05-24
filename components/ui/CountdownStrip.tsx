@@ -22,7 +22,7 @@ export function CountdownStrip({ closesAt, target, label, className }: { closesA
   const p = mounted ? parts(target || closesAt) : null;
   if (mounted && !p) {
     return (
-      <div className={cn("w-full text-center text-[10px] font-extrabold uppercase tracking-wider py-1.5 rounded-md bg-info/10 border border-info/30 text-info", className)}>
+      <div className={cn("td-countdown-box w-full text-center text-[10px] font-extrabold uppercase tracking-wider py-1.5 rounded-md text-info", className)}>
         Closed
       </div>
     );
@@ -30,15 +30,15 @@ export function CountdownStrip({ closesAt, target, label, className }: { closesA
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <div className="text-left text-[10px] font-extrabold uppercase tracking-[0.18em] text-info/90">{label}</div>
-      <div className="grid grid-cols-4 gap-1 rounded-md border border-info/30 bg-info/10 p-1">
+      <div className="td-countdown-box grid grid-cols-4 gap-1 rounded-md p-1">
         {([
           ["d", "Days"],
           ["h", "Hrs"],
           ["m", "Min"],
           ["s", "Sec"],
         ] as const).map(([key, segmentLabel]) => (
-          <div key={key} className="h-12 flex flex-col items-center justify-center gap-0.5 rounded-sm bg-info/15 shadow-[inset_0_0_0_1px_hsl(var(--info)/0.15)]">
-            <span className="font-mono-num font-extrabold text-white text-[18px] leading-none tabular-nums">
+          <div key={key} className="td-countdown-segment h-12 flex flex-col items-center justify-center gap-0.5 rounded-sm">
+            <span className="font-mono-num font-extrabold text-[color:var(--td-text)] text-[18px] leading-none tabular-nums">
               {p ? String(p[key]).padStart(2, "0") : "--"}
             </span>
             <span className="text-[9px] font-bold uppercase tracking-wider text-info leading-none">{segmentLabel}</span>

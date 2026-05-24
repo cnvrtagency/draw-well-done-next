@@ -119,13 +119,13 @@ function HeroFloatingTimer({ competition }: { competition?: Competition }) {
   ];
   return (
     <div className="absolute inset-x-0 bottom-4 z-20 px-5 sm:px-7 md:inset-x-auto md:bottom-6 md:right-6 md:px-0">
-      <div className="mx-auto w-full max-w-[23rem] rounded-xl border border-white/10 bg-[hsl(222_42%_5%/0.48)] px-3 py-2 shadow-[0_16px_34px_-24px_hsl(var(--primary)/0.8),inset_0_1px_0_hsl(0_0%_100%/0.10)] backdrop-blur-md sm:max-w-[27rem] md:mx-0 md:w-fit md:max-w-none md:px-4 md:py-3">
+      <div className="td-marketing-card mx-auto w-full max-w-[23rem] rounded-xl px-3 py-2 backdrop-blur-md sm:max-w-[27rem] md:mx-0 md:w-fit md:max-w-none md:px-4 md:py-3">
         <div className="flex items-end justify-center gap-1.5 sm:gap-2 md:gap-3">
           {items.map((item, index) => (
             <div key={item.label} className="flex items-end gap-1.5 md:gap-2">
               {index > 0 ? <span className="pb-[18px] text-xs font-black text-info/70 md:pb-[22px] md:text-sm">:</span> : null}
               <div className="min-w-[38px] text-center md:min-w-[50px]">
-                <div className="font-mono-num text-base font-black leading-none text-white sm:text-lg md:text-2xl">{item.value == null ? "--" : String(item.value).padStart(2, "0")}</div>
+                <div className="font-mono-num text-base font-black leading-none td-text sm:text-lg md:text-2xl">{item.value == null ? "--" : String(item.value).padStart(2, "0")}</div>
                 <div className="mt-1 text-[7px] font-extrabold uppercase tracking-[0.14em] text-info/80 md:text-[8px]">{item.label}</div>
               </div>
             </div>

@@ -186,10 +186,10 @@ export function BundleBuilder() {
   if (comps === null) {
     return (
       <Panel variant="glass" className="p-6 md:p-8 animate-pulse">
-        <div className="h-6 w-48 bg-white/10 rounded mb-4" />
+        <div className="h-6 w-48 bg-[color:var(--td-surface-hover)] rounded mb-4" />
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-16 bg-white/5 rounded-lg" />
+            <div key={i} className="h-16 bg-[color:var(--td-surface-muted)] rounded-lg" />
           ))}
         </div>
       </Panel>
@@ -202,9 +202,9 @@ export function BundleBuilder() {
         <span className="inline-grid place-items-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 text-primary shadow-glow-soft mb-4">
           <Sparkles className="w-5 h-5" />
         </span>
-        <h3 className="font-display text-lg md:text-xl font-bold text-white tracking-tight">Bundle builder will appear when live competitions are available.</h3>
-        <p className="text-sm text-white/70 mt-2 max-w-md mx-auto">{error || "Check back shortly, new prize drops are added regularly."}</p>
-        <Button asChild variant="outline" className="mt-5 border-white/20 text-white hover:bg-white/10 hover:text-white">
+        <h3 className="font-display text-lg md:text-xl font-bold td-text tracking-tight">Bundle builder will appear when live competitions are available.</h3>
+        <p className="text-sm td-muted mt-2 max-w-md mx-auto">{error || "Check back shortly, new prize drops are added regularly."}</p>
+        <Button asChild variant="outline" className="mt-5 border-[color:var(--td-border-strong)] text-[color:var(--td-text)] hover:bg-[color:var(--td-surface-hover)] hover:text-[color:var(--td-text)]">
           <Link href="/competitions">View competitions</Link>
         </Button>
       </Panel>
@@ -228,27 +228,27 @@ export function BundleBuilder() {
                 className={`rounded-lg border p-3 transition-all ${
                   isSel
                     ? "border-primary/35 bg-primary/[0.04] shadow-[0_0_18px_-12px_hsl(var(--primary)/0.5)]"
-                    : "border-white/10 bg-white/[0.025] hover:border-white/15"
+                    : "td-minicart-card"
                 }`}
               >
                 <div className="md:grid md:grid-cols-[140px_minmax(0,1fr)_150px] md:gap-5 md:items-center">
                   <div className="flex items-start gap-3 md:contents">
                     <Link href={`/competitions/${c.slug}`} className="shrink-0 md:block">
-                      <div className="w-24 h-24 md:w-[140px] md:h-[140px] rounded-xl overflow-hidden border border-white/10 bg-black/20">
+                      <div className="w-24 h-24 md:w-[140px] md:h-[140px] rounded-xl overflow-hidden border td-border bg-[color:var(--td-image-placeholder)]">
                         <SafePrizeImage url={competitionThumbImageUrl(c)} alt={c.title} aspect="aspect-square" imgClassName="h-full" width={200} height={200} />
                       </div>
                     </Link>
                     <div className="min-w-0 flex-1">
-                      <Link href={`/competitions/${c.slug}`} className="block font-display font-bold tracking-tight text-white text-sm md:text-base line-clamp-2 md:line-clamp-1 hover:text-primary" title={c.title}>
+                      <Link href={`/competitions/${c.slug}`} className="block font-display font-bold tracking-tight td-text text-sm md:text-base line-clamp-2 md:line-clamp-1 hover:text-primary" title={c.title}>
                         {c.title}
                       </Link>
-                      <div className="mt-1 flex items-center gap-1.5 flex-wrap text-[11px] font-mono-num text-white/70 min-w-0">
-                        <span className="text-white/90 font-bold">{formatMoney(c.ticket_price)}</span>
-                        <span className="text-white/30">·</span>
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap text-[11px] font-mono-num td-muted min-w-0">
+                        <span className="td-text font-bold">{formatMoney(c.ticket_price)}</span>
+                        <span className="td-faint">·</span>
                         <span className="whitespace-nowrap">{ticketsLeft.toLocaleString()} left</span>
                         {c.closes_at ? (
                           <>
-                            <span className="text-white/30">·</span>
+                            <span className="td-faint">·</span>
                             <CountdownPill closesAt={c.closes_at} prefix="" />
                           </>
                         ) : null}
@@ -256,7 +256,7 @@ export function BundleBuilder() {
                       <div className="mt-2 hidden md:flex flex-wrap items-center gap-1.5">
                         {l.tiers.length > 0 ? (
                           <>
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-white/45 mr-0.5">Discounts</span>
+                            <span className="text-[10px] uppercase tracking-wider font-bold td-faint mr-0.5">Discounts</span>
                             {l.tiers.map((t) => {
                               const reached = l.q >= t.min_quantity;
                               const isNext = !reached && l.nextTier?.id === t.id;
@@ -264,7 +264,7 @@ export function BundleBuilder() {
                                 ? "bg-emerald-400/12 border-emerald-400/30 text-emerald-300"
                                 : isNext
                                   ? "bg-primary/10 border-primary/30 text-primary"
-                                  : "bg-white/[0.04] border-white/10 text-white/55";
+                                  : "td-badge-muted";
                               return (
                                 <span key={t.id} className={`inline-flex items-center whitespace-nowrap text-[10px] font-mono-num font-bold px-2 py-0.5 rounded border ${cls}`}>
                                   {t.min_quantity}+ save {Number(t.discount_percentage)}%
@@ -273,12 +273,12 @@ export function BundleBuilder() {
                             })}
                           </>
                         ) : (
-                          <span className="text-[11px] text-white/45">No multi-ticket discounts</span>
+                          <span className="text-[11px] td-faint">No multi-ticket discounts</span>
                         )}
                       </div>
                       <div className="mt-1.5 text-xs text-primary/90">
                         {l.tiers.length === 0 ? null : l.q === 0 ? (
-                          <span className="text-white/55">Savings from {l.tiers[0].min_quantity} tickets.</span>
+                          <span className="td-soft">Savings from {l.tiers[0].min_quantity} tickets.</span>
                         ) : l.nextTier ? (
                           <span>Add {l.nextTier.min_quantity - l.q} more {l.nextTier.min_quantity - l.q === 1 ? "ticket" : "tickets"} to unlock {Number(l.nextTier.discount_percentage)}% off.</span>
                         ) : (
@@ -288,7 +288,7 @@ export function BundleBuilder() {
                       <button
                         type="button"
                         onClick={() => setExpanded((p) => ({ ...p, [c.id]: !isExp }))}
-                        className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-white/55 hover:text-white"
+                        className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider td-soft hover:text-[color:var(--td-text)]"
                       >
                         Details <ChevronDown className={`w-3 h-3 transition-transform ${isExp ? "rotate-180" : ""}`} />
                       </button>
@@ -296,9 +296,9 @@ export function BundleBuilder() {
                   </div>
 
                   <div className="mt-3 md:mt-0 flex items-center justify-between md:flex-col md:items-end md:gap-1">
-                    <div className="hidden md:block text-[10px] uppercase tracking-wider font-bold text-white/45">Tickets</div>
-                    <div className="inline-flex items-center rounded-md border border-white/15 bg-background/40">
-                      <button onClick={() => setQ(c, l.q - 1)} disabled={l.q <= 0} className="w-9 h-9 grid place-items-center text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Decrease">
+                    <div className="hidden md:block text-[10px] uppercase tracking-wider font-bold td-faint">Tickets</div>
+                    <div className="td-minicart-qty inline-flex items-center rounded-md">
+                      <button onClick={() => setQ(c, l.q - 1)} disabled={l.q <= 0} className="w-9 h-9 grid place-items-center td-text hover:bg-[color:var(--td-surface-hover)] disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Decrease">
                         <Minus className="w-3.5 h-3.5" />
                       </button>
                       <input
@@ -309,21 +309,21 @@ export function BundleBuilder() {
                           const n = parseInt(e.target.value.replace(/\D/g, ""), 10);
                           setQ(c, Number.isNaN(n) ? 0 : n);
                         }}
-                        className="w-10 text-center text-sm font-mono-num font-bold text-white bg-transparent outline-none"
+                        className="w-10 text-center text-sm font-mono-num font-bold td-text bg-transparent outline-none"
                         aria-label="Quantity"
                       />
-                      <button onClick={() => setQ(c, l.q + 1)} disabled={l.q >= max} className="w-9 h-9 grid place-items-center text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Increase">
+                      <button onClick={() => setQ(c, l.q + 1)} disabled={l.q >= max} className="w-9 h-9 grid place-items-center td-text hover:bg-[color:var(--td-surface-hover)] disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Increase">
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <div className="text-sm md:text-xs font-mono-num font-bold text-white md:mt-0.5 text-right">
-                      {isSel ? formatMoney(l.total) : <span className="text-white/40">-</span>}
-                      {isSel && l.discount > 0 ? <span className="ml-1.5 text-[10px] font-mono-num text-white/45 line-through font-normal">{formatMoney(l.subtotal)}</span> : null}
+                    <div className="text-sm md:text-xs font-mono-num font-bold td-text md:mt-0.5 text-right">
+                      {isSel ? formatMoney(l.total) : <span className="td-faint">-</span>}
+                      {isSel && l.discount > 0 ? <span className="ml-1.5 text-[10px] font-mono-num td-faint line-through font-normal">{formatMoney(l.subtotal)}</span> : null}
                     </div>
                   </div>
                 </div>
 
-                <div className="md:hidden mt-2 text-[11px] text-white/55">
+                <div className="md:hidden mt-2 text-[11px] td-soft">
                   {l.tiers.length === 0 ? (
                     <span>No multi-ticket discounts</span>
                   ) : l.q === 0 ? (
@@ -336,14 +336,14 @@ export function BundleBuilder() {
                 </div>
 
                 {isExp ? (
-                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-white/70 border-t border-white/10 pt-2">
-                    <dt>Ticket price</dt><dd className="text-right font-mono-num text-white">{formatMoney(c.ticket_price)}</dd>
-                    <dt>Selected tickets</dt><dd className="text-right font-mono-num text-white">{l.q}</dd>
-                    <dt>Subtotal</dt><dd className="text-right font-mono-num text-white">{formatMoney(l.subtotal)}</dd>
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] td-muted border-t td-border pt-2">
+                    <dt>Ticket price</dt><dd className="text-right font-mono-num td-text">{formatMoney(c.ticket_price)}</dd>
+                    <dt>Selected tickets</dt><dd className="text-right font-mono-num td-text">{l.q}</dd>
+                    <dt>Subtotal</dt><dd className="text-right font-mono-num td-text">{formatMoney(l.subtotal)}</dd>
                     <dt>Discount</dt><dd className="text-right font-mono-num text-emerald-300">{l.discount > 0 ? `-${formatMoney(l.discount)}` : "-"}</dd>
-                    <dt>Row total</dt><dd className="text-right font-mono-num font-bold text-white">{formatMoney(l.total)}</dd>
-                    <dt>Tickets left</dt><dd className="text-right font-mono-num text-white">{ticketsLeft.toLocaleString()}</dd>
-                    <dd className="col-span-2 text-[10.5px] text-white/45 mt-1">Free postal entry route available, no purchase necessary.</dd>
+                    <dt>Row total</dt><dd className="text-right font-mono-num font-bold td-text">{formatMoney(l.total)}</dd>
+                    <dt>Tickets left</dt><dd className="text-right font-mono-num td-text">{ticketsLeft.toLocaleString()}</dd>
+                    <dd className="col-span-2 text-[10.5px] td-faint mt-1">Free postal entry route available, no purchase necessary.</dd>
                   </dl>
                 ) : null}
               </li>
@@ -356,40 +356,40 @@ export function BundleBuilder() {
         <Panel variant="glass" tone="primary" className="p-5">
           <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary mb-2">Bundle summary</div>
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-              <div className="text-[10px] uppercase tracking-wider text-white/55 font-bold">Competitions</div>
-              <div className="font-mono-num text-xl font-extrabold text-white mt-1">{totals.selected}</div>
+            <div className="td-minicart-card rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wider td-soft font-bold">Competitions</div>
+              <div className="font-mono-num text-xl font-extrabold td-text mt-1">{totals.selected}</div>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-              <div className="text-[10px] uppercase tracking-wider text-white/55 font-bold">Total tickets</div>
-              <div className="font-mono-num text-xl font-extrabold text-white mt-1">{totals.entries}</div>
+            <div className="td-minicart-card rounded-lg p-3">
+              <div className="text-[10px] uppercase tracking-wider td-soft font-bold">Total tickets</div>
+              <div className="font-mono-num text-xl font-extrabold td-text mt-1">{totals.entries}</div>
             </div>
           </div>
-          <dl className="text-sm space-y-1.5 border-t border-white/10 pt-3">
-            <div className="flex justify-between text-white/75"><dt>Subtotal</dt><dd className="font-mono-num text-white">{formatMoney(totals.subtotal)}</dd></div>
+          <dl className="text-sm space-y-1.5 border-t td-border pt-3">
+            <div className="flex justify-between td-muted"><dt>Subtotal</dt><dd className="font-mono-num td-text">{formatMoney(totals.subtotal)}</dd></div>
             <div className="flex justify-between">
-              <dt className={totals.discount > 0 ? "text-emerald-300" : "text-white/55"}>Discount savings</dt>
-              <dd className={`font-mono-num ${totals.discount > 0 ? "text-emerald-300" : "text-white/55"}`}>{totals.discount > 0 ? `-${formatMoney(totals.discount)}` : formatMoney(0)}</dd>
+              <dt className={totals.discount > 0 ? "text-emerald-300" : "td-soft"}>Discount savings</dt>
+              <dd className={`font-mono-num ${totals.discount > 0 ? "text-emerald-300" : "td-soft"}`}>{totals.discount > 0 ? `-${formatMoney(totals.discount)}` : formatMoney(0)}</dd>
             </div>
-            <div className="flex justify-between border-t border-white/10 pt-2 mt-1">
-              <dt className="font-bold text-white">Final total</dt>
-              <dd className="font-mono-num font-extrabold text-white text-xl leading-none">{formatMoney(totals.total)}</dd>
+            <div className="flex justify-between border-t td-border pt-2 mt-1">
+              <dt className="font-bold td-text">Final total</dt>
+              <dd className="font-mono-num font-extrabold td-text text-xl leading-none">{formatMoney(totals.total)}</dd>
             </div>
           </dl>
-          <p className="text-[11px] text-white/55 mt-1.5">Final price confirmed securely at checkout.</p>
-          <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3">
-            <div className="text-[10px] uppercase tracking-wider text-white/55 font-bold mb-2">Selected prizes</div>
+          <p className="text-[11px] td-soft mt-1.5">Final price confirmed securely at checkout.</p>
+          <div className="td-minicart-card mt-4 rounded-lg p-3">
+            <div className="text-[10px] uppercase tracking-wider td-soft font-bold mb-2">Selected prizes</div>
             {totals.selected === 0 ? (
-              <p className="text-[11px] text-white/55">Choose tickets from the prize list to build your bundle.</p>
+              <p className="text-[11px] td-soft">Choose tickets from the prize list to build your bundle.</p>
             ) : (
               <ul className="space-y-1.5">
                 {(comps ?? []).filter((c) => (qty[c.id] ?? 0) > 0).map((c) => {
                   const l = lineFor(c);
                   return (
                     <li key={c.id} className="grid grid-cols-[1fr_auto_auto] gap-2 items-center text-[11.5px] min-w-0">
-                      <span className="text-white/85 line-clamp-1 min-w-0" title={c.title}>{c.title}</span>
-                      <span className="font-mono-num text-white/70 shrink-0">x{l.q}</span>
-                      <span className="font-mono-num font-bold text-white shrink-0 min-w-[3.5rem] text-right">{formatMoney(l.total)}</span>
+                      <span className="td-text line-clamp-1 min-w-0" title={c.title}>{c.title}</span>
+                      <span className="font-mono-num td-muted shrink-0">x{l.q}</span>
+                      <span className="font-mono-num font-bold td-text shrink-0 min-w-[3.5rem] text-right">{formatMoney(l.total)}</span>
                     </li>
                   );
                 })}
@@ -400,13 +400,13 @@ export function BundleBuilder() {
             <ShoppingBag className="w-4 h-4 mr-1.5" />
             {totals.entries === 0 ? "Add bundle to basket" : `Add bundle · ${formatMoney(totals.total)}`}
           </Button>
-          {totals.entries === 0 ? <p className="text-[11px] text-white/55 text-center mt-2">Choose at least one ticket.</p> : null}
-          <Button asChild variant="outline" className="w-full mt-2 border-white/20 text-white bg-transparent hover:bg-white/10 hover:text-white font-bold">
+          {totals.entries === 0 ? <p className="text-[11px] td-soft text-center mt-2">Choose at least one ticket.</p> : null}
+          <Button asChild variant="outline" className="w-full mt-2 border-[color:var(--td-border-strong)] text-[color:var(--td-text)] bg-transparent hover:bg-[color:var(--td-surface-hover)] hover:text-[color:var(--td-text)] font-bold">
             <Link href="/competitions">View all competitions <ArrowRight className="w-3.5 h-3.5 ml-1" /></Link>
           </Button>
           <ul className="mt-5 grid grid-cols-2 gap-1.5">
             {BADGES.map((b) => (
-              <li key={b.label} className="flex items-center gap-1.5 text-[10.5px] text-white/70">
+              <li key={b.label} className="flex items-center gap-1.5 text-[10.5px] td-muted">
                 <b.icon className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span className="leading-tight">{b.label}</span>
               </li>

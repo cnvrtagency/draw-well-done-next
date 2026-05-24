@@ -21,7 +21,7 @@ export function CountdownPill({ closesAt, target, tone = "default", prefix = "Cl
   useCountdownTick(30000);
   const label = mounted ? timeRemaining(target || closesAt) : "--";
   return (
-    <span className={cn("inline-flex items-center rounded-md border px-2 py-1 font-mono-num text-[10px] font-black uppercase tracking-wider backdrop-blur-md", tone === "warning" ? "border-warning/50 bg-warning/15 text-warning" : "border-primary/50 bg-primary/15 text-white")}>
+    <span className={cn("inline-flex items-center rounded-md border px-2 py-1 font-mono-num text-[10px] font-black uppercase tracking-wider backdrop-blur-md", tone === "warning" ? "border-warning/50 bg-warning/15 text-warning" : "td-countdown-default")}>
       {prefix ? `${prefix} ` : ""}{label}
     </span>
   );

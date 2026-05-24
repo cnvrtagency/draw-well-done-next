@@ -22,21 +22,21 @@ export function CompetitionMarquee({ text, enabled = true, speed = "normal", cla
     <div
       className={cn(
         "group relative overflow-hidden rounded-2xl border border-primary/30 backdrop-blur-xl",
-        "bg-[hsl(222_45%_6%/0.78)]",
+        "td-marketing-card",
         "shadow-[0_0_0_1px_hsl(var(--primary)/0.12),0_18px_45px_-22px_hsl(var(--primary)/0.8)]",
         className,
       )}
       role="marquee"
       aria-label="Competition highlights"
     >
-      <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[hsl(222_45%_6%)] to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[hsl(222_45%_6%)] to-transparent z-10 pointer-events-none" />
+      <div className="td-edge-fade-left absolute inset-y-0 left-0 w-16 z-10 pointer-events-none" />
+      <div className="td-edge-fade-right absolute inset-y-0 right-0 w-16 z-10 pointer-events-none" />
       <div className={cn("flex gap-0 whitespace-nowrap py-4 md:py-4", animClass, "group-hover:[animation-play-state:paused]")} style={durationStyle}>
         {loops.map((_, loopIdx) => (
           <div key={loopIdx} className="flex shrink-0 items-center" aria-hidden={loopIdx > 0}>
             {display.map((item, i) => (
               <span key={`${loopIdx}-${i}`} className="flex items-center">
-                <span className="px-5 font-display text-base md:text-base font-black italic uppercase tracking-[0.08em] text-white">{item}</span>
+                <span className="px-5 font-display text-base md:text-base font-black italic uppercase tracking-[0.08em] td-text">{item}</span>
                 <span aria-hidden className="inline-block w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
               </span>
             ))}

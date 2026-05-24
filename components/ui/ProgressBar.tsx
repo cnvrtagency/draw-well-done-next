@@ -14,7 +14,7 @@ export function ProgressBar({
   className?: string;
 }) {
   return (
-    <div className={cn("overflow-hidden rounded-full bg-white/10", thickness === "sm" ? "h-1.5" : "h-2", className)}>
+    <div className={cn("td-progress-track overflow-hidden rounded-full", thickness === "sm" ? "h-1.5" : "h-2", className)}>
       <div
         className={cn(
           "h-full rounded-full transition-all duration-500",

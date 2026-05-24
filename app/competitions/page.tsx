@@ -29,16 +29,16 @@ export default async function Competitions({ searchParams }: { searchParams?: { 
       <PublicPageHeader align="left" eyebrow="Competitions" title="Competitions" description="Browse live TopDraw competitions, see what's ending soon or coming up next, and revisit past draws, all in one place." />
       <div className="mb-6">
         <div className="w-full">
-          <div role="tablist" className="grid grid-cols-4 gap-1 md:inline-flex md:gap-2 p-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl shadow-[0_1px_0_0_hsl(204_100%_55%/0.15)_inset]">
+          <div role="tablist" className="td-tab-list grid grid-cols-4 gap-1 md:inline-flex md:gap-2 p-1 rounded-2xl backdrop-blur-xl">
             {tabs.map(([key, label]) => {
               const isActive = active === key || (!searchParams?.tab && key === "live");
-              return <Link key={key} href={`/competitions?tab=${key}`} role="tab" aria-selected={isActive} className={`relative inline-flex items-center justify-center gap-2 whitespace-nowrap px-2 md:px-4 h-10 rounded-xl font-display text-[11px] md:text-[12.5px] font-bold uppercase tracking-[0.04em] md:tracking-[0.06em] transition ${isActive ? "bg-primary/15 text-white border border-primary/40 shadow-[0_0_0_1px_hsl(204_100%_55%/0.2),0_0_24px_-6px_hsl(204_100%_55%/0.6)]" : "text-white/65 border border-transparent hover:text-white hover:bg-white/5"}`}>{label}</Link>;
+              return <Link key={key} href={`/competitions?tab=${key}`} role="tab" aria-selected={isActive} className={`relative inline-flex items-center justify-center gap-2 whitespace-nowrap px-2 md:px-4 h-10 rounded-xl font-display text-[11px] md:text-[12.5px] font-bold uppercase tracking-[0.04em] md:tracking-[0.06em] transition ${isActive ? "td-tab-active" : "td-tab"}`}>{label}</Link>;
             })}
           </div>
         </div>
       </div>
       {comps.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-card p-10 text-center text-white/60">
+        <div className="td-public-card rounded-xl p-10 text-center td-soft">
           {active === "ended" ? "No ended or drawn competitions yet." : active === "coming-soon" ? "No upcoming competitions scheduled yet." : active === "ending-soon" ? "Nothing is closing in the next 7 days." : "No live competitions right now."}
         </div>
       ) : (
@@ -48,7 +48,7 @@ export default async function Competitions({ searchParams }: { searchParams?: { 
       )}
       <div className="mt-10 grid gap-4 md:grid-cols-3">
         {["Ticket caps shown upfront", "Free postal entry route", "Winners published"].map((text) => (
-          <div key={text} className="rounded-xl border border-white/10 bg-card p-4 text-sm font-bold uppercase tracking-wider text-white/75">{text}</div>
+          <div key={text} className="td-public-card rounded-xl p-4 text-sm font-bold uppercase tracking-wider td-muted">{text}</div>
         ))}
       </div>
     </div>

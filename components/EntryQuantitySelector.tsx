@@ -100,22 +100,22 @@ export function EntryQuantitySelector({
                 type="button"
                 disabled={disabled}
                 onClick={() => setQty(q)}
-                className={`relative flex flex-col items-start justify-between gap-1.5 text-left rounded-xl border px-3 py-3 min-h-[88px] transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`relative flex flex-col items-start justify-between gap-1.5 text-left rounded-xl px-3 py-3 min-h-[88px] transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                   active
                     ? "border-primary bg-primary/10 ring-1 ring-primary/50 shadow-[0_0_22px_-6px_hsl(var(--primary)/0.65)]"
-                    : "border-white/10 bg-white/[0.035] hover:border-primary/40 hover:bg-white/[0.06]"
+                    : "td-quantity-tile"
                 }`}
               >
                 <div className="w-full flex flex-col gap-1">
-                  <div className={`font-mono-num font-extrabold leading-none text-white ${active ? "text-xl" : "text-lg"}`}>{q}</div>
-                  <div className="text-[11px] text-white/70 font-mono-num leading-none">{formatMoney(p.total)}</div>
+                  <div className={`font-mono-num font-extrabold leading-none text-[color:var(--td-text)] ${active ? "text-xl" : "text-lg"}`}>{q}</div>
+                  <div className="td-muted text-[11px] font-mono-num leading-none">{formatMoney(p.total)}</div>
                 </div>
                 {p.discountPct > 0 ? (
                   <div className="inline-flex items-center whitespace-nowrap leading-none text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-success/20 text-success border border-success/40">
                     Save {p.discountPct}%
                   </div>
                 ) : (
-                  <div className="inline-flex items-center whitespace-nowrap leading-none text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.05] text-white/55 border border-white/10">
+                  <div className="td-badge-muted inline-flex items-center whitespace-nowrap leading-none text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded">
                     No discount
                   </div>
                 )}
@@ -127,13 +127,13 @@ export function EntryQuantitySelector({
 
       <div className="space-y-1.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[11px] font-extrabold uppercase tracking-wider text-white">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-[color:var(--td-text)]">
             Selected: <span className="font-mono-num">{qty}</span> {qty === 1 ? "TICKET" : "TICKETS"} | Est. chance 1 in {maxEntries > 0 ? Math.ceil(maxEntries / qty).toLocaleString() : "-"}
           </span>
-          {perUserLimit ? <span className="text-white/45 font-mono-num text-[11px]">Max {perUserLimit} per person</span> : null}
+          {perUserLimit ? <span className="td-faint font-mono-num text-[11px]">Max {perUserLimit} per person</span> : null}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" disabled={disabled || qty <= 1} onClick={() => setQty(qty - 1)} className="w-9 h-9 shrink-0 rounded-md bg-white/[0.06] border border-white/10 hover:bg-white/10 text-white text-lg font-bold disabled:opacity-40" aria-label="Decrease quantity">
+          <button type="button" disabled={disabled || qty <= 1} onClick={() => setQty(qty - 1)} className="td-icon-button w-9 h-9 shrink-0 rounded-md border td-border text-lg font-bold disabled:opacity-40" aria-label="Decrease quantity">
             −
           </button>
           <input
@@ -150,7 +150,7 @@ export function EntryQuantitySelector({
               background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${((qty - 1) / Math.max(1, maxQty - 1)) * 100}%, hsl(var(--muted)) ${((qty - 1) / Math.max(1, maxQty - 1)) * 100}%, hsl(var(--muted)) 100%)`,
             }}
           />
-          <button type="button" disabled={disabled || qty >= maxQty} onClick={() => setQty(qty + 1)} className="w-9 h-9 shrink-0 rounded-md bg-white/[0.06] border border-white/10 hover:bg-white/10 text-white text-lg font-bold disabled:opacity-40" aria-label="Increase quantity">
+          <button type="button" disabled={disabled || qty >= maxQty} onClick={() => setQty(qty + 1)} className="td-icon-button w-9 h-9 shrink-0 rounded-md border td-border text-lg font-bold disabled:opacity-40" aria-label="Increase quantity">
             +
           </button>
         </div>
@@ -166,14 +166,14 @@ export function EntryQuantitySelector({
         </div>
       )}
 
-      <div className="rounded-xl border border-white/10 bg-white/[0.025] px-3.5 py-2.5">
+      <div className="td-minicart-card rounded-xl px-3.5 py-2.5">
         <div className="eyebrow !mb-1.5">Order summary</div>
         <dl className="text-[13px] space-y-1">
-          <div className="flex justify-between text-white/75">
+          <div className="flex justify-between td-muted">
             <dt>Tickets</dt>
-            <dd className="font-mono-num text-white">{qty}</dd>
+            <dd className="font-mono-num text-[color:var(--td-text)]">{qty}</dd>
           </div>
-          <div className="flex justify-between text-white/75">
+          <div className="flex justify-between td-muted">
             <dt>Price per ticket</dt>
             <dd className="font-mono-num">{formatMoney(ticketPrice)}</dd>
           </div>
@@ -183,13 +183,13 @@ export function EntryQuantitySelector({
               <dd className="font-mono-num">−{formatMoney(pricing.discount)}</dd>
             </div>
           ) : (
-            <div className="flex justify-between text-white/50">
+            <div className="flex justify-between td-soft">
               <dt>Discount</dt>
               <dd>None</dd>
             </div>
           )}
           {qty > 0 && maxEntries > 0 && (
-            <div className="flex justify-between text-white/75">
+            <div className="flex justify-between td-muted">
               <dt className="flex items-center gap-1.5">
                 <span>Estimated chance</span>
                 <button
@@ -201,16 +201,16 @@ export function EntryQuantitySelector({
                   <Info className="h-3.5 w-3.5" />
                 </button>
               </dt>
-              <dd className="font-mono-num text-white">1 in {Math.ceil(maxEntries / qty).toLocaleString()}</dd>
+              <dd className="font-mono-num text-[color:var(--td-text)]">1 in {Math.ceil(maxEntries / qty).toLocaleString()}</dd>
             </div>
           )}
-          <div className="flex justify-between border-t border-white/10 pt-1.5 mt-1">
-            <dt className="font-bold text-white text-sm">Total</dt>
+          <div className="flex justify-between border-t td-border pt-1.5 mt-1">
+            <dt className="font-bold text-[color:var(--td-text)] text-sm">Total</dt>
             <dd className="flex items-baseline justify-end gap-2">
               {pricing.discount > 0 && pricing.subtotal > pricing.total && (
-                <span className="font-mono-num font-extrabold text-sm leading-none text-white/40 line-through">{formatMoney(pricing.subtotal)}</span>
+                <span className="font-mono-num font-extrabold text-sm leading-none td-faint line-through">{formatMoney(pricing.subtotal)}</span>
               )}
-              <span className={`font-mono-num font-extrabold text-base leading-none ${pricing.discount > 0 && pricing.subtotal > pricing.total ? "text-success" : "text-white"}`}>{formatMoney(pricing.total)}</span>
+              <span className={`font-mono-num font-extrabold text-base leading-none ${pricing.discount > 0 && pricing.subtotal > pricing.total ? "text-success" : "text-[color:var(--td-text)]"}`}>{formatMoney(pricing.total)}</span>
             </dd>
           </div>
         </dl>
