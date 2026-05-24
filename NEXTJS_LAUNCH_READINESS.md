@@ -4,6 +4,14 @@
 
 The Next.js rebuild is closer to customer-facing launch parity, but it is not ready to replace the Vite app yet.
 
+## Final Parity Audit - 2026-05-23
+
+See `NEXTJS_FINAL_PARITY_AUDIT.md` for the complete final parity audit against the Vite app.
+
+Current verdict: ready for staging deployment and structured manual testing, but not production-ready as a Vite replacement. The top blockers are legal/static placeholders, real-browser visual/interactivity QA, checkout/account/admin staging mutation tests, and incomplete secondary admin parity for verifications, richer email tooling, settings, notifications, page content, dynamic content and profit calculator.
+
+Audit-only note: this pass made documentation changes only. No business logic, routing, checkout, basket, auth, admin mutations, Supabase schema/RLS, Edge Functions, payment, draw, allocation, Klaviyo or Resend logic was changed.
+
 ## Full Parity Audit - 2026-05-23
 
 Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.

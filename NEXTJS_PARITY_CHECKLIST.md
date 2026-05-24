@@ -1,5 +1,14 @@
 # Next.js Parity Checklist
 
+## Final Parity Audit
+
+- [x] Created `NEXTJS_FINAL_PARITY_AUDIT.md` with complete route, visual, public, checkout, account, admin, SEO/infrastructure and staging-test matrices
+- [ ] Replace final legal/static placeholder address and date content with approved business values
+- [ ] Complete real-browser visual QA at 1440px, 1280px, 390px and 430px
+- [ ] Complete checkout, account and high-risk admin staging mutation tests
+- [ ] Resolve secondary admin parity gaps: verifications, richer emails, settings, notifications, dynamic content, page content and profit calculator
+- [ ] Decide whether Next-only `/help` and Vite-only `/footers-preview` need redirect/noindex/removal
+
 ## Homepage
 
 - [x] Header visual structure
