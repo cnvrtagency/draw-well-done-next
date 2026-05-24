@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-12 text-center text-white/70">Loading order confirmation...</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-12 text-center td-muted">Loading order confirmation...</div>}>
       <CheckoutSuccessClient />
     </Suspense>
   );

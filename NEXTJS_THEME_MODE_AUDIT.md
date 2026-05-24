@@ -46,6 +46,7 @@ Phase 3 implementation status:
 - `CompetitionCard`, `WinnerCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `CountdownPill`, `CountdownStrip` and `ProgressBar` now use semantic public-card, quantity, countdown, progress, border and text utilities where safe.
 - Image-backed overlays, gold winner chips and primary brand CTA text intentionally remain dark-image/brand-gradient safe instead of being forced into generic theme text.
 - Public/static and marketing cleanup has started: `StaticPages`, `InfoPage`, `FAQClient`, `FreeEntryNotice`, guide list/detail pages, public route panels, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel` and category/tabs now use theme-aware text, panel, border, edge-fade and tab utilities where safe.
+- Checkout and auth cleanup has started: `CheckoutClient`, `CheckoutSuccessClient`, `LoginClient`, `RegisterClient`, `ForgotPasswordClient` and `ResetPasswordClient` now use theme-aware checkout/auth utilities where safe.
 - `Header` and `Footer` now use the new `/assets/topdraw-logo-light-mode.png` only when `html[data-theme="light"]` is active; dark mode keeps the existing `/assets/topdraw-logo.png`.
 - `HeroCarousel` remains intentionally dark-image led in light mode where white text sits over media or brand-gradient treatments.
 - Dark remains the default; no public toggle has been exposed.
@@ -527,6 +528,9 @@ Keep selected image-heavy panels dark where needed.
 
 Convert:
 
+- `app/checkout/CheckoutClient.tsx` - converted in checkout/auth cleanup pass
+- `app/checkout/success/CheckoutSuccessClient.tsx` - converted in checkout/auth cleanup pass
+- `app/login/LoginClient.tsx`, `app/register/RegisterClient.tsx`, `app/forgot-password/ForgotPasswordClient.tsx`, `app/reset-password/ResetPasswordClient.tsx` - converted in checkout/auth cleanup pass
 - `app/account/layout.tsx`
 - `app/account/AccountPages.tsx`
 - account table/input/panel utilities

@@ -23,10 +23,10 @@ export function ForgotPasswordClient() {
 
   return (
     <div className="container mx-auto max-w-md px-4 py-12">
-      <h1 className="font-display text-2xl font-semibold text-white">Reset your password</h1>
+      <h1 className="font-display text-2xl font-semibold td-text">Reset your password</h1>
       <form onSubmit={submit} className="mt-6 space-y-4">
         <AuthField label="Email"><Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={authInputClass} /></AuthField>
-        {message ? <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white/80">{message}</div> : null}
+        {message ? <div className="rounded-lg border td-border td-surface-soft px-3 py-2 text-sm td-muted">{message}</div> : null}
         <Button disabled={busy} className="btn-primary-glow w-full font-bold uppercase tracking-wider">{busy ? "Sending..." : "Send reset link"}</Button>
       </form>
     </div>

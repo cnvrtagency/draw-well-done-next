@@ -104,13 +104,13 @@ function StatTile({
   icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.07)]">
-      <div className="mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/55">
+    <div className="rounded-xl border td-border bg-[color:var(--td-surface-soft)] p-4 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.07)]">
+      <div className="mb-2 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.16em] td-soft">
         {icon ? <span className="text-primary">{icon}</span> : null}
         {label}
       </div>
-      <div className="font-mono-num text-xl font-black text-white">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-white/55">{hint}</div> : null}
+      <div className="font-mono-num text-xl font-black td-text">{value}</div>
+      {hint ? <div className="mt-1 text-xs td-soft">{hint}</div> : null}
     </div>
   );
 }
@@ -317,9 +317,9 @@ export function CheckoutSuccessClient() {
   return (
     <main className="container relative mx-auto py-8 md:py-12">
       {showHappy ? <Confetti /> : null}
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[420px] bg-hero-mesh opacity-90" />
+      <div className="td-auth-page-glow pointer-events-none absolute inset-x-0 top-0 -z-0 h-[420px] opacity-90" />
 
-      <Panel variant="raised" as="section" className="relative overflow-hidden bg-aurora p-6 text-center md:p-10">
+      <Panel variant="raised" as="section" className="td-marketing-panel relative overflow-hidden p-6 text-center md:p-10">
         <div className="relative">
           <HeaderBlock status={status} fullyAllocated={fullyAllocated} />
 
@@ -375,7 +375,7 @@ export function CheckoutSuccessClient() {
             />
           </div>
 
-          <p className="mx-auto mt-5 max-w-xl text-xs text-white/55">
+          <p className="mx-auto mt-5 max-w-xl text-xs td-soft">
             Winners are reviewed before publication. You can always find your ticket numbers in your account.
           </p>
 
@@ -383,7 +383,7 @@ export function CheckoutSuccessClient() {
             <Button asChild size="lg" className="bg-primary font-extrabold uppercase tracking-wider shadow-glow-soft hover:bg-primary/90">
               <Link href="/account/entries">My Entries</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white">
+            <Button asChild size="lg" variant="outline" className="td-border bg-transparent td-text hover:bg-[color:var(--td-surface-hover)] hover:text-[color:var(--td-text)]">
               <Link href="/competitions">Browse more competitions</Link>
             </Button>
           </div>
@@ -398,9 +398,9 @@ export function CheckoutSuccessClient() {
           { icon: <BadgeCheck className="h-5 w-5" />, t: "18+ only", b: "UK prize competitions, played responsibly." },
         ].map((r) => (
           <Panel key={r.t} variant="glass" className="p-4">
-            <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-primary">{r.icon}</div>
-            <div className="text-sm font-semibold text-white">{r.t}</div>
-            <div className="mt-1 text-xs text-white/65">{r.b}</div>
+            <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-md bg-[color:var(--td-surface-muted)] text-primary">{r.icon}</div>
+            <div className="text-sm font-semibold td-text">{r.t}</div>
+            <div className="mt-1 text-xs td-muted">{r.b}</div>
           </Panel>
         ))}
       </section>
@@ -410,10 +410,10 @@ export function CheckoutSuccessClient() {
           <div className="mb-5 flex items-end justify-between gap-3">
             <div>
               <div className="eyebrow mb-2">More live competitions</div>
-              <h2 className="font-display text-2xl font-bold text-white md:text-3xl">Fancy another shot?</h2>
-              <p className="mt-1 text-sm text-white/65">Your entries are confirmed. Here are a few more competitions ending soon.</p>
+              <h2 className="font-display text-2xl font-bold td-text md:text-3xl">Fancy another shot?</h2>
+              <p className="mt-1 text-sm td-muted">Your entries are confirmed. Here are a few more competitions ending soon.</p>
             </div>
-            <Link href="/competitions" className="hidden text-xs font-bold uppercase tracking-wider text-primary hover:text-white sm:inline">
+            <Link href="/competitions" className="hidden text-xs font-bold uppercase tracking-wider text-primary hover:text-[color:var(--td-text)] sm:inline">
               View all
             </Link>
           </div>
@@ -436,8 +436,8 @@ function HeaderBlock({ status, fullyAllocated }: { status: string; fullyAllocate
           <BadgeCheck className="h-9 w-9" />
         </div>
         <div className="eyebrow mb-1">Entries confirmed</div>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white md:text-6xl">You&apos;re in.</h1>
-        <p className="mt-3 text-lg text-white/70">Good luck, your tickets have been allocated.</p>
+        <h1 className="font-display text-4xl font-bold tracking-tight td-text md:text-6xl">You&apos;re in.</h1>
+        <p className="mt-3 text-lg td-muted">Good luck, your tickets have been allocated.</p>
       </>
     );
   }
@@ -459,10 +459,10 @@ function HeaderBlock({ status, fullyAllocated }: { status: string; fullyAllocate
         <Loader2 className="h-9 w-9 animate-spin" />
       </div>
       <div className="eyebrow mb-1">{finalising ? "Finalising payment" : "Allocating tickets"}</div>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-white md:text-5xl">
+      <h1 className="font-display text-3xl font-bold tracking-tight td-text md:text-5xl">
         {finalising ? "Almost there…" : "Assigning your numbers…"}
       </h1>
-      <p className="mt-3 text-base text-white/70">
+      <p className="mt-3 text-base td-muted">
         {finalising
           ? "Your payment is being confirmed. This usually only takes a few seconds."
           : "Your payment is confirmed. We're assigning your ticket numbers now."}
@@ -474,12 +474,12 @@ function HeaderBlock({ status, fullyAllocated }: { status: string; fullyAllocate
 function FailureHeader({ eyebrow, title, body, muted }: { eyebrow: string; title: string; body: string; muted?: boolean }) {
   return (
     <>
-      <div className={`mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-full ring-4 ${muted ? "bg-white/10 text-white/70 ring-white/10" : "bg-destructive/20 text-destructive ring-destructive/15"}`}>
+      <div className={`mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-full ring-4 ${muted ? "bg-[color:var(--td-surface-hover)] td-muted ring-[color:var(--td-border-muted)]" : "bg-destructive/20 text-destructive ring-destructive/15"}`}>
         {muted ? <XCircle className="h-9 w-9" /> : <AlertTriangle className="h-9 w-9" />}
       </div>
-      <div className={`eyebrow mb-1 ${muted ? "text-white/60" : "text-destructive"}`}>{eyebrow}</div>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-white md:text-5xl">{title}</h1>
-      <p className="mt-3 text-base text-white/70">{body}</p>
+      <div className={`eyebrow mb-1 ${muted ? "td-soft" : "text-destructive"}`}>{eyebrow}</div>
+      <h1 className="font-display text-3xl font-bold tracking-tight td-text md:text-5xl">{title}</h1>
+      <p className="mt-3 text-base td-muted">{body}</p>
     </>
   );
 }
@@ -490,11 +490,11 @@ function TicketPills({ tickets, max = 200 }: { tickets: number[]; max?: number }
   return (
     <div className="flex flex-wrap gap-1.5">
       {shown.map((n) => (
-        <span key={n} className="font-mono-num rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-xs font-bold text-white">
+        <span key={n} className="font-mono-num rounded-md border td-border bg-[color:var(--td-surface-muted)] px-2 py-1 text-xs font-bold td-text">
           #{String(n).padStart(5, "0")}
         </span>
       ))}
-      {sorted.length > max ? <span className="font-mono-num px-2 py-1 text-xs text-white/60">+{sorted.length - max} more</span> : null}
+      {sorted.length > max ? <span className="font-mono-num px-2 py-1 text-xs td-soft">+{sorted.length - max} more</span> : null}
     </div>
   );
 }
@@ -517,14 +517,14 @@ function StatusPanel(props: {
 }) {
   const { paymentId, status, fullyAllocated, allocatedCount, totalEntries, failureReason, grouped, refreshing, onRefresh, loadError, timedOut, isMultiline, linesLoaded, linesCount } = props;
 
-  if (!paymentId) return <p className="text-sm text-white/65">Payment confirmed. View your entries from your account.</p>;
+  if (!paymentId) return <p className="text-sm td-muted">Payment confirmed. View your entries from your account.</p>;
 
   if (loadError) {
     return (
       <Panel variant="glass" tone="warning" className="space-y-2 p-4">
         <div className="eyebrow text-destructive">Couldn&apos;t load your ticket numbers</div>
-        <p className="text-sm text-white/85">We hit an error reading your order. Your payment reference is <span className="font-mono text-white">{paymentId}</span>.</p>
-        <p className="break-all font-mono text-xs text-white/60">{loadError}</p>
+        <p className="text-sm td-muted">We hit an error reading your order. Your payment reference is <span className="font-mono td-text">{paymentId}</span>.</p>
+        <p className="break-all font-mono text-xs td-soft">{loadError}</p>
         <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
       </Panel>
     );
@@ -534,8 +534,8 @@ function StatusPanel(props: {
     return (
       <Panel variant="glass" tone="warning" className="space-y-2 p-4">
         <div className="eyebrow text-destructive">Payment received, allocation needs review</div>
-        <p className="text-sm text-white/85">Your payment was received, but we could not automatically allocate your ticket numbers. Please contact support with reference <span className="font-mono text-white">{paymentId}</span>.</p>
-        {failureReason ? <p className="text-xs text-white/60">Reason: <span className="font-mono">{failureReason}</span></p> : null}
+        <p className="text-sm td-muted">Your payment was received, but we could not automatically allocate your ticket numbers. Please contact support with reference <span className="font-mono td-text">{paymentId}</span>.</p>
+        {failureReason ? <p className="text-xs td-soft">Reason: <span className="font-mono">{failureReason}</span></p> : null}
       </Panel>
     );
   }
@@ -551,8 +551,8 @@ function StatusPanel(props: {
   if (status === "pending") {
     return (
       <Panel variant="glass" tone="info" className="flex items-center justify-between gap-3 p-4">
-        <div className="text-sm text-white/85">
-          <div className="font-semibold text-white">Finalising payment…</div>
+        <div className="text-sm td-muted">
+          <div className="font-semibold td-text">Finalising payment…</div>
           Your payment is being confirmed. This usually only takes a few seconds.
         </div>
         <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
@@ -564,7 +564,7 @@ function StatusPanel(props: {
     return (
       <Panel variant="glass" tone="warning" className="space-y-2 p-4">
         <div className="eyebrow text-destructive">Order lines unavailable</div>
-        <p className="text-sm text-white/85">Your payment succeeded but we couldn&apos;t load the items in your order. Your reference is <span className="font-mono text-white">{paymentId}</span>. Please contact support if your tickets don&apos;t appear in your account shortly.</p>
+        <p className="text-sm td-muted">Your payment succeeded but we couldn&apos;t load the items in your order. Your reference is <span className="font-mono td-text">{paymentId}</span>. Please contact support if your tickets don&apos;t appear in your account shortly.</p>
         <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
       </Panel>
     );
@@ -574,8 +574,8 @@ function StatusPanel(props: {
     return (
       <Panel variant="glass" tone="warning" className="space-y-3 p-4">
         <div className="eyebrow text-warning">Taking longer than expected</div>
-        <p className="text-sm text-white/85">Your payment succeeded, but ticket allocation is taking longer than usual. Your reference is <span className="font-mono text-white">{paymentId}</span>. Tap refresh in a moment, or check <Link href="/account/entries" className="text-primary hover:underline">My Entries</Link>. If nothing appears within a few minutes, please contact support.</p>
-        {totalEntries > 0 ? <p className="text-xs text-white/60">{allocatedCount} of {totalEntries} tickets allocated so far.</p> : null}
+        <p className="text-sm td-muted">Your payment succeeded, but ticket allocation is taking longer than usual. Your reference is <span className="font-mono td-text">{paymentId}</span>. Tap refresh in a moment, or check <Link href="/account/entries" className="text-primary hover:underline">My Entries</Link>. If nothing appears within a few minutes, please contact support.</p>
+        {totalEntries > 0 ? <p className="text-xs td-soft">{allocatedCount} of {totalEntries} tickets allocated so far.</p> : null}
         <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
         <PartialGroups grouped={grouped} />
       </Panel>
@@ -586,8 +586,8 @@ function StatusPanel(props: {
     return (
       <Panel variant="glass" tone="info" className="space-y-3 p-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="text-sm text-white/85">
-            <div className="font-semibold text-white">Allocating your tickets…</div>
+          <div className="text-sm td-muted">
+            <div className="font-semibold td-text">Allocating your tickets…</div>
             Your payment is confirmed. We&apos;re assigning your ticket numbers now{totalEntries > 0 ? <> ({allocatedCount} of {totalEntries} so far)</> : null}.
           </div>
           <RefreshButton refreshing={refreshing} onRefresh={onRefresh} />
@@ -601,7 +601,7 @@ function StatusPanel(props: {
     <Panel variant="glass" tone="success" className="space-y-3 p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="eyebrow text-success">Your ticket numbers</div>
-        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 text-xs text-white/60">
+        <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 text-xs td-soft">
           <RefreshCw className={`mr-1 h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} /> Refresh
         </Button>
       </div>
@@ -616,15 +616,15 @@ function SimpleStatus({ title, body, failureReason }: { title: string; body: str
   return (
     <Panel variant="glass" tone="warning" className="space-y-2 p-4">
       <div className="eyebrow text-destructive">{title}</div>
-      <p className="text-sm text-white/85">{body}</p>
-      {failureReason ? <p className="text-xs text-white/60">Reason: <span className="font-mono">{failureReason}</span></p> : null}
+      <p className="text-sm td-muted">{body}</p>
+      {failureReason ? <p className="text-xs td-soft">Reason: <span className="font-mono">{failureReason}</span></p> : null}
     </Panel>
   );
 }
 
 function RefreshButton({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: () => void }) {
   return (
-    <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing} className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white">
+    <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing} className="td-border bg-transparent td-text hover:bg-[color:var(--td-surface-hover)] hover:text-[color:var(--td-text)]">
       <RefreshCw className={`mr-1 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} /> Refresh now
     </Button>
   );
@@ -642,17 +642,17 @@ function PartialGroups({ grouped }: { grouped: GroupedComp[] }) {
 
 function GroupBlock({ g }: { g: GroupedComp }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+    <div className="rounded-lg border td-border bg-[color:var(--td-surface-soft)] p-3">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <div className="text-sm font-semibold text-white">
+        <div className="text-sm font-semibold td-text">
           {g.slug ? <Link href={`/competitions/${g.slug}`} className="text-primary hover:underline">{g.title}</Link> : g.title}
         </div>
-        <div className="text-xs text-white/60">
+        <div className="text-xs td-soft">
           {g.tickets.length}
           {g.expected > 0 && g.tickets.length < g.expected ? ` / ${g.expected}` : ""} {g.tickets.length === 1 ? "entry" : "entries"}
         </div>
       </div>
-      {g.tickets.length > 0 ? <TicketPills tickets={g.tickets} /> : <div className="text-xs text-white/55">Tickets being assigned…</div>}
+      {g.tickets.length > 0 ? <TicketPills tickets={g.tickets} /> : <div className="text-xs td-soft">Tickets being assigned…</div>}
     </div>
   );
 }

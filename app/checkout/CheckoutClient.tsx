@@ -241,18 +241,18 @@ export function CheckoutClient() {
   }
 
   if (authLoading) {
-    return <CheckoutShell><Panel variant="glass" className="p-6 text-white">Loading checkout...</Panel></CheckoutShell>;
+    return <CheckoutShell><Panel variant="glass" className="p-6 td-text">Loading checkout...</Panel></CheckoutShell>;
   }
 
   if (!user) {
     return (
       <div className="mx-auto max-w-md px-4 py-12 text-center">
         <Lock className="mx-auto mb-3 h-8 w-8 text-primary" />
-        <h1 className="font-display mb-2 text-2xl font-bold text-white">Sign in to checkout</h1>
-        <p className="mb-4 text-white/70">You need an account to enter competitions.</p>
+        <h1 className="font-display mb-2 text-2xl font-bold td-text">Sign in to checkout</h1>
+        <p className="mb-4 td-muted">You need an account to enter competitions.</p>
         <div className="flex justify-center gap-2">
           <Button asChild><Link href="/login">Log in</Link></Button>
-          <Button asChild variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"><Link href="/register">Create account</Link></Button>
+          <Button asChild variant="outline"><Link href="/register">Create account</Link></Button>
         </div>
       </div>
     );
@@ -261,11 +261,11 @@ export function CheckoutClient() {
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-white/10 bg-white/5">
-          <ShoppingBag className="h-7 w-7 text-white/50" />
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border td-border td-surface-soft">
+          <ShoppingBag className="h-7 w-7 td-soft" />
         </div>
-        <h1 className="font-display mb-2 text-2xl font-bold text-white">Your basket is empty</h1>
-        <p className="mb-6 text-white/70">Choose a live competition to get started.</p>
+        <h1 className="font-display mb-2 text-2xl font-bold td-text">Your basket is empty</h1>
+        <p className="mb-6 td-muted">Choose a live competition to get started.</p>
         <Button asChild className="btn-primary-glow font-bold uppercase tracking-wider">
           <Link href="/competitions">View live competitions</Link>
         </Button>
@@ -278,29 +278,29 @@ export function CheckoutClient() {
   return (
     <CheckoutShell>
       <div className="mb-6 md:mb-8">
-        <h1 className="font-display text-3xl font-bold uppercase tracking-tight text-white md:text-4xl">Finalise your order</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-tight td-text md:text-4xl">Finalise your order</h1>
       </div>
       {loading ? (
-        <Panel variant="glass" className="h-64 rounded-xl p-6 text-white/70">Loading order...</Panel>
+        <Panel variant="glass" className="h-64 rounded-xl p-6 td-muted">Loading order...</Panel>
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-10">
           <div className="min-w-0 space-y-4">
             {missingItems.length > 0 && <WarningPanel title="A basket item is no longer available." detail="Remove unavailable items before continuing to payment." onRemove={() => missingItems.forEach((item) => remove(item.competition_id))} />}
             {invalidLines.length > 0 && (
-              <Panel variant="outline" tone="warning" className="p-4 text-sm text-white">
+              <Panel variant="outline" tone="warning" className="p-4 text-sm td-text">
                 <div className="flex gap-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white">Some basket items can no longer be purchased.</div>
-                    <div className="mt-1 text-white/75">Remove them before continuing to payment.</div>
+                    <div className="font-bold td-text">Some basket items can no longer be purchased.</div>
+                    <div className="mt-1 td-muted">Remove them before continuing to payment.</div>
                     <div className="mt-3 space-y-2">
                       {invalidLines.map((line) => (
                         <div key={line.comp.id} className="flex flex-col gap-2 rounded-lg border border-warning/25 bg-warning/10 p-3 sm:flex-row sm:items-center sm:justify-between">
                           <div className="min-w-0">
-                            <div className="line-clamp-1 font-bold text-white">{line.comp.title}</div>
-                            <div className="text-xs text-white/70">{line.reason}</div>
+                            <div className="line-clamp-1 font-bold td-text">{line.comp.title}</div>
+                            <div className="text-xs td-muted">{line.reason}</div>
                           </div>
-                          <button type="button" onClick={() => remove(line.comp.id)} className="shrink-0 rounded-md border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/15">Remove</button>
+                          <button type="button" onClick={() => remove(line.comp.id)} className="shrink-0 rounded-md border td-border bg-[color:var(--td-surface-muted)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider td-text hover:bg-[color:var(--td-surface-hover)]">Remove</button>
                         </div>
                       ))}
                     </div>
@@ -308,11 +308,11 @@ export function CheckoutClient() {
                 </div>
               </Panel>
             )}
-            <Panel variant="glass" className="overflow-hidden rounded-2xl border-white/10 p-0">
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 p-4 sm:p-5">
+            <Panel variant="glass" className="overflow-hidden rounded-2xl td-border p-0">
+              <div className="flex items-center justify-between gap-3 border-b td-border p-4 sm:p-5">
                 <div className="min-w-0">
-                  <div className="font-display text-base font-bold text-white sm:text-lg">Order review</div>
-                  <div className="mt-0.5 text-xs text-white/60"><span className="font-bold text-primary">{count}</span> {ticketWord} selected across {lines.length} {compWord}</div>
+                  <div className="font-display text-base font-bold td-text sm:text-lg">Order review</div>
+                  <div className="mt-0.5 text-xs td-soft"><span className="font-bold text-primary">{count}</span> {ticketWord} selected across {lines.length} {compWord}</div>
                 </div>
                 <button type="button" onClick={() => setDrawerOpen(true)} className="shrink-0 text-xs font-bold uppercase tracking-wider text-primary hover:underline">Edit basket</button>
               </div>
@@ -320,18 +320,18 @@ export function CheckoutClient() {
                 {lines.map((line) => {
                   const image = competitionThumbImageUrl(line.comp);
                   return (
-                    <div key={line.comp.id} className="rounded-xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-white/15 sm:p-3.5">
+                    <div key={line.comp.id} className="td-checkout-row rounded-xl p-3 transition sm:p-3.5">
                       <div className="flex items-start gap-3">
-                        {image ? <img src={image} alt="" loading="lazy" decoding="async" className="h-20 w-20 shrink-0 rounded-xl border border-white/10 bg-black/20 object-cover sm:h-24 sm:w-24" /> : <div className="h-20 w-20 shrink-0 rounded-xl border border-white/10 bg-white/5 sm:h-24 sm:w-24" />}
+                        {image ? <img src={image} alt="" loading="lazy" decoding="async" className="h-20 w-20 shrink-0 rounded-xl border td-border bg-[color:var(--td-image-placeholder)] object-cover sm:h-24 sm:w-24" /> : <div className="h-20 w-20 shrink-0 rounded-xl border td-border bg-[color:var(--td-image-placeholder)] sm:h-24 sm:w-24" />}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start gap-2">
-                            <Link href={`/competitions/${line.comp.slug}`} className="font-display line-clamp-2 min-w-0 flex-1 text-sm font-bold text-white transition hover:text-primary">{line.comp.title}</Link>
+                            <Link href={`/competitions/${line.comp.slug}`} className="font-display line-clamp-2 min-w-0 flex-1 text-sm font-bold td-text transition hover:text-primary">{line.comp.title}</Link>
                             <div className="font-mono-num shrink-0 text-right">
-                              <div className="text-sm font-extrabold text-white">{formatMoney(line.tier.after)}</div>
-                              {line.tier.discount > 0 && <div className="text-[10px] leading-tight text-white/40 line-through">{formatMoney(line.tier.subtotal)}</div>}
+                              <div className="text-sm font-extrabold td-text">{formatMoney(line.tier.after)}</div>
+                              {line.tier.discount > 0 && <div className="text-[10px] leading-tight td-faint line-through">{formatMoney(line.tier.subtotal)}</div>}
                             </div>
                           </div>
-                          <div className="font-mono-num mt-0.5 text-[11px] text-white/55">{formatMoney(line.comp.ticket_price)} x {line.item.quantity}</div>
+                          <div className="font-mono-num mt-0.5 text-[11px] td-soft">{formatMoney(line.comp.ticket_price)} x {line.item.quantity}</div>
                           {line.tier.pct > 0 && <span className="mt-1.5 inline-flex rounded-md border border-success/40 bg-success/15 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-success">-{line.tier.pct}% bundle</span>}
                         </div>
                       </div>
@@ -343,39 +343,39 @@ export function CheckoutClient() {
           </div>
 
           <aside className="lg:sticky lg:top-24">
-            <Panel variant="glass" className="space-y-4 rounded-2xl border-primary/25 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 shadow-[0_0_60px_-18px_hsl(var(--primary)/0.45)] backdrop-blur-xl sm:p-6">
+            <Panel variant="glass" className="td-checkout-summary space-y-4 rounded-2xl border-primary/25 p-5 backdrop-blur-xl sm:p-6">
               <div className="flex items-center justify-between">
-                <div className="font-display text-lg font-bold tracking-tight text-white">Order summary</div>
+                <div className="font-display text-lg font-bold tracking-tight td-text">Order summary</div>
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary"><Lock className="h-2.5 w-2.5" /> Secure</span>
               </div>
               <div className="max-h-44 space-y-2.5 overflow-y-auto pr-1">
-                {lines.map((line) => <div key={line.comp.id} className="flex items-start gap-2 text-xs"><span className="font-mono-num inline-flex h-6 min-w-[28px] items-center justify-center rounded-md border border-primary/30 bg-primary/15 px-1.5 text-[11px] font-bold text-primary">x{line.item.quantity}</span><span className="line-clamp-2 flex-1 leading-snug text-white/85">{line.comp.title}</span><span className="font-mono-num shrink-0 font-bold text-white">{formatMoney(line.tier.after)}</span></div>)}
+                {lines.map((line) => <div key={line.comp.id} className="flex items-start gap-2 text-xs"><span className="font-mono-num inline-flex h-6 min-w-[28px] items-center justify-center rounded-md border border-primary/30 bg-primary/15 px-1.5 text-[11px] font-bold text-primary">x{line.item.quantity}</span><span className="line-clamp-2 flex-1 leading-snug td-muted">{line.comp.title}</span><span className="font-mono-num shrink-0 font-bold td-text">{formatMoney(line.tier.after)}</span></div>)}
               </div>
-              <div className="border-t border-white/10" />
+              <div className="border-t td-border" />
               <div className="space-y-2">
                 <SummaryLine label="Tickets" value={`${count} ${ticketWord}`} />
                 {tierDiscount > 0 ? <><SummaryLine label="Original subtotal" value={formatMoney(subtotal)} muted strike /><SummaryLine label="Bundle savings" value={`-${formatMoney(tierDiscount)}`} tone="success" /><SummaryLine label="Discounted subtotal" value={formatMoney(afterTiers)} tone="success" /></> : <SummaryLine label="Subtotal" value={formatMoney(subtotal)} />}
                 {codeDiscount > 0 && <SummaryLine label={`Code (${appliedCode})`} value={`-${formatMoney(codeDiscount)}`} tone="success" />}
                 {requestedWallet > 0 && <SummaryLine label="Wallet credit" value={`-${formatMoney(requestedWallet)}`} tone="gold" />}
               </div>
-              <div className="flex items-baseline justify-between rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3">
-                <span className="text-xs font-bold uppercase tracking-[0.15em] text-white/80">Total to pay</span>
-                <span className="font-mono-num font-display text-3xl font-extrabold leading-none text-white">{formatMoney(total)}</span>
+              <div className="td-checkout-total flex items-baseline justify-between rounded-xl px-4 py-3">
+                <span className="text-xs font-bold uppercase tracking-[0.15em] td-muted">Total to pay</span>
+                <span className="font-mono-num font-display text-3xl font-extrabold leading-none td-text">{formatMoney(total)}</span>
               </div>
               {tierDiscount + codeDiscount + requestedWallet > 0 && <div className="text-center text-[11px] font-bold uppercase tracking-wider text-success">You&apos;re saving {formatMoney(tierDiscount + codeDiscount + requestedWallet)} on this order</div>}
-              <div className="space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><span className="text-[11px] font-bold uppercase tracking-wider text-white/80">Discount code</span></div>
-                {appliedCode ? <div className="flex items-center justify-between rounded-lg border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs"><span className="min-w-0 truncate text-white"><span className="font-mono font-bold text-success">{appliedCode}</span>, {formatMoney(codeValidation?.discount_amount ?? 0)} off</span><button type="button" onClick={clearCode} className="ml-2 shrink-0 text-[11px] text-white/70 underline hover:text-white">Remove</button></div> : <div className="flex gap-2"><Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Enter code" className="h-9 flex-1 bg-white text-sm uppercase text-black placeholder:text-black/50" /><Button type="button" onClick={applyCode} disabled={!code.trim() || validating} className="h-9 px-3 text-xs font-bold uppercase tracking-wider">{validating ? "..." : "Apply"}</Button></div>}
+              <div className="space-y-2 rounded-xl border td-border bg-[color:var(--td-surface-soft)] p-3">
+                <div className="flex items-center gap-2"><Tag className="h-3.5 w-3.5 text-primary" /><span className="text-[11px] font-bold uppercase tracking-wider td-muted">Discount code</span></div>
+                {appliedCode ? <div className="flex items-center justify-between rounded-lg border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs"><span className="min-w-0 truncate td-text"><span className="font-mono font-bold text-success">{appliedCode}</span>, {formatMoney(codeValidation?.discount_amount ?? 0)} off</span><button type="button" onClick={clearCode} className="ml-2 shrink-0 text-[11px] td-muted underline hover:text-[color:var(--td-text)]">Remove</button></div> : <div className="flex gap-2"><Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="Enter code" className="h-9 flex-1 text-sm uppercase" /><Button type="button" onClick={applyCode} disabled={!code.trim() || validating} className="h-9 px-3 text-xs font-bold uppercase tracking-wider">{validating ? "..." : "Apply"}</Button></div>}
               </div>
-              {walletBalance > 0 && <div className="space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3"><div className="flex items-center gap-2"><Wallet className="h-3.5 w-3.5 text-gold" /><span className="text-[11px] font-bold uppercase tracking-wider text-white/80">Wallet credit</span><span className="font-mono-num ml-auto text-[11px] text-white/60">{formatMoney(walletBalance)} available</span></div><label className="flex cursor-pointer select-none items-center gap-2 text-xs text-white/85"><input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} className="h-4 w-4 accent-gold" disabled={maxWalletApplicable <= 0} />Apply up to <span className="font-mono-num font-bold text-gold">{formatMoney(maxWalletApplicable)}</span></label>{useWallet && maxWalletApplicable > 0 && <div className="flex items-center gap-2"><Input type="number" min="0" max={maxWalletApplicable} step="0.01" value={walletAmountInput} placeholder={String(maxWalletApplicable.toFixed(2))} onChange={(e) => setWalletAmountInput(e.target.value)} className="h-9 flex-1 bg-white text-sm text-black" /><span className="font-mono-num text-[11px] text-white/60">-{formatMoney(requestedWallet)}</span></div>}</div>}
+              {walletBalance > 0 && <div className="space-y-2 rounded-xl border td-border bg-[color:var(--td-surface-soft)] p-3"><div className="flex items-center gap-2"><Wallet className="h-3.5 w-3.5 text-gold" /><span className="text-[11px] font-bold uppercase tracking-wider td-muted">Wallet credit</span><span className="font-mono-num ml-auto text-[11px] td-soft">{formatMoney(walletBalance)} available</span></div><label className="flex cursor-pointer select-none items-center gap-2 text-xs td-muted"><input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} className="h-4 w-4 accent-gold" disabled={maxWalletApplicable <= 0} />Apply up to <span className="font-mono-num font-bold text-gold">{formatMoney(maxWalletApplicable)}</span></label>{useWallet && maxWalletApplicable > 0 && <div className="flex items-center gap-2"><Input type="number" min="0" max={maxWalletApplicable} step="0.01" value={walletAmountInput} placeholder={String(maxWalletApplicable.toFixed(2))} onChange={(e) => setWalletAmountInput(e.target.value)} className="h-9 flex-1 text-sm" /><span className="font-mono-num text-[11px] td-soft">-{formatMoney(requestedWallet)}</span></div>}</div>}
               {willEarn > 0 && total > 0 && <div className="flex items-center justify-center gap-1 text-[11px] text-gold"><Sparkles className="h-3 w-3" /> You&apos;ll earn {formatMoney(willEarn)} in wallet credit</div>}
-              <label className="flex cursor-pointer select-none items-start gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-[12px] leading-relaxed text-white/80"><input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-primary" /><span>Email me TopDraw offers and similar competitions. You can unsubscribe at any time.</span></label>
-              {notice ? <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-white/80">{notice}</div> : null}
+              <label className="flex cursor-pointer select-none items-start gap-2 rounded-lg border td-border bg-[color:var(--td-surface-soft)] px-3 py-2.5 text-[12px] leading-relaxed td-muted"><input type="checkbox" checked={marketingOptIn} onChange={(e) => setMarketingOptIn(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-primary" /><span>Email me TopDraw offers and similar competitions. You can unsubscribe at any time.</span></label>
+              {notice ? <div className="rounded-lg border td-border bg-[color:var(--td-surface-soft)] px-3 py-2 text-xs td-muted">{notice}</div> : null}
               <Button type="button" onClick={pay} disabled={submitting || lines.length === 0 || hasInvalidBasket} className="btn-primary-glow h-12 w-full text-sm font-bold uppercase tracking-wider">{ctaLabel}</Button>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-white/60"><ShieldCheck className="h-3 w-3 text-primary" /> Secure checkout. Entries confirmed after payment.</div>
+              <div className="flex items-center justify-center gap-1.5 text-[11px] td-soft"><ShieldCheck className="h-3 w-3 text-primary" /> Secure checkout. Entries confirmed after payment.</div>
             </Panel>
-            <p className="mx-auto mt-4 max-w-[34ch] text-balance text-center text-xs leading-relaxed text-white sm:max-w-[58ch] sm:text-sm">
-              18+ UK only. By placing this order you agree to our <Link href="/terms" className="underline decoration-white/40 underline-offset-2 hover:decoration-white">Terms</Link> and confirm you are 18 or over. A free postal entry route is available. See <Link href="/free-entry" className="underline decoration-white/40 underline-offset-2 hover:decoration-white">Free entry</Link>.
+            <p className="mx-auto mt-4 max-w-[34ch] text-balance text-center text-xs leading-relaxed td-muted sm:max-w-[58ch] sm:text-sm">
+              18+ UK only. By placing this order you agree to our <Link href="/terms" className="underline decoration-primary/50 underline-offset-2 hover:decoration-primary">Terms</Link> and confirm you are 18 or over. A free postal entry route is available. See <Link href="/free-entry" className="underline decoration-primary/50 underline-offset-2 hover:decoration-primary">Free entry</Link>.
             </p>
           </aside>
         </div>
@@ -390,13 +390,13 @@ function CheckoutShell({ children }: { children: React.ReactNode }) {
 
 function WarningPanel({ title, detail, onRemove }: { title: string; detail: string; onRemove: () => void }) {
   return (
-    <Panel variant="outline" tone="warning" className="p-4 text-sm text-white">
+    <Panel variant="outline" tone="warning" className="p-4 text-sm td-text">
       <div className="flex gap-2">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
         <div className="min-w-0 flex-1">
-          <div className="font-bold text-white">{title}</div>
-          <div className="mt-1 text-white/75">{detail}</div>
-          <button type="button" onClick={onRemove} className="mt-3 rounded-md border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/15">Remove unavailable item</button>
+          <div className="font-bold td-text">{title}</div>
+          <div className="mt-1 td-muted">{detail}</div>
+          <button type="button" onClick={onRemove} className="mt-3 rounded-md border td-border bg-[color:var(--td-surface-muted)] px-3 py-1.5 text-xs font-bold uppercase tracking-wider td-text hover:bg-[color:var(--td-surface-hover)]">Remove unavailable item</button>
         </div>
       </div>
     </Panel>
@@ -404,10 +404,10 @@ function WarningPanel({ title, detail, onRemove }: { title: string; detail: stri
 }
 
 function SummaryLine({ label, value, tone = "default", muted, strike }: { label: string; value: string; tone?: "default" | "success" | "gold"; muted?: boolean; strike?: boolean }) {
-  const valueClass = tone === "success" ? "text-success" : tone === "gold" ? "text-gold" : muted ? "text-white/50" : "text-white";
+  const valueClass = tone === "success" ? "text-success" : tone === "gold" ? "text-gold" : muted ? "td-faint" : "td-text";
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className={`${tone === "success" ? "font-bold text-success/90" : "text-white/70"}`}>{label}</span>
+      <span className={`${tone === "success" ? "font-bold text-success/90" : "td-muted"}`}>{label}</span>
       <span className={`font-mono-num font-bold ${valueClass} ${strike ? "line-through" : ""}`}>{value}</span>
     </div>
   );

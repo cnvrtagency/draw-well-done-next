@@ -9,8 +9,8 @@ Dark mode remains the only launch-ready visual mode. The Phase 1-3 theme work cr
 
 Light mode is currently a mixed state:
 
-- Better: `Header`, `Footer`, shared primitives, MiniCart, `CompetitionCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `WinnerCard`, countdowns and progress bars now have semantic token coverage in important areas.
-- Still weak: homepage hero/marketing sections, static/legal pages, auth pages, checkout, checkout success, account pages and admin pages still contain dense dark-only styling.
+- Better: `Header`, `Footer`, shared primitives, MiniCart, `CompetitionCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `WinnerCard`, countdowns, progress bars, public/static/marketing surfaces, checkout and auth screens now have semantic token coverage in important areas.
+- Still weak: account pages and admin pages still contain dense dark-only styling.
 - Highest risk: admin/account data-dense screens use white text, translucent white surfaces, dark hard-coded selects/tables/dialogs and dark mesh backgrounds. These will not be reliable in light mode until converted as a group.
 - Browser visual QA is still required after implementation. This audit is based on source inspection, route/component mapping, and build/lint validation. The in-app browser control tool was unavailable in this session, so no screenshot-based contrast checks were performed.
 
@@ -19,6 +19,12 @@ Public cleanup update:
 - Static/legal/help surfaces, guide list/detail cards, competition/winner route stat panels, homepage prize tabs, review/marquee fades, Bundle FAQ panels, and featured carousel controls have now been converted to theme-aware utilities.
 - Header and footer now swap to `/assets/topdraw-logo-light-mode.png` only under `html[data-theme="light"]`; dark mode continues using `/assets/topdraw-logo.png`.
 - The homepage hero remains intentionally dark-image led in light mode for premium contrast. Its headline/badge white text is deliberate and should be judged in browser QA rather than replaced blindly.
+
+Checkout/auth cleanup update:
+
+- `/checkout`, `/checkout/success`, `/login`, `/register`, `/forgot-password` and `/reset-password` now use theme-aware checkout/auth utilities where safe.
+- Checkout basket validation, discount code, wallet credit, Stripe/free-order payloads, checkout-success polling and Klaviyo one-shot behavior were not changed.
+- Auth validation and Supabase auth calls were not changed.
 
 Production verdict:
 
@@ -35,8 +41,8 @@ Production verdict:
 | `/competitions/[real slug]` | Partial | Detail core is improved, but gallery, marquee, free-entry notice, some gradients and status overlays remain dark-only. | High | Yes |
 | `/build-a-bundle` | Mostly improved | Builder rows/summary are better, but page-level intro/FAQ/home linking sections may still be dark-only depending on wrapper usage. | Medium | Yes |
 | `/winners` | Improved | Winner route stat panels and empty state are tokenized; browser QA still required. | Low | Yes |
-| `/checkout` | Not light-ready | `CheckoutClient` has 38 `text-white` matches and 13 dark surface/border matches; wallet, discount, stale basket, line items and summary panels need conversion. | Blocker for toggle | Yes, dedicated checkout pass |
-| `/checkout/success` | Not light-ready | `CheckoutSuccessClient` still uses `bg-hero-mesh`, `bg-aurora`, many white text/surface classes and dark status panels. | High | Yes |
+| `/checkout` | Improved | Order review, line cards, summary, wallet, discount, notices and empty/login states now use theme-aware utilities; browser QA still required. | Medium | Browser QA |
+| `/checkout/success` | Improved | Confirmation shell, status panels, ticket pills, refresh controls and recommendation copy now use theme-aware utilities; browser QA still required for all payment states. | Medium | Browser QA |
 | `/account` | Not light-ready | `AccountPages.tsx` has 52 white-text and 23 dark surface/border matches; account layout has dark mesh/panels. | Blocker for toggle | Yes, dedicated account pass |
 | `/account/profile` | Not light-ready | Forms use shared input better, but labels, panels, verification/upload copy and account utilities remain dark-only. | High | Yes |
 | `/account/wallet` | Not light-ready | Wallet rows, ledger, transaction icons and account panels use dark-only text/surfaces. | High | Yes |
@@ -94,16 +100,16 @@ Production verdict:
 
 | Component | Gap | Severity | Recommended fix | Dark risk |
 | --- | --- | --- | --- | --- |
-| `CheckoutClient` | Checkout page has dark-only line cards, wallet panels, notices, summary, stale basket warnings and outline buttons. | Blocker | Dedicated checkout conversion after public static/marketing. Use shared Panel/Input/Button tokens. | Medium |
-| `CheckoutSuccessClient` | Success hero uses `bg-hero-mesh`, `bg-aurora`, white text and dark panels; status/timeout/error panels remain dark-coded. | High | Convert success surfaces and reuse `td-public-card`/status utilities. | Medium |
+| `CheckoutClient` | Improved. Line cards, wallet panels, notices, summary, stale basket warnings and outline buttons now use theme-aware utilities. | Medium | Browser QA checkout totals, wallet, discount, stale basket and empty/login states. | Low |
+| `CheckoutSuccessClient` | Improved. Confirmation shell, status panels, ticket pills, recommendation cards and warning states now use theme-aware utilities. | Medium | Browser QA success, pending, failed, cancelled and allocation states. | Low |
 
 ### Auth
 
 | Component | Gap | Severity | Recommended fix | Dark risk |
 | --- | --- | --- | --- | --- |
-| `LoginClient` | `authInputClass`, labels, links and copy are white/dark-only. | High | Create auth-page semantic classes and update login/register/reset together. | Low |
-| `RegisterClient` | Multiple white text classes, dark panels and hard-coded checkbox/help copy. | High | Convert with login in one pass. | Low |
-| `ForgotPasswordClient` / `ResetPasswordClient` | Smaller but same auth styling assumptions. | Medium | Include in auth pass. | Low |
+| `LoginClient` | Improved. Auth inputs, labels, links and copy now use theme-aware auth utilities. | Low | Browser QA submit/error states. | Low |
+| `RegisterClient` | Improved. Auth glow, form card, phone input, checkbox rows, helper copy and links now use theme-aware auth utilities while keeping CTA gradient. | Medium | Browser QA mobile form density, date input and checkbox rows. | Low |
+| `ForgotPasswordClient` / `ResetPasswordClient` | Improved. Headings, inputs and messages now use theme-aware auth utilities. | Low | Browser QA message/error states. | Low |
 
 ### Account
 
@@ -235,11 +241,11 @@ Recommended admin approach:
 2. **Homepage marketing pass**  
    Convert `HeroCarousel`, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel`, `CategoryTabs`. Keep image overlays intentionally dark where needed.
 
-3. **Checkout pass**  
-   Convert `CheckoutClient` and `CheckoutSuccessClient`. This is a launch-critical customer flow and should get its own QA.
+3. **Checkout browser QA**  
+   Verify `CheckoutClient` and `CheckoutSuccessClient` in hidden light mode, including wallet, discount, stale basket, success, pending, failed, cancelled and allocation states.
 
-4. **Auth pass**  
-   Convert login/register/forgot/reset with shared auth surface classes.
+4. **Auth browser QA**  
+   Verify login/register/forgot/reset in hidden light mode, including error and success messages.
 
 5. **Account pass**  
    Convert account layout, account pages, wallet/profile/wins/security/responsible-play and prize claim/verification dialogs.

@@ -58,6 +58,17 @@ First visible light-mode cleanup pass for public/marketing surfaces is implement
 
 Launch note: hidden light mode is now substantially more readable on public/static/marketing pages. It is still not launch-ready until checkout/auth/account/admin surfaces are converted and browser contrast-tested at mobile and desktop widths.
 
+## Theme Checkout And Auth Cleanup - 2026-05-24
+
+Next light-mode cleanup pass is implemented for checkout and auth surfaces:
+
+- `CheckoutClient` now uses theme-aware text, panel, row, total, notice, wallet, discount and empty-state styling while preserving the existing basket, pricing, discount-code, wallet and `create-checkout-session` behavior.
+- `CheckoutSuccessClient` now uses tokenized confirmation panels, status panels, ticket pills, refresh buttons, recommendation blocks and success/failure/pending copy while preserving allocation polling and Klaviyo one-shot behavior.
+- `LoginClient`, `RegisterClient`, `ForgotPasswordClient` and `ResetPasswordClient` now use theme-aware auth input, label, hint, panel and checkbox-row styles while preserving existing Supabase auth calls and validation.
+- No visible theme toggle was added, and no checkout, basket, auth, Supabase, schema/RLS, Stripe/payment, ticket allocation, draw, pricing, Klaviyo or Resend logic was changed.
+
+Launch note: hidden light mode is now readable across public/static/marketing plus checkout/auth surfaces. It is still not ready for a customer-visible toggle until account and admin are converted and all themed routes receive browser contrast QA.
+
 ## Full Parity Audit - 2026-05-23
 
 Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.
