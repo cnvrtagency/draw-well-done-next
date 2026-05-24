@@ -19,6 +19,16 @@ Recommended approach:
 
 Light mode is realistic, but only if it remains TopDraw-branded: light graphite/silver backgrounds, strong dark text, restrained cyan accents, subtle glass panels, and fewer glows. It should feel premium and trustworthy, closer to fintech/editorial than a generic white SaaS UI.
 
+Phase 1 implementation status:
+
+- Added a lightweight custom `ThemeProvider` in `hooks/useTheme.tsx`.
+- Added `html[data-theme]` and `html[data-theme-preference]` scaffolding in `app/layout.tsx`, defaulting to dark.
+- Added a pre-paint theme initialisation script so a stored preference is applied before hydration.
+- Added dark and light token scaffolding in `app/globals.css`.
+- Kept the existing `.theme-dark` app wrapper and current dark visual system intact.
+- No visible theme toggle has been added yet.
+- Component-level light-mode conversion is intentionally deferred to the next phases.
+
 ## 2. Current Theme Architecture
 
 Audited files:
@@ -644,4 +654,3 @@ Use this as the first implementation pass:
 > Implement Phase 1 of the TopDraw light/dark mode system only. Work only in `~/Desktop/draw-well-done-next`. Do not change business logic, checkout, basket, auth, admin operations, Supabase, schema, RLS, payment, ticket allocation, draw logic, or pricing. Add a custom theme provider with dark/light/system preference, persisted via cookie and localStorage, and set `html[data-theme]` before paint to avoid theme flash. Keep dark mode as the exact default and do not add a visible toggle yet. Add light-mode CSS variable overrides and mode-aware primitive variables, but do not attempt broad component conversion. Verify current dark visuals remain unchanged. Run `npm run build` and `npm run lint`.
 
 After that pass, proceed component-by-component, starting with `Panel`, `Button`, `Input`, `Dialog`, `StatusBadge`, `Header`, `MiniCart`, and `CompetitionCard`.
-

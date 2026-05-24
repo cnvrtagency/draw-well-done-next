@@ -82,6 +82,8 @@
 - [x] Designer font copied
 - [x] Colours/glows/gradients copied
 - [x] Button/card utility classes copied
+- [x] Phase 1 theme-mode infrastructure added: `html[data-theme]`, dark default, pre-paint init script, custom `ThemeProvider`, persisted preference support and light token scaffold
+- [ ] Phase 2 theme-mode component conversion and visible toggle
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present
 - [x] Free Entry and Contact page content parity with Vite source

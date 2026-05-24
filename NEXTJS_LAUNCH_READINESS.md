@@ -12,6 +12,19 @@ Current verdict: ready for staging deployment and structured manual testing, but
 
 Audit-only note: this pass made documentation changes only. No business logic, routing, checkout, basket, auth, admin mutations, Supabase schema/RLS, Edge Functions, payment, draw, allocation, Klaviyo or Resend logic was changed.
 
+## Theme Mode Infrastructure - 2026-05-24
+
+Phase 1 of the light/dark mode system is implemented as infrastructure only:
+
+- `app/layout.tsx` now renders `html[data-theme="dark"]` by default and runs a small pre-paint script to apply any stored theme preference before hydration.
+- `hooks/useTheme.tsx` provides `ThemeProvider`, `useTheme`, `setTheme`, `theme` and `resolvedTheme`.
+- Theme preference is stored in `localStorage` and mirrored to a `topdraw_theme` cookie.
+- Supported preferences are `dark`, `light` and `system`; dark remains the default when no preference exists.
+- `app/globals.css` now contains light token scaffolding under `html[data-theme="light"] .theme-dark`.
+- The existing `.theme-dark` wrapper remains in place, and no visible toggle or component-wide light-mode conversion has been added yet.
+
+Launch note: dark-mode staging behavior should remain visually unchanged. Light mode is not launch-ready until shared components, public pages, account pages and admin pages are converted and contrast-tested.
+
 ## Full Parity Audit - 2026-05-23
 
 Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.
