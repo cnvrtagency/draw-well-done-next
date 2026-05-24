@@ -16,6 +16,7 @@ Strict palette/contrast follow-up:
 - Competition image gallery frames and account verification glow are now theme-aware.
 - `/admin/content-library` now uses explicit section, field-label, helper-text, upload-title and media-card classes so Upload/Files headings, Target folder labels, helper copy, search/select controls, previews, file names, folders and file sizes are readable.
 - Checkout light mode now has checkout-specific summary/row/total overrides so functional order text is darker, financial metadata is readable, ticket pills are crisper and primary CTA glow is restrained instead of blurred.
+- Emergency shared glow reset is implemented in `app/globals.css`: light mode now strips text glow, disables glow pulse animation, flattens `rim-glow`, neutralises major shared panel/background glows, and turns `btn-primary-glow`/`btn-free-glow` into crisp filled CTAs with restrained neutral shadows.
 
 This pass converted shared admin surfaces only:
 
@@ -42,6 +43,7 @@ Current production verdict:
 - Dark mode: staging-testable.
 - Light mode public/checkout/auth/account: staging-testable with browser QA required.
 - Light mode admin: shared surfaces, `/admin/entries` dense-table contrast and route-level compatibility are improved; browser QA and targeted route cleanup are still required before production sign-off.
+- Light mode glow: shared/global offenders are flattened; route-specific arbitrary shadows still need screenshot QA and targeted cleanup where visible.
 - Visible toggle: implemented and should remain enabled for staging QA.
 
 ## 2. Route-By-Route Gap List

@@ -1790,3 +1790,142 @@ html[data-theme="light"] .theme-dark .account-verification-glow {
   font-size: 0.875rem;
 }
 .account-table tbody tr:hover td { background: var(--td-surface-hover); }
+
+/* Emergency shared light-mode glow reset. Dark mode keeps the TopDraw glow identity. */
+html[data-theme="light"] .theme-dark .glow-text {
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .theme-dark .glow-border,
+html[data-theme="light"] .theme-dark .shadow-glow,
+html[data-theme="light"] .theme-dark .shadow-glow-soft,
+html[data-theme="light"] .theme-dark .td-glow-blue {
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.92) inset, 0 8px 20px -18px hsl(215 28% 27% / 0.22) !important;
+}
+
+html[data-theme="light"] .theme-dark .animate-glow-pulse {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .theme-dark .btn-primary-glow {
+  background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(208 100% 43%));
+  color: hsl(0 0% 100%);
+  text-shadow: none !important;
+  filter: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.24), 0 8px 18px -16px hsl(215 28% 27% / 0.32), inset 0 1px 0 hsl(0 0% 100% / 0.24) !important;
+}
+
+html[data-theme="light"] .theme-dark .btn-primary-glow:hover {
+  filter: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.34), 0 10px 20px -16px hsl(215 28% 27% / 0.36), inset 0 1px 0 hsl(0 0% 100% / 0.26) !important;
+}
+
+html[data-theme="light"] .theme-dark .btn-free-glow {
+  background-image: linear-gradient(135deg, hsl(350 75% 45%), hsl(4 74% 48%));
+  color: hsl(0 0% 100%);
+  text-shadow: none !important;
+  filter: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--destructive) / 0.24), 0 8px 18px -16px hsl(215 28% 27% / 0.32), inset 0 1px 0 hsl(0 0% 100% / 0.24) !important;
+}
+
+html[data-theme="light"] .theme-dark .btn-free-glow:hover {
+  filter: none !important;
+  box-shadow: 0 0 0 1px hsl(var(--destructive) / 0.34), 0 10px 20px -16px hsl(215 28% 27% / 0.36), inset 0 1px 0 hsl(0 0% 100% / 0.26) !important;
+}
+
+html[data-theme="light"] .theme-dark .rim-glow::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+html[data-theme="light"] .theme-dark .rim-glow,
+html[data-theme="light"] .theme-dark .td-public-card,
+html[data-theme="light"] .theme-dark .td-marketing-card {
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.94) inset, 0 10px 24px -20px hsl(215 28% 27% / 0.22) !important;
+}
+
+html[data-theme="light"] .theme-dark .td-public-card::before,
+html[data-theme="light"] .theme-dark .td-ui-panel::before {
+  opacity: 0.12 !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .theme-dark .td-empty-state-glow,
+html[data-theme="light"] .theme-dark .td-auth-page-glow,
+html[data-theme="light"] .theme-dark .admin-shell-glow,
+html[data-theme="light"] .theme-dark .account-bg-glow,
+html[data-theme="light"] .theme-dark .account-verification-glow {
+  opacity: 0 !important;
+  background: none !important;
+  filter: none !important;
+}
+
+html[data-theme="light"] .theme-dark .admin-shell {
+  background: hsl(var(--background)) !important;
+}
+
+html[data-theme="light"] .theme-dark .account-bg-mesh {
+  opacity: 0.16 !important;
+  background: linear-gradient(180deg, hsl(214 36% 98% / 0.55), transparent 82%) !important;
+}
+
+html[data-theme="light"] .theme-dark .bg-radial-glow,
+html[data-theme="light"] .theme-dark .bg-aurora::before,
+html[data-theme="light"] .theme-dark .bg-hero-mesh,
+html[data-theme="light"] .theme-dark .home-bg-layer {
+  filter: none !important;
+  background-image: none !important;
+}
+
+html[data-theme="light"] .theme-dark .home-bg {
+  background: hsl(210 57% 97%) !important;
+}
+
+html[data-theme="light"] .theme-dark .td-minicart-drawer.is-open,
+html[data-theme="light"] .theme-dark .td-minicart-footer {
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.92) inset, 0 10px 24px -20px hsl(215 28% 27% / 0.24) !important;
+}
+
+html[data-theme="light"] .theme-dark .td-tab-active,
+html[data-theme="light"] .theme-dark .td-nav-link-active::after,
+html[data-theme="light"] .theme-dark .td-countdown-segment {
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .theme-dark .td-progress-track [class*="shadow-[0_0"],
+html[data-theme="light"] .theme-dark .td-progress-track [class*="shadow-[inset_0_0"],
+html[data-theme="light"] .theme-dark .td-public-card [class*="shadow-[0_0"],
+html[data-theme="light"] .theme-dark .td-public-card [class*="shadow-[inset_0_0"],
+html[data-theme="light"] .theme-dark .account-page [class*="shadow-[0_0"],
+html[data-theme="light"] .theme-dark .td-minicart-drawer [class*="shadow-[0_0"],
+html[data-theme="light"] .theme-dark .td-minicart-drawer [class*="shadow-[0_10px"],
+html[data-theme="light"] .theme-dark .td-checkout-summary [class*="shadow-[0_0"] {
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.9) inset !important;
+}
+
+html[data-theme="light"] .theme-dark .entry-range::-webkit-slider-thumb,
+html[data-theme="light"] .theme-dark .entry-range::-moz-range-thumb,
+html[data-theme="light"] .theme-dark .entry-range--slim::-webkit-slider-thumb,
+html[data-theme="light"] .theme-dark .entry-range--slim::-moz-range-thumb {
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.28) !important;
+}
+
+html[data-theme="light"] .theme-dark .account-header,
+html[data-theme="light"] .theme-dark .account-panel,
+html[data-theme="light"] .theme-dark .account-panel-blue,
+html[data-theme="light"] .theme-dark .account-field-card {
+  box-shadow: 0 1px 0 hsl(0 0% 100% / 0.94) inset, 0 10px 24px -20px hsl(215 28% 27% / 0.22) !important;
+}
+
+html[data-theme="light"] .theme-dark .account-input:focus,
+html[data-theme="light"] .theme-dark .account-input:focus-visible {
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18) !important;
+}
+
+html[data-theme="light"] .theme-dark .account-secondary-button:hover {
+  box-shadow: 0 8px 18px -16px hsl(215 28% 27% / 0.26) !important;
+}

@@ -72,6 +72,7 @@ Admin shared-surface implementation status:
 - Strict light-mode palette pass applied the supplied fixed colours to the light tokens, disabled light-mode text glow, dampened light-mode glow shadows/pulses, softened light-mode aurora/mesh backgrounds, and added route-level admin compatibility for remaining dark utility classes.
 - The `/admin/content-library` page now uses explicit admin section, field-label, helper-text, upload-title and media-card classes for readable Upload/Files headings, Target folder labels, helper copy, controls, full-colour previews, strong file names, readable folder/size metadata and visible action buttons.
 - Checkout light mode now uses scoped summary/row/total overrides to keep order titles, prices, subtotal/discount rows, wallet/discount helper text and ticket pills crisp without changing checkout logic.
+- Emergency shared light-mode glow reset is now implemented: shared text glow, CTA glow, rim glow, auth/account/admin background glows, MiniCart shadows, account panel shadows, progress/arbitrary glow selectors and glow pulse animation are flattened only under `html[data-theme="light"]`.
 - Admin route-level content in `AdminPages.tsx` still needs follow-up conversion and browser QA.
 
 ## 2. Current Theme Architecture

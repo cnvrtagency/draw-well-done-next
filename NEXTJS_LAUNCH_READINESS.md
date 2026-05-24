@@ -128,6 +128,7 @@ The strict light-mode visual rules pass is implemented:
 - Competition image gallery frames now use theme-aware gallery frame/thumb utilities.
 - `/admin/content-library` now uses explicit admin section, field-label, helper-text, upload-title and media-card classes, so Upload/Files headings, Target folder labels, helper copy, search/select controls, previews, file names, folders, file sizes and copy/delete actions are readable without changing storage/upload/delete logic.
 - Checkout order summary, checkout rows, total panel and success ticket pills now have light-mode-specific contrast overrides; `btn-primary-glow` keeps a strong blue CTA but removes the messy blue glow in light mode.
+- Emergency shared glow reset is now applied under `html[data-theme="light"]`: shared text glow, heavy CTA/free button glow, rim glow pseudo-elements, auth/account/admin background glows, MiniCart/footer shadows, account panel shadows, progress/arbitrary glow selectors and glow pulse animation are flattened to crisp non-glowing light-mode treatments.
 
 Launch note: dark mode should remain visually close to the existing TopDraw baseline. Light mode still requires real-browser screenshot QA across public, checkout, account and admin routes before production sign-off.
 
