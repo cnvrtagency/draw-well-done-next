@@ -67,7 +67,32 @@ Next light-mode cleanup pass is implemented for checkout and auth surfaces:
 - `LoginClient`, `RegisterClient`, `ForgotPasswordClient` and `ResetPasswordClient` now use theme-aware auth input, label, hint, panel and checkbox-row styles while preserving existing Supabase auth calls and validation.
 - No visible theme toggle was added, and no checkout, basket, auth, Supabase, schema/RLS, Stripe/payment, ticket allocation, draw, pricing, Klaviyo or Resend logic was changed.
 
-Launch note: hidden light mode is now readable across public/static/marketing plus checkout/auth surfaces. It is still not ready for a customer-visible toggle until account and admin are converted and all themed routes receive browser contrast QA.
+Launch note: this phase kept light mode hidden. Checkout/auth surfaces still require browser contrast QA now that the header toggle is visible.
+
+## Theme Account And Light Background Cleanup - 2026-05-24
+
+Next light-mode cleanup pass is implemented for customer account surfaces and the global light-mode page shell:
+
+- Global `bg-hero-mesh`, `home-bg`, `home-bg-layer`, native date/select controls and `.bg-card` now resolve through theme variables so light mode uses a premium light/silver page background instead of a hard-coded dark navy shell.
+- `app/account/layout.tsx` now uses the tokenized account panel/navigation treatment while preserving the existing logged-out redirect and mobile scroll behavior.
+- `AccountPages` overview, entries, orders, wallet, transactions, profile, security, verification upload, prize claim dialog, wins and responsible-play surfaces now use theme-aware account/text/panel/input/table utilities where safe.
+- Shared `StatTile` now uses theme-aware text, icon and surface tokens for account dashboards and other summary tiles.
+- No visible theme toggle was added, and no account, auth, checkout, basket, Supabase, schema/RLS, Stripe/payment, ticket allocation, draw, pricing, Klaviyo or Resend logic was changed.
+
+Launch note: light mode is now substantially more readable across customer-facing public, checkout, auth and account surfaces. Admin remains the main known light-mode QA/follow-up area now that the header toggle is visible.
+
+## Theme Toggle - 2026-05-24
+
+The light/dark mode toggle is now visible for staging QA:
+
+- `Header` includes a compact icon toggle in the desktop control group near the wallet, MiniCart, Account/Admin and login controls.
+- The mobile menu includes a labeled theme toggle row.
+- The toggle uses the existing `useTheme`/`setTheme` provider only; it does not add a second theme state system.
+- Preference persistence remains the existing `topdraw_theme` localStorage value mirrored to the `topdraw_theme` cookie.
+- Dark remains the default for new users, and stored preferences continue to be respected before hydration by the existing pre-paint script.
+- Toggle buttons use real `<button>` elements with `aria-label`, `aria-pressed`, focus rings and touch-sized mobile controls.
+
+Launch note: public, checkout, auth and account light-mode surfaces are partially converted and exposed for staging review. Admin light mode is still a known QA/follow-up area and needs dedicated contrast testing; admin access is not blocked or forced back to dark mode.
 
 ## Full Parity Audit - 2026-05-23
 

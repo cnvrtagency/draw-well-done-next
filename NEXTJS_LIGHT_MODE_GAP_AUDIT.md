@@ -9,9 +9,9 @@ Dark mode remains the only launch-ready visual mode. The Phase 1-3 theme work cr
 
 Light mode is currently a mixed state:
 
-- Better: `Header`, `Footer`, shared primitives, MiniCart, `CompetitionCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `WinnerCard`, countdowns, progress bars, public/static/marketing surfaces, checkout and auth screens now have semantic token coverage in important areas.
-- Still weak: account pages and admin pages still contain dense dark-only styling.
-- Highest risk: admin/account data-dense screens use white text, translucent white surfaces, dark hard-coded selects/tables/dialogs and dark mesh backgrounds. These will not be reliable in light mode until converted as a group.
+- Better: `Header`, `Footer`, shared primitives, MiniCart, `CompetitionCard`, `CompetitionDetailClient`, `EntryQuantitySelector`, `BundleBuilder`, `WinnerCard`, countdowns, progress bars, public/static/marketing surfaces, checkout, auth and account screens now have semantic token coverage in important areas.
+- Still weak: admin pages still contain dense dark-only styling.
+- Highest risk: admin data-dense screens use white text, translucent white surfaces, dark hard-coded selects/tables/dialogs and dark mesh backgrounds. These will not be reliable in light mode until converted as a group.
 - Browser visual QA is still required after implementation. This audit is based on source inspection, route/component mapping, and build/lint validation. The in-app browser control tool was unavailable in this session, so no screenshot-based contrast checks were performed.
 
 Public cleanup update:
@@ -26,11 +26,23 @@ Checkout/auth cleanup update:
 - Checkout basket validation, discount code, wallet credit, Stripe/free-order payloads, checkout-success polling and Klaviyo one-shot behavior were not changed.
 - Auth validation and Supabase auth calls were not changed.
 
+Account/background cleanup update:
+
+- Global mesh/home/page background helpers now use theme variables, so hidden light mode no longer keeps the full page shell on hard-coded dark navy.
+- `/account`, `/account/entries`, `/account/orders`, `/account/transactions`, `/account/wallet`, `/account/profile`, `/account/security`, `/account/wins` and `/account/responsible-play` now use theme-aware account utilities where safe.
+- Prize claim dialog and verification upload panel are tokenized for hidden light mode. Account data queries, updates, password change, verification upload, claim submission and responsible-play RPC calls were not changed.
+
 Production verdict:
 
 - Dark mode: staging-testable.
-- Light mode hidden test: useful for developer inspection only.
-- Light mode public toggle: not ready.
+- Light mode visible toggle: now available in the desktop header controls and mobile menu for staging QA.
+- Light mode production sign-off: not ready until admin receives dedicated conversion/contrast QA and all routes pass browser testing.
+
+Visible toggle update:
+
+- The header toggle uses the existing `ThemeProvider`/`setTheme` persistence path and does not add a second localStorage loop.
+- Public, checkout, auth and account surfaces are ready for structured staging review in both modes.
+- Admin light mode remains the highest-risk follow-up area because it is still dense and operational.
 
 ## 2. Route-By-Route Gap List
 
@@ -43,11 +55,11 @@ Production verdict:
 | `/winners` | Improved | Winner route stat panels and empty state are tokenized; browser QA still required. | Low | Yes |
 | `/checkout` | Improved | Order review, line cards, summary, wallet, discount, notices and empty/login states now use theme-aware utilities; browser QA still required. | Medium | Browser QA |
 | `/checkout/success` | Improved | Confirmation shell, status panels, ticket pills, refresh controls and recommendation copy now use theme-aware utilities; browser QA still required for all payment states. | Medium | Browser QA |
-| `/account` | Not light-ready | `AccountPages.tsx` has 52 white-text and 23 dark surface/border matches; account layout has dark mesh/panels. | Blocker for toggle | Yes, dedicated account pass |
-| `/account/profile` | Not light-ready | Forms use shared input better, but labels, panels, verification/upload copy and account utilities remain dark-only. | High | Yes |
-| `/account/wallet` | Not light-ready | Wallet rows, ledger, transaction icons and account panels use dark-only text/surfaces. | High | Yes |
-| `/admin` | Not light-ready | Admin shell/sidebar, admin panels, tables, dialogs and route content are dark-only. | Blocker for toggle | Yes, dedicated admin pass |
-| `/admin/competitions` | Not light-ready | Tables, create/edit forms, image uploader, dialogs, selects and badges need tokenized admin utilities. | Blocker for toggle | Yes |
+| `/account` | Improved | Account overview, stat tiles, profile summary and nav shell now use theme-aware account utilities; browser QA still required. | Medium | Browser QA |
+| `/account/profile` | Improved | Profile forms, verification upload, labels, messages and account panels now use theme-aware utilities; browser QA still required. | Medium | Browser QA |
+| `/account/wallet` | Improved | Wallet balance, activity rows and transaction surfaces now use theme-aware utilities; browser QA still required. | Medium | Browser QA |
+| `/admin` | Not light-ready | Admin shell/sidebar, admin panels, tables, dialogs and route content are dark-only. | Blocker for production sign-off | Yes, dedicated admin pass |
+| `/admin/competitions` | Not light-ready | Tables, create/edit forms, image uploader, dialogs, selects and badges need tokenized admin utilities. | Blocker for production sign-off | Yes |
 | `/admin/hero-banners` | Not light-ready | Preview/forms/dialogs inherit admin dark-only shell and table utilities. | High | Yes |
 | `/free-entry` | Improved | Static page text, panels and legal instructions are now tokenized; placeholder legal address remains a content blocker. | Medium | Browser QA |
 | `/contact` | Improved | Contact text/panel are now tokenized; placeholder legal address remains a content blocker. | Medium | Browser QA |
@@ -247,8 +259,8 @@ Recommended admin approach:
 4. **Auth browser QA**  
    Verify login/register/forgot/reset in hidden light mode, including error and success messages.
 
-5. **Account pass**  
-   Convert account layout, account pages, wallet/profile/wins/security/responsible-play and prize claim/verification dialogs.
+5. **Account browser QA**  
+   Verify account layout, wallet/profile/wins/security/responsible-play and prize claim/verification dialogs in hidden light mode.
 
 6. **Admin shell/kit pass**  
    Convert `AdminShell`, `AdminKit`, `AdminImageUploader`, admin form/table/dialog primitives.

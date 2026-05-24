@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Menu, User, X } from "lucide-react";
+import { ChevronRight, Menu, Moon, Sun, User, X } from "lucide-react";
 import { brand } from "@/config/brand";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { MiniCartTrigger } from "@/components/MiniCart";
 import { useAuth } from "@/hooks/useAuth";
 import { WalletPill } from "@/components/WalletPill";
+import { useTheme } from "@/hooks/useTheme";
 
 const promo = ["Live competitions open now", "18+ only", "Free postal entry route", "Winners published", "Entry caps shown upfront", "UK prize competitions"];
 const navItems = [
@@ -24,6 +25,50 @@ function Wordmark() {
       <img src="/assets/topdraw-logo.png" alt={`${brand.name} logo`} width={470} height={95} className="td-logo-dark h-9 md:h-8 w-auto select-none group-hover:opacity-90 transition" draggable={false} />
       <img src="/assets/topdraw-logo-light-mode.png" alt={`${brand.name} logo`} width={470} height={95} className="td-logo-light h-9 md:h-8 w-auto select-none group-hover:opacity-90 transition" draggable={false} />
     </Link>
+  );
+}
+
+function ThemeToggle({ mobile = false }: { mobile?: boolean }) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isLight = mounted && resolvedTheme === "light";
+  const nextTheme = isLight ? "dark" : "light";
+  const label = mounted ? `Switch to ${nextTheme} mode` : "Toggle colour theme";
+  const Icon = isLight ? Moon : Sun;
+
+  if (mobile) {
+    return (
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={isLight}
+        onClick={() => setTheme(nextTheme)}
+        className="td-icon-button flex min-h-11 w-full items-center justify-between rounded-lg border border-[color:var(--td-border-muted)] bg-[color:var(--td-surface-soft)] px-4 py-3 text-left font-display text-[13px] font-bold uppercase tracking-[0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+      >
+        <span>{isLight ? "Dark mode" : "Light mode"}</span>
+        <span className="grid h-8 w-8 place-items-center rounded-full border border-[color:var(--td-border-muted)] bg-[color:var(--td-surface-muted)] text-[color:var(--td-text)]">
+          <Icon className="h-4 w-4" aria-hidden="true" />
+        </span>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={isLight}
+      title={label}
+      onClick={() => setTheme(nextTheme)}
+      className="td-icon-button hidden h-10 w-10 place-items-center rounded-md border border-[color:var(--td-border-muted)] bg-[color:var(--td-surface-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 lg:grid"
+    >
+      <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+    </button>
   );
 }
 
@@ -65,6 +110,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           <WalletPill />
           <MiniCartTrigger />
+          <ThemeToggle />
           {!loading && user ? (
             <>
               {isAdmin ? (
@@ -103,6 +149,7 @@ export function Header() {
               <Link href="/free-entry" onClick={() => setOpen(false)} className="block rounded-lg border border-info/40 bg-info/10 px-4 py-3 font-display text-[13px] font-bold uppercase tracking-[0.06em] text-info">Free postal entry route →</Link>
             </div>
             <div className="relative p-4 border-t td-border mt-2 space-y-2">
+              <ThemeToggle mobile />
               {!loading && user ? (
                 <>
                   <div className="flex items-center gap-3 px-1 pb-3">

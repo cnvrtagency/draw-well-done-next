@@ -26,7 +26,7 @@ Phase 1 implementation status:
 - Added a pre-paint theme initialisation script so a stored preference is applied before hydration.
 - Added dark and light token scaffolding in `app/globals.css`.
 - Kept the existing `.theme-dark` app wrapper and current dark visual system intact.
-- No visible theme toggle has been added yet.
+- No visible theme toggle was added in Phase 1.
 - Component-level light-mode conversion is intentionally deferred to the next phases.
 
 Phase 2 implementation status:
@@ -47,9 +47,17 @@ Phase 3 implementation status:
 - Image-backed overlays, gold winner chips and primary brand CTA text intentionally remain dark-image/brand-gradient safe instead of being forced into generic theme text.
 - Public/static and marketing cleanup has started: `StaticPages`, `InfoPage`, `FAQClient`, `FreeEntryNotice`, guide list/detail pages, public route panels, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel` and category/tabs now use theme-aware text, panel, border, edge-fade and tab utilities where safe.
 - Checkout and auth cleanup has started: `CheckoutClient`, `CheckoutSuccessClient`, `LoginClient`, `RegisterClient`, `ForgotPasswordClient` and `ResetPasswordClient` now use theme-aware checkout/auth utilities where safe.
+- Account cleanup has started: global page background helpers and `AccountLayout`, `AccountPages`, `StatTile`, prize claim and verification upload surfaces now use theme-aware account utilities where safe.
 - `Header` and `Footer` now use the new `/assets/topdraw-logo-light-mode.png` only when `html[data-theme="light"]` is active; dark mode keeps the existing `/assets/topdraw-logo.png`.
 - `HeroCarousel` remains intentionally dark-image led in light mode where white text sits over media or brand-gradient treatments.
-- Dark remains the default; no public toggle has been exposed.
+- Dark remains the default.
+
+Visible toggle implementation status:
+
+- `Header` now exposes a compact desktop theme toggle near the wallet, MiniCart and account/admin controls.
+- The mobile menu now includes a labeled theme toggle row.
+- The toggle uses the existing `ThemeProvider`/`useTheme`/`setTheme` path, so persistence remains `topdraw_theme` in localStorage mirrored to the `topdraw_theme` cookie.
+- Admin light mode is still the main known QA risk; the toggle is available for staging review but does not mean light mode has production sign-off.
 
 ## 2. Current Theme Architecture
 
@@ -531,9 +539,9 @@ Convert:
 - `app/checkout/CheckoutClient.tsx` - converted in checkout/auth cleanup pass
 - `app/checkout/success/CheckoutSuccessClient.tsx` - converted in checkout/auth cleanup pass
 - `app/login/LoginClient.tsx`, `app/register/RegisterClient.tsx`, `app/forgot-password/ForgotPasswordClient.tsx`, `app/reset-password/ResetPasswordClient.tsx` - converted in checkout/auth cleanup pass
-- `app/account/layout.tsx`
-- `app/account/AccountPages.tsx`
-- account table/input/panel utilities
+- `app/account/layout.tsx` - converted in account cleanup pass
+- `app/account/AccountPages.tsx` - converted in account cleanup pass
+- account table/input/panel utilities - converted in account cleanup pass
 - `components/admin/AdminShell.tsx`
 - `components/admin/AdminKit.tsx`
 - `app/admin/AdminPages.tsx`

@@ -88,9 +88,13 @@
 - [x] Light-mode logo asset wired for Header/Footer via CSS `data-theme` switching; dark logo remains unchanged
 - [x] First visible public/static/marketing light-mode cleanup pass for static/legal/help pages, FAQs, guides, PrizeDrops, Bundle FAQ, reviews/marquees and featured carousel controls
 - [x] Checkout/auth light-mode cleanup pass for checkout, checkout success, login, register, forgot password and reset password
+- [x] Global light-mode page background cleanup for `bg-hero-mesh`, home background helpers, `.bg-card` and native date/select controls
+- [x] Account light-mode cleanup pass for account layout, overview, entries, orders, wallet, profile, security, wins, prize claim, verification upload and responsible play
+- [x] Visible theme toggle added to desktop header controls and mobile menu using the existing `ThemeProvider` persistence path
 - [ ] Checkout/auth browser contrast QA
-- [ ] Account/admin light-mode conversion and contrast QA
-- [ ] Visible theme toggle after dark/light public, account and admin QA
+- [ ] Account browser contrast QA
+- [ ] Admin light-mode conversion and contrast QA
+- [ ] Full route browser contrast QA after exposing the toggle, especially admin
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present
 - [x] Free Entry and Contact page content parity with Vite source
