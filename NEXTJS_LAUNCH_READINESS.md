@@ -81,6 +81,13 @@ Next light-mode cleanup pass is implemented for customer account surfaces and th
 
 Launch note: light mode is now substantially more readable across customer-facing public, checkout, auth and account surfaces. Admin remains the main known light-mode QA/follow-up area now that the header toggle is visible.
 
+Account background follow-up:
+
+- `/account/*` no longer uses the generic high-opacity `bg-hero-mesh` account backdrop.
+- `app/account/layout.tsx` now uses account-specific `account-bg-mesh` and `account-bg-glow` layers.
+- Dark mode keeps the existing premium blue mesh atmosphere; light mode uses much softer silver/cyan gradients to avoid the dark blue glow behind account content.
+- Decorative account background layers remain `pointer-events-none` and do not affect account logic or routing.
+
 ## Theme Toggle - 2026-05-24
 
 The light/dark mode toggle is now visible for staging QA:
@@ -93,6 +100,19 @@ The light/dark mode toggle is now visible for staging QA:
 - Toggle buttons use real `<button>` elements with `aria-label`, `aria-pressed`, focus rings and touch-sized mobile controls.
 
 Launch note: public, checkout, auth and account light-mode surfaces are partially converted and exposed for staging review. Admin light mode is still a known QA/follow-up area and needs dedicated contrast testing; admin access is not blocked or forced back to dark mode.
+
+## Theme Admin Shared Surfaces - 2026-05-24
+
+The first admin light-mode cleanup pass is implemented for shared surfaces only:
+
+- `AdminShell` now uses theme-aware admin shell, sidebar, navigation, loading and access-denied styling.
+- `AdminKit` shared page headers, panels, table wrappers and table rows now use admin theme tokens.
+- `AdminImageUploader` dropzone, drag-over state, title and helper text now use admin theme tokens.
+- Shared admin helper labels, textareas, loading messages and empty states in `AdminPages.tsx` now use admin theme classes.
+- Repeated admin table headers, native selects and dialog shells were moved away from hard-coded dark HSL/white utility styling.
+- Admin business logic, role guard behavior, queries, mutations, RPC/Edge Function calls, uploads and validation were not changed.
+
+Launch note: admin light mode is more readable at the shared-surface level, but route-level admin content still needs conversion and browser QA before production sign-off.
 
 ## Full Parity Audit - 2026-05-23
 

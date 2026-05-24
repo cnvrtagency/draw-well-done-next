@@ -43,8 +43,8 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="container relative mx-auto grid flex-1 gap-5 px-4 py-6 md:grid-cols-[236px_1fr] md:gap-7 md:py-7">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[420px] bg-hero-mesh opacity-85" />
-      <div className="pointer-events-none absolute inset-x-0 top-24 -z-0 h-[360px] bg-[radial-gradient(60%_45%_at_50%_0%,hsl(var(--primary)/0.10),transparent_70%)]" />
+      <div className="account-bg-mesh pointer-events-none absolute inset-x-0 top-0 -z-0 h-[420px]" />
+      <div className="account-bg-glow pointer-events-none absolute inset-x-0 top-24 -z-0 h-[360px]" />
       <aside className="account-panel relative h-fit self-start p-3 backdrop-blur-xl md:sticky md:top-20">
         <div className="px-3 pb-3 pt-1"><div className="eyebrow">My account</div></div>
         <nav className="space-y-1" aria-label="Account navigation">

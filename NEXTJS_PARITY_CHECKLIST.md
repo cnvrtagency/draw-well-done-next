@@ -90,10 +90,12 @@
 - [x] Checkout/auth light-mode cleanup pass for checkout, checkout success, login, register, forgot password and reset password
 - [x] Global light-mode page background cleanup for `bg-hero-mesh`, home background helpers, `.bg-card` and native date/select controls
 - [x] Account light-mode cleanup pass for account layout, overview, entries, orders, wallet, profile, security, wins, prize claim, verification upload and responsible play
+- [x] Account light-mode background glow cleanup: `/account/*` now uses account-specific mesh/glow utilities instead of the generic strong `bg-hero-mesh` layer
 - [x] Visible theme toggle added to desktop header controls and mobile menu using the existing `ThemeProvider` persistence path
+- [x] Admin shared-surface light-mode cleanup for `AdminShell`, `AdminKit`, `AdminImageUploader`, common admin labels/textareas/selects/dialog shells and table wrappers
 - [ ] Checkout/auth browser contrast QA
 - [ ] Account browser contrast QA
-- [ ] Admin light-mode conversion and contrast QA
+- [ ] Admin route-level light-mode conversion and contrast QA
 - [ ] Full route browser contrast QA after exposing the toggle, especially admin
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present

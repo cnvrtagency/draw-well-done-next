@@ -48,6 +48,7 @@ Phase 3 implementation status:
 - Public/static and marketing cleanup has started: `StaticPages`, `InfoPage`, `FAQClient`, `FreeEntryNotice`, guide list/detail pages, public route panels, `PrizeDrops`, `BundleFAQSection`, `ReviewsMarquee`, `CompetitionMarquee`, `FeaturedCompetitionsCarousel` and category/tabs now use theme-aware text, panel, border, edge-fade and tab utilities where safe.
 - Checkout and auth cleanup has started: `CheckoutClient`, `CheckoutSuccessClient`, `LoginClient`, `RegisterClient`, `ForgotPasswordClient` and `ResetPasswordClient` now use theme-aware checkout/auth utilities where safe.
 - Account cleanup has started: global page background helpers and `AccountLayout`, `AccountPages`, `StatTile`, prize claim and verification upload surfaces now use theme-aware account utilities where safe.
+- Account background follow-up replaced the generic high-opacity `bg-hero-mesh` account backdrop with account-specific `account-bg-mesh` and `account-bg-glow` utilities; light mode now uses softer silver/cyan ambience while dark mode keeps the premium blue mesh feel.
 - `Header` and `Footer` now use the new `/assets/topdraw-logo-light-mode.png` only when `html[data-theme="light"]` is active; dark mode keeps the existing `/assets/topdraw-logo.png`.
 - `HeroCarousel` remains intentionally dark-image led in light mode where white text sits over media or brand-gradient treatments.
 - Dark remains the default.
@@ -58,6 +59,15 @@ Visible toggle implementation status:
 - The mobile menu now includes a labeled theme toggle row.
 - The toggle uses the existing `ThemeProvider`/`useTheme`/`setTheme` path, so persistence remains `topdraw_theme` in localStorage mirrored to the `topdraw_theme` cookie.
 - Admin light mode is still the main known QA risk; the toggle is available for staging review but does not mean light mode has production sign-off.
+
+Admin shared-surface implementation status:
+
+- `AdminShell` now uses tokenized admin shell, sidebar, nav, loading and access-denied classes.
+- `AdminKit` now uses tokenized admin header, panel and table row classes.
+- `AdminImageUploader` now uses tokenized dropzone, drag-over and helper text classes.
+- Shared admin helpers in `AdminPages.tsx` now use tokenized labels, textareas, loading and empty states.
+- Repeated admin table headers, select controls and dialog shells were moved to admin token classes.
+- Admin route-level content in `AdminPages.tsx` still needs follow-up conversion and browser QA.
 
 ## 2. Current Theme Architecture
 

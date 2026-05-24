@@ -6,11 +6,11 @@ export function AdminPageHeader({ eyebrow, title, subtitle, actions, icon, class
     <header className={cn("mb-5 flex flex-col gap-3 md:mb-6 md:flex-row md:items-end md:justify-between", className)}>
       <div className="min-w-0">
         {eyebrow ? <div className="eyebrow mb-1">{eyebrow}</div> : null}
-        <h1 className="font-display flex items-center gap-2 text-2xl font-bold tracking-tight text-white md:text-3xl">
+        <h1 className="font-display flex items-center gap-2 text-2xl font-bold tracking-tight admin-value md:text-3xl">
           {icon ? <span className="inline-flex text-primary">{icon}</span> : null}
           <span className="truncate">{title}</span>
         </h1>
-        {subtitle ? <p className="mt-1.5 max-w-3xl text-sm text-white/60">{subtitle}</p> : null}
+        {subtitle ? <p className="mt-1.5 max-w-3xl text-sm admin-muted">{subtitle}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
     </header>
@@ -24,8 +24,8 @@ export function AdminPanel({ title, description, actions, children, className, b
       {hasHeader ? (
         <div className="flex flex-col gap-2 px-5 pt-5 sm:flex-row sm:items-start sm:justify-between md:px-6 md:pt-6">
           <div className="min-w-0">
-            {title ? <h2 className="font-display text-base font-bold tracking-tight text-white md:text-lg">{title}</h2> : null}
-            {description ? <p className="mt-1 text-xs text-white/60 md:text-sm">{description}</p> : null}
+            {title ? <h2 className="font-display text-base font-bold tracking-tight admin-value md:text-lg">{title}</h2> : null}
+            {description ? <p className="mt-1 text-xs admin-muted md:text-sm">{description}</p> : null}
           </div>
           {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
         </div>
@@ -39,7 +39,7 @@ export function AdminTable({ children, minWidth = 920 }: { children: React.React
   return (
     <Panel variant="glass" className="overflow-hidden p-0">
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-sm" style={{ minWidth }}>{children}</table>
+        <table className="admin-table" style={{ minWidth }}>{children}</table>
       </div>
     </Panel>
   );
@@ -54,5 +54,5 @@ export function AdminTD({ children, align = "left", className }: { children: Rea
 }
 
 export function AdminTR({ children }: { children: React.ReactNode }) {
-  return <tr className="border-t border-white/10 transition-colors hover:bg-white/5">{children}</tr>;
+  return <tr className="admin-table-row">{children}</tr>;
 }
