@@ -95,11 +95,11 @@ export function Header() {
 
   return (
     <header className={`td-header sticky top-0 z-40 transition-colors duration-300 ${scrolled ? "is-scrolled" : ""}`}>
-      <div className="container mx-auto px-4 pt-2 md:pt-3">
-        <div className="td-header-shell mx-auto max-w-7xl grid grid-cols-[auto_1fr_auto] items-center gap-4 px-3 py-2 lg:flex lg:h-[68px] lg:justify-between lg:px-4 xl:px-5">
+      <div className="relative container mx-auto px-4 pt-2 md:pt-3">
+        <div className="td-header-shell relative z-[52] mx-auto max-w-7xl grid grid-cols-[auto_1fr_auto] items-center gap-4 px-3 py-2 lg:flex lg:h-[68px] lg:justify-between lg:px-4 xl:px-5">
           <div className="flex items-center gap-3 lg:hidden">
-            <button aria-label="Open menu" onClick={() => setOpen(true)} className="td-header-control td-icon-button grid h-10 w-10 place-items-center rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60">
-              <Menu className="w-5 h-5" />
+            <button aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((v) => !v)} className="td-header-control td-icon-button grid h-10 w-10 place-items-center rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60">
+              {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
           <div className="hidden lg:block"><Wordmark /></div>
@@ -132,51 +132,49 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button className="td-modal-backdrop absolute inset-0" aria-label="Close menu" onClick={() => setOpen(false)} />
-          <aside className="td-mobile-menu td-header-mobile-menu relative h-dvh w-[88%] max-w-sm overflow-hidden p-0">
-            <div className="relative flex items-center justify-between border-b td-border px-4 py-4">
-              <Wordmark />
-              <button aria-label="Close menu" onClick={() => setOpen(false)} className="td-header-control td-icon-button grid h-9 w-9 place-items-center rounded-xl focus-visible:ring-2 focus-visible:ring-primary/60"><X className="w-5 h-5" /></button>
-            </div>
-            <nav className="relative flex flex-col px-3 py-3">
+        <>
+          <button className="td-modal-backdrop fixed inset-0 z-40 lg:hidden" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <div className="absolute inset-x-0 top-full z-50 px-4 pt-2 lg:hidden">
+            <aside className="td-header-mobile-menu td-header-mobile-dropdown mx-auto max-w-7xl overflow-hidden p-0 animate-fade-up">
+              <nav className="relative flex flex-col px-3 py-3">
               {navItems.map((n) => (
                 <Link key={n.to} href={n.to} onClick={() => setOpen(false)} className={`td-header-mobile-link flex items-center justify-between px-3.5 py-3.5 font-display text-[14px] font-bold uppercase tracking-[0.06em] ${pathname === n.to ? "is-active text-[color:var(--td-text)]" : "td-muted hover:text-[color:var(--td-text)]"}`}>
                   <span>{n.label}</span><ChevronRight className="w-4 h-4 text-[color:var(--td-text-soft)]" />
                 </Link>
               ))}
-            </nav>
-            <div className="px-4 pt-4">
-              <Link href="/free-entry" onClick={() => setOpen(false)} className="td-header-control block rounded-xl px-4 py-3 font-display text-[13px] font-bold uppercase tracking-[0.06em] text-info">Free postal entry route →</Link>
-            </div>
-            <div className="relative mt-3 space-y-2 border-t td-border p-4">
-              <ThemeToggle mobile />
-              {!loading && user ? (
-                <>
-                  <div className="flex items-center gap-3 px-1 pb-3">
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-electric text-white">
-                      <User className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="td-soft text-xs font-bold uppercase tracking-wider">Signed in</div>
-                      <div className="truncate text-sm text-[color:var(--td-text)]">{user.email}</div>
+              </nav>
+              <div className="px-4 pt-2">
+                <Link href="/free-entry" onClick={() => setOpen(false)} className="td-header-control block rounded-xl px-4 py-3 font-display text-[13px] font-bold uppercase tracking-[0.06em] text-info">Free postal entry route →</Link>
+              </div>
+              <div className="relative mt-3 space-y-2 border-t td-border p-4">
+                <ThemeToggle mobile />
+                {!loading && user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-1 pb-3">
+                      <span className="grid h-10 w-10 place-items-center rounded-full bg-electric text-white">
+                        <User className="h-5 w-5" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="td-soft text-xs font-bold uppercase tracking-wider">Signed in</div>
+                        <div className="truncate text-sm text-[color:var(--td-text)]">{user.email}</div>
+                      </div>
                     </div>
-                  </div>
-                  {isAdmin ? <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/admin" onClick={() => setOpen(false)}>Admin</Link></Button> : null}
-                  <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/account" onClick={() => setOpen(false)}>My account</Link></Button>
-                  <Button className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs" onClick={closeAndSignOut}>Sign out</Button>
-                </>
-              ) : !loading ? (
-                <>
-                  <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/login" onClick={() => setOpen(false)}>Log in</Link></Button>
-                  <Button asChild className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs"><Link href="/register" onClick={() => setOpen(false)}>Create account</Link></Button>
-                </>
-              ) : (
-                <div className="td-minicart-card rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-[0.06em] td-soft">Checking session...</div>
-              )}
-            </div>
-          </aside>
-        </div>
+                    {isAdmin ? <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/admin" onClick={() => setOpen(false)}>Admin</Link></Button> : null}
+                    <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/account" onClick={() => setOpen(false)}>My account</Link></Button>
+                    <Button className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs" onClick={closeAndSignOut}>Sign out</Button>
+                  </>
+                ) : !loading ? (
+                  <>
+                    <Button asChild variant="outline" className="td-header-control w-full border-0 bg-transparent font-display text-xs uppercase tracking-[0.06em] text-[color:var(--td-text)]"><Link href="/login" onClick={() => setOpen(false)}>Log in</Link></Button>
+                    <Button asChild className="w-full btn-primary-glow font-display font-bold uppercase tracking-[0.06em] text-xs"><Link href="/register" onClick={() => setOpen(false)}>Create account</Link></Button>
+                  </>
+                ) : (
+                  <div className="td-minicart-card rounded-lg px-4 py-3 text-xs font-bold uppercase tracking-[0.06em] td-soft">Checking session...</div>
+                )}
+              </div>
+            </aside>
+          </div>
+        </>
       )}
     </header>
   );

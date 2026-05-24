@@ -129,7 +129,7 @@ export function MiniCart() {
     <>
       {isOpen && <button type="button" aria-label="Close basket" onClick={close} className="td-modal-backdrop fixed inset-0 z-50" />}
       <aside
-        className={`td-minicart-drawer fixed right-0 top-0 z-50 theme-dark h-[100dvh] w-full max-w-[440px] transform transition-[transform,opacity,box-shadow] duration-300 will-change-transform ${isOpen ? "is-open translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none shadow-none"}`}
+        className={`td-minicart-drawer td-minicart-dropdown fixed z-[51] theme-dark transition-[transform,opacity,box-shadow] duration-300 will-change-transform ${isOpen ? "is-open" : ""}`}
         aria-hidden={!isOpen}
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
