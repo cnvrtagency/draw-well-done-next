@@ -83,7 +83,9 @@
 - [x] Colours/glows/gradients copied
 - [x] Button/card utility classes copied
 - [x] Phase 1 theme-mode infrastructure added: `html[data-theme]`, dark default, pre-paint init script, custom `ThemeProvider`, persisted preference support and light token scaffold
-- [ ] Phase 2 theme-mode component conversion and visible toggle
+- [x] Phase 2 shared theme primitives converted: `Panel`, `Button`, `Input`, `Dialog`, `StatusBadge`, `EmptyState`, `WalletPill` and `MiniCart`
+- [ ] Phase 3 public shell/theme conversion for Header, Footer, competition cards, detail, Bundle Builder and winners
+- [ ] Visible theme toggle after dark/light public, account and admin QA
 - [x] Header/footer routes preserved
 - [x] Static/legal routes present
 - [x] Free Entry and Contact page content parity with Vite source

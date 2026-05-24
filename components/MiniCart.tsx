@@ -35,7 +35,7 @@ export function MiniCartTrigger() {
       type="button"
       aria-label={`Basket (${count} items)`}
       onClick={openDrawer}
-      className="relative w-10 h-10 grid place-items-center rounded-md text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary/60"
+      className="td-icon-button relative w-10 h-10 grid place-items-center rounded-md focus-visible:ring-2 focus-visible:ring-primary/60"
     >
       <ShoppingBag className="w-5 h-5" />
       {count > 0 && (
@@ -127,33 +127,33 @@ export function MiniCart() {
 
   return (
     <>
-      {isOpen && <button type="button" aria-label="Close basket" onClick={close} className="fixed inset-0 z-50 bg-black/60" />}
+      {isOpen && <button type="button" aria-label="Close basket" onClick={close} className="td-modal-backdrop fixed inset-0 z-50" />}
       <aside
-        className={`fixed right-0 top-0 z-50 theme-dark h-[100dvh] w-full max-w-[440px] transform border-l border-white/10 !bg-[hsl(222_45%_6%/0.96)] text-white backdrop-blur-xl transition-[transform,opacity,box-shadow] duration-300 will-change-transform ${isOpen ? "translate-x-0 opacity-100 pointer-events-auto shadow-[0_0_60px_-10px_hsl(var(--primary)/0.35)]" : "translate-x-full opacity-0 pointer-events-none shadow-none"}`}
+        className={`td-minicart-drawer fixed right-0 top-0 z-50 theme-dark h-[100dvh] w-full max-w-[440px] transform transition-[transform,opacity,box-shadow] duration-300 will-change-transform ${isOpen ? "is-open translate-x-0 opacity-100 pointer-events-auto" : "translate-x-full opacity-0 pointer-events-none shadow-none"}`}
         aria-hidden={!isOpen}
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
         <div className="flex h-full flex-col overflow-hidden">
-          <div className="flex shrink-0 items-center justify-between border-b border-white/10 bg-[hsl(222_45%_6%/0.92)] px-5 py-4 backdrop-blur-xl">
+          <div className="td-minicart-header flex shrink-0 items-center justify-between px-5 py-4">
             <div className="min-w-0">
-              <div className="font-display text-lg font-bold uppercase leading-none tracking-wide text-white">Your basket</div>
-              <div className="mt-1 text-xs text-white/60">
+              <div className="font-display text-lg font-bold uppercase leading-none tracking-wide text-[color:var(--td-text)]">Your basket</div>
+              <div className="td-soft mt-1 text-xs">
                 {count > 0 ? <><span className="font-bold text-primary">{count}</span> {itemWord}</> : "Empty"}
               </div>
             </div>
-            <button type="button" onClick={close} aria-label="Close basket" className="grid h-9 w-9 place-items-center rounded-lg text-white transition hover:bg-white/10">
+            <button type="button" onClick={close} aria-label="Close basket" className="td-icon-button grid h-9 w-9 place-items-center rounded-lg transition">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {items.length === 0 ? (
-            <div className="grid flex-1 place-items-center px-6 py-10 text-center text-white/80">
+            <div className="td-muted grid flex-1 place-items-center px-6 py-10 text-center">
               <div>
-                <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl border border-white/10 bg-white/5">
-                  <ShoppingBag className="h-7 w-7 text-white/50" />
+                <div className="td-minicart-card mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl">
+                  <ShoppingBag className="h-7 w-7 text-[color:var(--td-text-soft)]" />
                 </div>
-                <div className="font-display mb-1 text-base font-bold text-white">Your basket is empty</div>
-                <div className="mb-5 text-sm text-white/60">Choose a live competition to get started.</div>
+                <div className="font-display mb-1 text-base font-bold text-[color:var(--td-text)]">Your basket is empty</div>
+                <div className="td-soft mb-5 text-sm">Choose a live competition to get started.</div>
                 <Button asChild onClick={close} className="btn-primary-glow font-bold uppercase tracking-wider">
                   <Link href="/competitions">View live competitions</Link>
                 </Button>
@@ -172,40 +172,40 @@ export function MiniCart() {
                   const activeTier = activeTierFor(i.competition_id, i.quantity);
                   const image = competitionThumbImageUrl(c ?? {});
                   return (
-                    <div key={i.competition_id} className="rounded-xl border border-white/10 bg-white/[0.035] p-3 transition hover:border-white/15 sm:p-3.5">
+                    <div key={i.competition_id} className="td-minicart-card rounded-xl p-3 transition sm:p-3.5">
                       <div className="flex items-start gap-3">
                         {image ? (
-                          <img src={image} alt="" className="h-20 w-20 shrink-0 rounded-xl border border-white/10 bg-black/20 object-cover sm:h-24 sm:w-24" loading="lazy" decoding="async" />
+                          <img src={image} alt="" className="h-20 w-20 shrink-0 rounded-xl border td-border bg-[color:var(--td-image-placeholder)] object-cover sm:h-24 sm:w-24" loading="lazy" decoding="async" />
                         ) : (
-                          <div className="h-20 w-20 shrink-0 rounded-xl border border-white/10 bg-white/5 sm:h-24 sm:w-24" />
+                          <div className="h-20 w-20 shrink-0 rounded-xl border td-border bg-[color:var(--td-image-placeholder)] sm:h-24 sm:w-24" />
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start gap-2">
-                            <Link href={c ? `/competitions/${c.slug}` : "#"} onClick={close} className="font-display line-clamp-2 min-w-0 flex-1 text-sm font-bold text-white transition hover:text-primary">
+                            <Link href={c ? `/competitions/${c.slug}` : "#"} onClick={close} className="font-display line-clamp-2 min-w-0 flex-1 text-sm font-bold text-[color:var(--td-text)] transition hover:text-primary">
                               {c?.title ?? "Loading..."}
                             </Link>
-                            <button type="button" onClick={() => remove(i.competition_id)} aria-label={c ? `Remove ${c.title}` : "Remove item"} className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-white/50 transition hover:bg-white/5 hover:text-warning">
+                            <button type="button" onClick={() => remove(i.competition_id)} aria-label={c ? `Remove ${c.title}` : "Remove item"} className="td-icon-button grid h-7 w-7 shrink-0 place-items-center rounded-md text-[color:var(--td-text-soft)] transition hover:text-warning">
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
                           </div>
-                          <div className="font-mono-num mt-0.5 text-[11px] text-white/55">{c ? formatMoney(c.ticket_price) : "-"} per ticket</div>
+                          <div className="td-soft font-mono-num mt-0.5 text-[11px]">{c ? formatMoney(c.ticket_price) : "-"} per ticket</div>
                           <div className="mt-1.5">
                             {activeTier ? (
                               <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-success/40 bg-success/15 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-success">
                                 <BadgePercent className="h-3 w-3" /> Save {activeTier.discount_percentage}% applied
                               </span>
                             ) : (
-                              <span className="inline-flex rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white/55">No discount</span>
+                              <span className="td-badge-muted inline-flex rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">No discount</span>
                             )}
                           </div>
                         </div>
                       </div>
                       <div className="mt-2 flex items-center justify-between pl-[92px] sm:pl-[108px]">
-                        <div className="inline-flex h-[34px] items-center rounded-md border border-white/10 bg-black/30">
-                          <button type="button" onClick={() => update(i.competition_id, i.quantity - 1)} aria-label="Decrease quantity" className="grid h-full w-9 place-items-center rounded-l-md text-white hover:bg-white/10">
+                        <div className="td-minicart-qty inline-flex h-[34px] items-center rounded-md">
+                          <button type="button" onClick={() => update(i.competition_id, i.quantity - 1)} aria-label="Decrease quantity" className="td-icon-button grid h-full w-9 place-items-center rounded-l-md">
                             <Minus className="h-3.5 w-3.5" />
                           </button>
-                          <span className="font-mono-num w-8 text-center text-sm font-bold text-white">{i.quantity}</span>
+                          <span className="font-mono-num w-8 text-center text-sm font-bold text-[color:var(--td-text)]">{i.quantity}</span>
                           <button
                             type="button"
                             onClick={() => {
@@ -218,12 +218,12 @@ export function MiniCart() {
                             }}
                             disabled={atLimit}
                             aria-label="Increase quantity"
-                            className="grid h-full w-9 place-items-center rounded-r-md text-white hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                            className="td-icon-button grid h-full w-9 place-items-center rounded-r-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
                         </div>
-                        <div className="font-mono-num whitespace-nowrap text-sm font-bold text-white">{formatMoney(lineTotal)}</div>
+                        <div className="font-mono-num whitespace-nowrap text-sm font-bold text-[color:var(--td-text)]">{formatMoney(lineTotal)}</div>
                       </div>
                       {c && c.per_user_entry_limit != null && i.quantity >= c.per_user_entry_limit && (
                         <div className="mt-1.5 pl-[92px] text-[11px] text-warning sm:pl-[108px]">Entry limit reached ({c.per_user_entry_limit} per person).</div>
@@ -234,8 +234,8 @@ export function MiniCart() {
                 {limitMessage ? <div className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">{limitMessage}</div> : null}
               </div>
 
-              <div className="shrink-0 border-t border-white/10 bg-[hsl(222_45%_5%/0.98)] px-4 pb-2 pt-4 shadow-[0_-12px_40px_-12px_hsl(var(--primary)/0.35)] backdrop-blur-xl sm:px-5" style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
-                <div className="relative mb-3 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-white/[0.025] to-transparent p-4">
+              <div className="td-minicart-footer shrink-0 px-4 pb-2 pt-4 sm:px-5" style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}>
+                <div className="td-minicart-card relative mb-3 overflow-hidden rounded-2xl p-4">
                   <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_top_right,hsl(var(--primary)/0.12),transparent_60%)]" />
                   <div className="relative space-y-2.5">
                     {hasSavings ? (
@@ -247,23 +247,23 @@ export function MiniCart() {
                     ) : (
                       <SummaryRow label="Subtotal" value={formatMoney(subtotal)} />
                     )}
-                    <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                    <div className="td-divider-soft" />
                     <div className="flex items-baseline justify-between">
-                      <span className="font-display text-sm font-extrabold uppercase tracking-wider text-white">Total</span>
-                      <span className="font-mono-num text-2xl font-extrabold leading-none text-white">{formatMoney(hasSavings ? discountedSubtotal : subtotal)}</span>
+                      <span className="font-display text-sm font-extrabold uppercase tracking-wider text-[color:var(--td-text)]">Total</span>
+                      <span className="font-mono-num text-2xl font-extrabold leading-none text-[color:var(--td-text)]">{formatMoney(hasSavings ? discountedSubtotal : subtotal)}</span>
                     </div>
-                    <p className="pt-1 text-[12px] leading-relaxed text-white/70">Discount codes and wallet credit can be applied at checkout.</p>
+                    <p className="td-muted pt-1 text-[12px] leading-relaxed">Discount codes and wallet credit can be applied at checkout.</p>
                   </div>
                 </div>
                 {anyDiscounted ? (
                   <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-success/40 bg-success/[0.10] px-3.5 py-2.5 shadow-[0_0_24px_-10px_hsl(var(--success)/0.6)]">
                     <BadgePercent className="h-4 w-4 shrink-0 text-success" />
-                    <span className="font-display text-[13px] font-extrabold uppercase leading-tight tracking-wider text-white">Ticket bundle savings applied</span>
+                    <span className="font-display text-[13px] font-extrabold uppercase leading-tight tracking-wider text-[color:var(--td-text)]">Ticket bundle savings applied</span>
                   </div>
                 ) : (
                   <div className="mb-3 flex items-center gap-2 rounded-lg border border-info/25 bg-info/[0.06] px-3 py-2">
                     <Sparkles className="h-3.5 w-3.5 shrink-0 text-info" />
-                    <span className="text-[12px] leading-snug text-white/85">{upsellMsg}</span>
+                    <span className="td-muted text-[12px] leading-snug">{upsellMsg}</span>
                   </div>
                 )}
                 <Button asChild className="btn-primary-glow h-14 w-full text-[15px] font-extrabold uppercase tracking-wider shadow-[0_10px_30px_-8px_hsl(var(--primary)/0.7)]" onClick={close}>
@@ -284,8 +284,8 @@ export function MiniCart() {
 function SummaryRow({ label, value, muted, strike, success }: { label: string; value: string; muted?: boolean; strike?: boolean; success?: boolean }) {
   return (
     <div className="flex items-center justify-between text-[13px]">
-      <span className={`text-[11px] font-bold uppercase tracking-wider ${success ? "text-success" : "text-white/60"}`}>{label}</span>
-      <span className={`font-mono-num ${success ? "font-extrabold text-success" : muted ? "text-white/55" : "font-bold text-white/90"} ${strike ? "line-through" : ""}`}>{value}</span>
+      <span className={`text-[11px] font-bold uppercase tracking-wider ${success ? "text-success" : "td-soft"}`}>{label}</span>
+      <span className={`font-mono-num ${success ? "font-extrabold text-success" : muted ? "td-soft" : "font-bold text-[color:var(--td-text)]"} ${strike ? "line-through" : ""}`}>{value}</span>
     </div>
   );
 }

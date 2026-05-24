@@ -25,6 +25,17 @@ Phase 1 of the light/dark mode system is implemented as infrastructure only:
 
 Launch note: dark-mode staging behavior should remain visually unchanged. Light mode is not launch-ready until shared components, public pages, account pages and admin pages are converted and contrast-tested.
 
+## Theme Shared Primitives - 2026-05-24
+
+Phase 2 of the light/dark mode system is implemented for shared primitives only:
+
+- `Panel`, `Button`, `Input`, `Dialog`, `StatusBadge`, `EmptyState`, `WalletPill` and `MiniCart` now use semantic theme-aware classes or CSS variables where safe.
+- The MiniCart closed state remains non-interactive with `pointer-events-none` and no open-state shadow while closed.
+- Dialog overlays remain Radix-mounted only while open and use a theme-aware backdrop variable.
+- Header and Footer were audited but intentionally not converted in this pass; they remain part of the next public-shell theme phase.
+
+Launch note: dark remains the default and should remain visually equivalent. Light mode is still not production-ready until page-level surfaces and high-risk account/admin components are converted and manually contrast-tested.
+
 ## Full Parity Audit - 2026-05-23
 
 Overall verdict: not ready for staging sign-off as a Vite replacement. The main customer journey and admin shell are substantially ported, `/build-a-bundle` has now been replaced with the real Vite-style Bundle Builder, and public static/legal pages now use the full Vite source content. The Vite source still contains placeholder promoter postal address/date strings, so final legal address/date content remains a launch content blocker. High-risk checkout/account/admin mutations still need real staging tests against existing Supabase RLS, storage policies, RPCs and Edge Functions.

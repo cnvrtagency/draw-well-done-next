@@ -29,6 +29,16 @@ Phase 1 implementation status:
 - No visible theme toggle has been added yet.
 - Component-level light-mode conversion is intentionally deferred to the next phases.
 
+Phase 2 implementation status:
+
+- Converted shared primitive surfaces to semantic utility classes without adding a visible toggle.
+- `Panel` now uses `td-ui-panel`, `td-ui-panel-surface`, `td-ui-panel-raised` and `td-ui-panel-outline`.
+- `Button`, `Input` and `Dialog` now expose theme-aware primitive classes while preserving their existing variants and `asChild` behavior.
+- `StatusBadge` neutral/muted states now use semantic badge classes instead of white-border dark-only classes.
+- `EmptyState`, `WalletPill` and `MiniCart` now use theme-aware surface, border, text and overlay variables.
+- MiniCart still uses `pointer-events-none` while closed and keeps the drawer translated off-screen to avoid click blocking or right-edge glow bleed.
+- Header/Footer were audited but not converted in this pass because they are higher-risk public-shell components.
+
 ## 2. Current Theme Architecture
 
 Audited files:

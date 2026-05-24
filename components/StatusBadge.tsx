@@ -1,14 +1,14 @@
 import { cn } from "@/lib/utils";
 
 const map: Record<string, { label: string; cls: string }> = {
-  draft: { label: "Draft", cls: "bg-muted text-muted-foreground border border-white/10" },
+  draft: { label: "Draft", cls: "td-badge-muted" },
   scheduled: { label: "Scheduled", cls: "bg-info/20 text-info border border-info/40" },
   live: { label: "Live", cls: "bg-success text-success-foreground" },
   sold_out: { label: "Sold out", cls: "bg-warning text-warning-foreground" },
-  closed: { label: "Closed", cls: "bg-white/10 text-white border border-white/15" },
+  closed: { label: "Closed", cls: "td-badge-neutral" },
   drawn: { label: "Drawn", cls: "bg-primary text-primary-foreground" },
-  archived: { label: "Archived", cls: "bg-muted text-muted-foreground border border-white/10" },
-  pending: { label: "Pending", cls: "bg-muted text-muted-foreground border border-white/10" },
+  archived: { label: "Archived", cls: "td-badge-muted" },
+  pending: { label: "Pending", cls: "td-badge-muted" },
   published: { label: "Published", cls: "bg-success text-success-foreground" },
   under_review: { label: "Under review", cls: "bg-warning text-warning-foreground" },
   succeeded: { label: "Succeeded", cls: "bg-success text-success-foreground" },

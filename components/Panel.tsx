@@ -5,10 +5,10 @@ type Variant = "glass" | "surface" | "raised" | "outline";
 type Tone = "default" | "primary" | "info" | "success" | "warning" | "gold";
 
 const variantCls: Record<Variant, string> = {
-  glass: "glass-panel",
-  surface: "surface-card",
-  raised: "glass-panel-strong",
-  outline: "rounded-xl border border-white/10 bg-transparent",
+  glass: "td-ui-panel",
+  surface: "td-ui-panel-surface",
+  raised: "td-ui-panel-raised",
+  outline: "td-ui-panel-outline",
 };
 
 const toneCls: Record<Tone, string> = {
