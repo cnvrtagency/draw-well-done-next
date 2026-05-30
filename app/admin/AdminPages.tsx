@@ -15,6 +15,12 @@ import { isLikelyHttpsImage } from "@/lib/image";
 import { regenerateCompetitionImageVariants, type CompetitionImageVariantSet } from "@/lib/competitionImages";
 import { AdminPageHeader, AdminPanel, AdminTable, AdminTD, AdminTH, AdminTR } from "@/components/admin/AdminKit";
 import { AdminImageUploader } from "@/components/admin/AdminImageUploader";
+import { AdminOrdersPage } from "@/components/admin/AdminOrdersPage";
+import { AdminPaymentsDevPage } from "@/components/admin/AdminPaymentsDevPage";
+import { AdminProfitCalculator } from "@/components/admin/AdminProfitCalculator";
+import { AdminSettingsPage } from "@/components/admin/AdminSettingsPage";
+import { AdminUsersPage } from "@/components/admin/AdminUsersPage";
+import { AdminVerificationsPage } from "@/components/admin/AdminVerificationsPage";
 
 type Row = Record<string, any>;
 
@@ -71,10 +77,12 @@ export function AdminRoute({ path }: { path?: string[] }) {
   if (key === "competitions/new") return <CompetitionFormPage mode="new" />;
   if (key.startsWith("competitions/")) return <CompetitionFormPage mode="edit" id={path?.[1]} />;
   if (key === "hero-banners") return <HeroBannersPage />;
-  if (key === "customers" || key === "users") return <CustomersPage />;
+  if (key === "customers") return <CustomersPage />;
+  if (key === "users") return <AdminUsersPage />;
   if (key === "entries") return <EntriesPage />;
-  if (key === "orders") return <PaymentsPage title="Orders" />;
+  if (key === "orders") return <AdminOrdersPage />;
   if (key === "payments") return <PaymentsPage title="Payments" />;
+  if (key === "payments-dev") return <AdminPaymentsDevPage />;
   if (key === "draws") return <DrawsPage />;
   if (key === "winners") return <WinnersPage />;
   if (key === "reviews") return <ReviewsPage />;
@@ -91,7 +99,9 @@ export function AdminRoute({ path }: { path?: string[] }) {
   if (key === "dynamic-content") return <DynamicContentPage />;
   if (key === "page-content") return <PageContentPage />;
   if (key === "notifications") return <NotificationsPage />;
-  if (key === "profit-calculator") return <UnavailableAdminPage title="Profit Calculator" body="This advisory tool is outside the staging operations set. Use the documented readiness checklist for launch review." />;
+  if (key === "profit-calculator") return <AdminProfitCalculator />;
+  if (key === "verifications") return <AdminVerificationsPage />;
+  if (key === "settings") return <AdminSettingsPage />;
   return <UnavailableAdminPage title="Admin" body={`No operational admin screen is available for /admin/${key}.`} />;
 }
 

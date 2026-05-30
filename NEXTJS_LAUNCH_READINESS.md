@@ -11,30 +11,36 @@
 
 ## Current state summary
 
-- The rebuild is functionally broad: public, auth, account, checkout, admin, sitemap/robots, Netlify config, and Supabase plumbing are present.
-- Theme system is fully wired (`ThemeProvider`, preference persistence, default dark, visible toggle).
-- Light mode is substantially improved on public/checkout/account surfaces but still needs final browser validation, especially admin.
-- Build/lint are passing but with non-blocking warnings.
+- Core public/auth/account/checkout routes remain in place and stable.
+- Admin parity for previously missing Vite areas requested in this implementation pass is now implemented/clarified:
+  - `/admin/profit-calculator`
+  - `/admin/verifications`
+  - `/admin/users`
+  - `/admin/settings`
+  - `/admin/payments-dev`
+  - `/footers-preview`
+- `/admin/orders` now clearly documents its Vite parity status as a compatibility route while preserving explicit separation.
+- Remaining major risk remains legal/compliance content, staging validation of all write paths, and light-mode/admin accessibility polish.
 
 ## Top hard blockers
-1. Legal/placeholders from Vite source are still public.
-2. Checkout/account/admin mutation and payment flows are not yet fully validated in staging.
-3. Admin parity gaps remain for secondary areas and dedicated verification route.
-4. Real-browser interactivity/visual QA remains to be executed.
+
+1. Legal placeholders and launch content blockers in static/legal pages are still present.
+2. High-risk checkout/account/admin write paths still need staging-safe execution (refund/cancel, entry actions, draw flow, claim + verification lifecycle).
+3. Legacy alias routes remain intentionally present and require operator documentation during rollout.
+4. Light-mode audit is only partial for dense admin tables, dialogs, and forms.
 
 ## What passed vs what remains
 
 ### Good
-- Route surface coverage: all required core routes exist.
-- Bundle Builder is implemented on `/build-a-bundle`.
-- `/admin`/`/account` access control and route mapping exists.
-- `app/sitemap.ts`, `app/robots.ts`, and `NEXT_PUBLIC_SITE_URL` metadata patterns are configured.
+- Route surface includes all user-facing core pages.
+- Theme persistence and dark-mode-default plumbing are fully operational.
+- Route map for requested admin tools was expanded and wired in `app/admin/AdminPages.tsx` and visible in `components/admin/AdminShell.tsx`.
+- Build/lint execution remains a gate.
 
 ### Remaining
-- Launch-critical content/legal placeholders.
-- Staging validation of all revenue/admin writes.
-- Visual/accessibility parity checks across breakpoints.
-- Route decisions for `/help` and Vite-only route equivalents.
+- Confirm legal text cleanup and promoter/compliance copy.
+- Confirm Vite parity decisions for legacy alias routes and explicit dev-only behavior.
+- Confirm no console hydration or action-state regressions on admin pages under staging-like payloads.
 
 ## Build / lint status
 
@@ -43,9 +49,12 @@
 
 ## Updated launch actions
 
-- [x] Confirm and replace legal placeholders and promoter details.
-- [ ] Decide and finalize `/help` parity behavior (keep/remove/noindex).
-- [ ] Run full breakpoint manual QA for public + account + checkout + admin.
-- [ ] Run staged staging-safe mutation tests for checkout/account/admin.
-- [ ] Finalize light-mode/admin contrast and accessibility checks.
-- [ ] Ensure IndexNow key deployment and env settings in Netlify.
+- [x] Wire `/admin/profit-calculator` route/component from parity baseline.
+- [x] Add `/admin/verifications` review workflow.
+- [x] Add `/admin/users` dedicated route.
+- [x] Add `/admin/settings` route placeholder (safe parity status preserved).
+- [x] Add `/admin/payments-dev` parity route with dev-only visual guard.
+- [x] Add `/footers-preview` route + noindex metadata.
+- [ ] Resolve all legal/compliance placeholders before production signoff.
+- [ ] Complete staging-safe manual validation for all checkout/account/admin mutations.
+- [ ] Finish light-mode/admin accessibility verification and contrast checks.

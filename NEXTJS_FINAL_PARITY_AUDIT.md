@@ -20,9 +20,15 @@
 - **Admin:** `/admin` and core admin subroutes listed in parity plan
 
 ### Missing/extra notes
-- ` /footers-preview` (Vite route) is not a public route in Next.
+- `/footers-preview` is now implemented as a public preview route with `noindex`.
 - `/help` exists in Next as redirect alias, but no direct Vite source equivalent.
-- Several Vite admin routes exist as placeholders/catch-all fallbacks in Next.
+- Previously missing Vite admin routes now have dedicated parity pages:
+  - `/admin/profit-calculator`
+  - `/admin/verifications`
+  - `/admin/users`
+  - `/admin/settings`
+  - `/admin/payments-dev`
+  - `/admin/orders` (compatibility route with explicit note)
 
 ## What is close to parity
 - Basket + MiniCart + discount and wallet math are present and shape-compatible.
@@ -34,7 +40,7 @@
 - Legal/static placeholder cleanup.
 - Full-staging validation of high-impact writes.
 - Visual and accessibility parity under real breakpoint/browser testing.
-- Admin route completeness for secondary workflows.
+- Admin route completeness for reduced/editor-light workflows (emails, notifications, dynamic/page content) and operator training on alias routes.
 
 ## Recommended decision
 

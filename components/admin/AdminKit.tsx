@@ -17,7 +17,23 @@ export function AdminPageHeader({ eyebrow, title, subtitle, actions, icon, class
   );
 }
 
-export function AdminPanel({ title, description, actions, children, className, bodyClassName, flush, variant = "glass", ...rest }: PanelProps & { title?: React.ReactNode; description?: React.ReactNode; actions?: React.ReactNode; bodyClassName?: string; flush?: boolean }) {
+export function AdminPanel({
+  title,
+  description,
+  actions,
+  children,
+  className,
+  bodyClassName,
+  flush,
+  variant = "glass",
+  ...rest
+}: Omit<PanelProps, "title"> & {
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  actions?: React.ReactNode;
+  bodyClassName?: string;
+  flush?: boolean;
+}) {
   const hasHeader = Boolean(title || description || actions);
   return (
     <Panel variant={variant} className={cn("overflow-hidden", className)} {...rest}>

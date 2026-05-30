@@ -2,21 +2,28 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
+  Calculator,
   Award,
   BookOpen,
   CreditCard,
   ExternalLink,
+  ShieldCheck,
   Gavel,
+  BellRing,
   Image as ImageIcon,
   LayoutDashboard,
   Library,
   LifeBuoy,
+  FileText,
+  Megaphone,
+  Settings,
   LogOut,
   Mail,
   Search,
   Send,
+  Terminal,
   Star,
   Tag,
   Trophy,
@@ -26,9 +33,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { showDevTools } from "@/lib/devTools";
 
-const nav = [
+const coreNav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/profit-calculator", label: "Profit Calculator", icon: Calculator },
   { href: "/admin/competitions", label: "Competitions", icon: Trophy },
   { href: "/admin/content-library", label: "Content", icon: Library },
   { href: "/admin/guides", label: "Guides", icon: BookOpen },
@@ -39,16 +48,34 @@ const nav = [
   { href: "/admin/postal-entries", label: "Postal entries", icon: Mail },
   { href: "/admin/draws", label: "Draws", icon: Gavel },
   { href: "/admin/winners", label: "Winners", icon: Award },
-  { section: "Phase 2" },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
-  { href: "/admin/orders", label: "Orders", icon: CreditCard },
   { href: "/admin/customers", label: "Customers", icon: UserCircle },
   { href: "/admin/discount-codes", label: "Discount codes", icon: Tag },
   { href: "/admin/wallet-settings", label: "Wallet settings", icon: Wallet },
   { href: "/admin/faqs", label: "FAQs", icon: LifeBuoy },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
+];
+
+const phaseTwoNav = [
+  { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/admin/orders", label: "Orders", icon: CreditCard },
+  { href: "/admin/verifications", label: "Verifications", icon: ShieldCheck },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
+
+const toolsNav = [
+  { href: "/admin/notifications", label: "Notifications", icon: BellRing },
+  { href: "/admin/content", label: "Content", icon: Library },
+  { href: "/admin/dynamic-content", label: "Dynamic content", icon: Megaphone },
+  { href: "/admin/page-content", label: "Page content", icon: FileText },
+  { href: "/admin/seo", label: "SEO", icon: Search },
+] as const;
+
+const maybeDevNav = showDevTools
+  ? [{ href: "/admin/payments-dev", label: "Payments (dev)", icon: Terminal }]
+  : [];
+
+const nav = [...coreNav, ...phaseTwoNav, ...maybeDevNav, ...toolsNav];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -88,7 +115,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </Link>
         <nav className="flex-1 space-y-1 overflow-y-auto p-2" aria-label="Admin navigation">
           {nav.map((item, index) => {
-            if ("section" in item) return <div key={`${item.section}-${index}`} className="admin-nav-section eyebrow mt-3 border-t px-3 pt-3">{item.section}</div>;
+            if ("section" in item) {
+              const section = (item as { section: ReactNode }).section;
+              if (!section) return null;
+              return (
+                <div key={`${section}-${index}`} className="admin-nav-section eyebrow mt-3 border-t px-3 pt-3">
+                  {section}
+                </div>
+              );
+            }
             const exact = "exact" in item && item.exact;
             const active = exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;

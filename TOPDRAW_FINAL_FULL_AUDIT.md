@@ -5,6 +5,21 @@
 **Source of truth:** `~/Desktop/draw-well-done`  
 **Scope:** complete audit only (no functional changes)
 
+## 0) Post-pass implementation update (2026-05-30)
+
+Admin parity gap closure has been completed for:
+- `/admin/profit-calculator`
+- `/admin/verifications`
+- `/admin/users`
+- `/admin/settings`
+- `/admin/payments-dev`
+- `/footers-preview`
+- explicit `/admin/orders` admin compatibility route note
+
+All of these are now surfaced in admin navigation and/or route handling with Vite-aligned behavior and no schema or function changes introduced.
+
+## 1) Executive summary
+
 ## 1) Executive summary
 
 The Next.js App Router rebuild is substantially complete functionally, with most customer and admin routes present and wired to existing Supabase/Edge Function plumbing. It is **not yet production-ready** for replacement of the Vite app.
@@ -51,9 +66,9 @@ Primary launch blockers remain: legal/content placeholders inherited from the Vi
    - Impact: revenue + compliance + support risk.
 3. **Account claim/verification/storage flows unverified in staging** (`submit_prize_claim`, `submit_account_verification`).
 4. **Admin draw/payment/entry/wallet/postal mutation paths unverified**.
-5. **No dedicated `/admin/verifications` workflow parity** (Vite had dedicated verification review surface). Next now relies on customer row status/info only.
+5. **`/admin/verifications` now has dedicated parity workflow**.
 6. **Admin route `/admin/emails` is simplified** compared with Vite rich editor/preview/log tooling.
-7. **Secondary admin routes missing/limited parity:** `/admin/notifications`, `/admin/dynamic-content`, `/admin/page-content`, `/admin/settings`, `/admin/profit-calculator`.
+7. **Secondary admin routes remain limited**: `/admin/notifications`, `/admin/dynamic-content`, `/admin/page-content`.
 8. **Light-mode browser QA not completed for admin and all-route-state combinations.**
 9. **Real-browser pixel/interactivity QA still not completed at required breakpoints** (1440/1280/390/430).
 10. **Competition detail: "Tell me when it’s live" CTA appears for coming-soon with no visible handler** (dead clickable target risk).
@@ -141,7 +156,7 @@ Primary launch blockers remain: legal/content placeholders inherited from the Vi
 | `/admin/hero-banners` | ✅ | `app/admin/hero-banners/page.tsx` -> `AdminPages` | Parity close | Upload/activation/test path not browser-verified | Staging validation | P2 |
 | `/admin/customers` | ✅ | `app/admin/customers/page.tsx` -> `AdminPages` | Customer list and wallet actions exist | Richness reduced vs Vite but usable | QA + storage/action validation | P1 |
 | `/admin/entries` | ✅ | `app/admin/entries/page.tsx` -> `AdminPages` | Route exists | Entry actions available | Staging validation | P1 |
-| `/admin/orders` | ✅ (alias-like list path into generic admin route) | `app/admin/...` + `AdminPages` | Distinct Vite route style not fully mirrored | Admin confusion risk, not functional gap | QA | P2 |
+| `/admin/orders` | ✅ (alias-like list path into generic admin route) | `app/admin/...` + `AdminPages` | Vite does not expose a distinct orders page and Next presents compatibility route | Admin confusion risk only | QA | P2 |
 | `/admin/payments` | ✅ | `app/admin/payments/page.tsx` -> `AdminPages` | Refund/cancel flows exist | Very high-stakes money flow | Staging validation | P1 |
 | `/admin/draws` | ✅ | `app/admin/draws/page.tsx` -> `AdminPages` | Draw execution path exists | High-stakes operational risk | Staging validation | P1 |
 | `/admin/winners` | ✅ | `app/admin/winners/page.tsx` -> `AdminPages` | Status/publish/proof actions exist | Proof bucket/display QA pending | Staging validation | P1 |
@@ -157,8 +172,11 @@ Primary launch blockers remain: legal/content placeholders inherited from the Vi
 | `/admin/content-library` | ✅ | `app/admin/content-library/page.tsx` -> `AdminPages` | Functional parity close | Storage/perms validation pending | P1 |
 | `/admin/seo-centre` | ✅ | `app/admin/seo-centre/page.tsx` -> `AdminPages` | Functionality exists (IndexNow submit + URL list/copy) | Env-key and production verification needed | P2 |
 | `/admin` catch-all `/admin/[...path]` | ✅ | `app/admin/[...path]/page.tsx` + `AdminPages` | Unknown/unsupported routes fallback | Useful compatibility bridge | Unknown visual parity for fallback states | Low | P4 |
-| `/admin/custom alias routes` (`/admin/content`, `/admin/seo`, `/admin/users`) | ✅ aliases | same as above via fallback | Route-level parity only partial | Low-medium | P4 |
-| `/admin/notifications`, `/admin/dynamic-content`, `/admin/page-content`, `/admin/settings`, `/admin/verifications`, `/admin/profit-calculator` | ✅ via fallback only | safe unavailable page messages | Missing dedicated parity pages | Operational feature gap | Launch not critical if intentionally removed; documented blockers remain | P4 |
+| `/admin/profit-calculator` | ✅ | `app/admin/profit-calculator/page.tsx` + `components/admin/AdminProfitCalculator.tsx` | Dedicated calculator implemented | Formula parity depends on Vite-side validation | Staging validation | P2 |
+| `/admin/verifications` | ✅ | `app/admin/verifications/page.tsx` + `components/admin/AdminVerificationsPage.tsx` | Dedicated verification review workflow | Action safety depends on storage/RLS | Staging validation | P1 |
+| `/admin/users` | ✅ | `app/admin/users/page.tsx` + `components/admin/AdminUsersPage.tsx` | Dedicated route implemented | Distinction from `/admin/customers` incomplete by design | Staging validation | P2 |
+| `/admin/settings` | ✅ | `app/admin/settings/page.tsx` + `components/admin/AdminSettingsPage.tsx` | Settings parity mostly placeholder/utility | Depends on Vite source expectations | Staging validation | P2 |
+| `/admin/custom alias routes` (`/admin/content`, `/admin/seo`, `/admin/notifications`, `/admin/dynamic-content`, `/admin/page-content`) | ✅ aliases | same as above via fallback | Dedicated implementations incomplete for listed routes | Operational feature gap | P3 |
 
 ## 5) Design / visual audit
 
@@ -296,9 +314,9 @@ Primary launch blockers remain: legal/content placeholders inherited from the Vi
 - Route mapping and role checks are in-app.
 
 ### Missing/partial parity
-- No dedicated verification review route.
+- `/admin/verifications` route and review workflow are implemented.
 - `/admin/emails` is a reduced implementation.
-- Dynamic content/settings/notifications/page-content routes are placeholders or compatibility text.
+- `notifications`, `dynamic-content`, and `page-content` routes are compatibility-only and require operator decision.
 - Admin light-mode final verification remains incomplete.
 
 ### Highest-risk admin actions

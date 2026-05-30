@@ -20,20 +20,21 @@ Target: TopDraw Next.js staging vs Vite parity (source of truth: `~/Desktop/draw
 5. Auth: login/register/reset/logout happy path.
 6. Account: `/account/entries`, `/account/orders`, `/account/wins`, `/account/security`, `/account/responsible-play`.
 7. Account claim and verification upload.
-8. Admin: competitions create/edit/view, draw, payment refund/cancel, winners publish/process.
-9. Header/footer/nav state transitions at 390/430/1280/1440.
-10. Theme toggle across light/dark in public + account + admin at all breakpoints.
+8. Admin route parity: `/admin/profit-calculator`, `/admin/verifications`, `/admin/users`, `/admin/settings`, `/admin/payments-dev`, `/admin/payments`, `/admin/orders`.
+9. Admin: competitions create/edit/view, draw, payment refund/cancel, winners publish/process.
+10. Header/footer/nav state transitions at 390/430/1280/1440.
+11. Theme toggle across light/dark in public + account + admin at all breakpoints.
 
 ## Additional parity checks
 - `/competitions` tabs and `/competitions/[slug]` states (live/coming soon/closed/sold out/drawn).
 - `/guides` and `/guides/[slug]` rendering and navigation.
-- `/admin` fallback/unsupported path behavior (`/admin/notifications`, `/admin/page-content`, etc.)
+- `/admin` fallback/unsupported path behavior and alias path behavior (`/admin/notifications`, `/admin/page-content`, `/admin/content`, `/admin/seo`, `/admin/orders`).
 - `app/sitemap.xml` includes all required public routes.
 - `/help` route behavior vs Vite baseline decision (remove/keep/noindex).
 
 ## Known staged blockers to record during QA
 - legal placeholders in static/legal + footer
-- incomplete admin secondary pages (verifications/emails/settings/notifications/page-content/dynamic content/profit calculator)
+- incomplete admin secondary pages in legacy editors (notifications/page-content/dynamic content) and reduced email tooling parity
 - missing/no-handler CTA on certain coming-soon state in competition detail
 - unresolved light-mode accessibility/contrast in some admin states
 

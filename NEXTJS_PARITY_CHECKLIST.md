@@ -58,8 +58,14 @@ Vite → Next.js parity across public, auth, checkout, account, admin, SEO, and 
 - [x] `/admin` and `/admin/...` route map
 - [x] Core CRUD paths: competitions, hero banners, customers, entries, payments, draws, winners, reviews, discounts, FAQs, guides, wallets, postal entries, content library, SEO centre
 - [ ] Complete admin write-path staging tests
-- [ ] Missing parity paths: `verifications`, `notifications`, `settings`, `dynamic-content`, `page-content`, `profit-calculator`
-- [ ] Email tooling parity is reduced vs Vite (editor/preview)
+- [x] Route parity: `/admin/profit-calculator`
+- [x] Route parity: `/admin/verifications`
+- [x] Route parity: `/admin/users`
+- [x] Route parity: `/admin/settings`
+- [x] Route parity: `/admin/payments-dev`
+- [x] Route parity: `/footers-preview`
+- [x] Alias route parity: `/admin/content`, `/admin/seo`, `/admin/dynamic-content`, `/admin/page-content`, `/admin/orders`
+- [ ] Email tooling parity remains reduced vs Vite (editor/preview)
 
 ## Infrastructure / SEO
 - [x] `next.config.mjs`, `netlify.toml`, `app/sitemap.ts`, `app/robots.ts`
