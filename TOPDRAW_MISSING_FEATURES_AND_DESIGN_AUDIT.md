@@ -17,6 +17,9 @@ Top verdict:
 - Overall readiness: **CONDITIONAL**
 - Production parity: **NO**
 - Remaining blockers: legal/content placeholders, staging verification gaps on high-risk write paths, light-mode proofing debt.
+- Runtime parity fixes completed:
+  - `/admin/emails` now uses `email_templates.is_enabled` (matches Vite/server route shape).
+  - `/admin/discount-codes` now fails safely with disabled mutation controls when `admin-discount-codes` is not deployed/reachable.
 
 ## 2) Missing route matrix (Vite -> Next)
 

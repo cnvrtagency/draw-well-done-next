@@ -66,6 +66,9 @@ Vite → Next.js parity across public, auth, checkout, account, admin, SEO, and 
 - [x] Route parity: `/footers-preview`
 - [x] Alias route parity: `/admin/content`, `/admin/seo`, `/admin/dynamic-content`, `/admin/page-content`, `/admin/orders`
 - [ ] Email tooling parity remains reduced vs Vite (editor/preview)
+- [x] `/admin/emails` runtime schema alignment (`email_templates.is_enabled`)
+- [x] `/admin/discount-codes` graceful fallback when `admin-discount-codes` is unavailable
+- [ ] Deploy `admin-discount-codes` Edge Function in every target Supabase environment
 
 ## Infrastructure / SEO
 - [x] `next.config.mjs`, `netlify.toml`, `app/sitemap.ts`, `app/robots.ts`

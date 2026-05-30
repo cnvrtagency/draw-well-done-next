@@ -1999,6 +1999,7 @@ function DiscountCodesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [functionUnavailable, setFunctionUnavailable] = useState(false);
 
   const emptyCode = {
     code: "",
@@ -2015,8 +2016,15 @@ function DiscountCodesPage() {
     competition_id: null,
   };
 
-  const parseFunctionError = async (fnError: any, fallback: string) => {
+  const isFunctionUnavailableError = useCallback((text: string) =>
+    /Failed to send a request to the Edge Function/i.test(text) ||
+    /Could not reach discount code admin function/i.test(text) ||
+    (/Edge Function/i.test(text) && /404|not found/i.test(text))
+  , []);
+
+  const parseFunctionError = useCallback(async (fnError: any, fallback: string) => {
     let msg = fnError?.message || fallback;
+    let unavailable = isFunctionUnavailableError(msg);
     try {
       const ctx = fnError?.context;
       if (ctx && typeof ctx.text === "function") {
@@ -2033,9 +2041,11 @@ function DiscountCodesPage() {
     } catch {}
     if (/Failed to send a request to the Edge Function/i.test(fnError?.message || "")) {
       msg = "Could not reach discount code admin function. Check that admin-discount-codes is deployed in Supabase.";
+      unavailable = true;
     }
-    return msg;
-  };
+    if (isFunctionUnavailableError(msg)) unavailable = true;
+    return { message: msg, unavailable };
+  }, [isFunctionUnavailableError]);
 
   const load = useCallback(async () => {
     if (!supabase) return;
@@ -2046,26 +2056,36 @@ function DiscountCodesPage() {
       supabase.from("competitions").select("id,title").order("title"),
     ]);
     if (listRes.error) {
-      setError(await parseFunctionError(listRes.error, "Failed to load discount codes."));
+      const parsed = await parseFunctionError(listRes.error, "Failed to load discount codes.");
+      setError(parsed.message);
+      setFunctionUnavailable(parsed.unavailable);
       setRows([]);
+      setRedemptions({});
+      setEditing(null);
     } else {
+      setFunctionUnavailable(false);
       const data = listRes.data as Row | null;
       setRows(((data?.rows ?? []) as Row[]).map((row) => ({ ...row, discount_value: Number(row.discount_value) })));
       const counts: Record<string, number> = {};
       for (const item of ((data?.redemptions ?? []) as Row[])) if (item.status === "confirmed") counts[item.discount_code_id] = (counts[item.discount_code_id] ?? 0) + 1;
       setRedemptions(counts);
     }
-    if (compsRes.error) setError(compsRes.error.message);
+    if (compsRes.error && !listRes.error) setError(compsRes.error.message);
     setCompetitions((compsRes.data as Row[]) ?? []);
     setLoading(false);
-  }, [supabase]);
+  }, [parseFunctionError, supabase]);
 
   useEffect(() => { load(); }, [load]);
 
   async function callAdmin(action: "create" | "update" | "delete", payload: Row) {
     if (!supabase) throw new Error("Supabase client is not configured.");
+    if (functionUnavailable) throw new Error("Discount code admin function is unavailable. Deploy admin-discount-codes before using create/update/delete.");
     const { data, error: nextError } = await supabase.functions.invoke("admin-discount-codes", { body: { action, payload } });
-    if (nextError) throw new Error(await parseFunctionError(nextError, "Discount code request failed."));
+    if (nextError) {
+      const parsed = await parseFunctionError(nextError, "Discount code request failed.");
+      if (parsed.unavailable) setFunctionUnavailable(true);
+      throw new Error(parsed.message);
+    }
     if ((data as Row)?.error) throw new Error(String((data as Row).error));
     return data;
   }
@@ -2135,14 +2155,19 @@ function DiscountCodesPage() {
 
   return (
     <div>
-      <AdminPageHeader eyebrow="Marketing" title="Discount codes" icon={<Tag className="h-5 w-5" />} subtitle="Create and manage promo codes through the existing admin-discount-codes Edge Function." actions={<Button onClick={() => setEditing({ ...emptyCode })}><Plus className="h-4 w-4" /> New code</Button>} />
+      <AdminPageHeader eyebrow="Marketing" title="Discount codes" icon={<Tag className="h-5 w-5" />} subtitle="Create and manage promo codes through the existing admin-discount-codes Edge Function." actions={<Button onClick={() => setEditing({ ...emptyCode })} disabled={functionUnavailable || loading} title={functionUnavailable ? "Deploy admin-discount-codes in Supabase to enable admin actions." : undefined}><Plus className="h-4 w-4" /> New code</Button>} />
+      {functionUnavailable ? (
+        <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+          Discount code admin function is not reachable. Deploy <code className="rounded bg-black/20 px-1 py-0.5">admin-discount-codes</code> in Supabase, then retry.
+        </div>
+      ) : null}
       {error ? <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">{error}</div> : null}
       {success ? <div className="mb-4 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">{success}</div> : null}
       <LoadingOrError loading={loading} error={null} />
       {rows.length ? (
         <AdminTable minWidth={1000}>
           <thead className="text-xs uppercase tracking-wider"><tr><AdminTH>Code</AdminTH><AdminTH>Discount</AdminTH><AdminTH>Limits</AdminTH><AdminTH>Validity</AdminTH><AdminTH align="right">Used</AdminTH><AdminTH>Status</AdminTH><AdminTH align="right">Actions</AdminTH></tr></thead>
-          <tbody>{rows.map((row) => <AdminTR key={row.id}><AdminTD><div className="font-mono font-bold text-primary">{row.code}</div>{row.description ? <div className="text-xs text-white/55">{row.description}</div> : null}</AdminTD><AdminTD>{row.discount_type === "percent" ? `${row.discount_value}%` : formatMoney(Number(row.discount_value || 0))}</AdminTD><AdminTD className="text-xs text-white/70">{row.max_uses ? <div>Max {row.max_uses} total</div> : null}{row.max_uses_per_user ? <div>{row.max_uses_per_user} per user</div> : null}{row.min_quantity ? <div>Min qty {row.min_quantity}</div> : null}{row.min_subtotal ? <div>Min {formatMoney(Number(row.min_subtotal))}</div> : null}{!row.max_uses && !row.max_uses_per_user && !row.min_quantity && !row.min_subtotal ? "-" : null}</AdminTD><AdminTD className="text-xs text-white/70">{row.starts_at ? <div>From {fmtDate(row.starts_at)}</div> : null}{row.expires_at ? <div>Until {fmtDate(row.expires_at)}</div> : null}{!row.starts_at && !row.expires_at ? "Always" : null}</AdminTD><AdminTD align="right">{redemptions[row.id] ?? 0}</AdminTD><AdminTD><button type="button" onClick={() => toggleDiscountCode(row)} className={`rounded px-2 py-1 text-xs font-bold ${row.is_active ? "bg-success/20 text-success" : "bg-white/10 text-white/60"}`}>{row.is_active ? "Active" : "Inactive"}</button></AdminTD><AdminTD align="right"><div className="flex justify-end gap-1"><Button size="sm" variant="outline" onClick={() => setEditing(row)}><Pencil className="h-3.5 w-3.5" /></Button><Button size="sm" variant="outline" onClick={() => deleteDiscountCode(row)}><Trash2 className="h-3.5 w-3.5" /></Button></div></AdminTD></AdminTR>)}</tbody>
+          <tbody>{rows.map((row) => <AdminTR key={row.id}><AdminTD><div className="font-mono font-bold text-primary">{row.code}</div>{row.description ? <div className="text-xs text-white/55">{row.description}</div> : null}</AdminTD><AdminTD>{row.discount_type === "percent" ? `${row.discount_value}%` : formatMoney(Number(row.discount_value || 0))}</AdminTD><AdminTD className="text-xs text-white/70">{row.max_uses ? <div>Max {row.max_uses} total</div> : null}{row.max_uses_per_user ? <div>{row.max_uses_per_user} per user</div> : null}{row.min_quantity ? <div>Min qty {row.min_quantity}</div> : null}{row.min_subtotal ? <div>Min {formatMoney(Number(row.min_subtotal))}</div> : null}{!row.max_uses && !row.max_uses_per_user && !row.min_quantity && !row.min_subtotal ? "-" : null}</AdminTD><AdminTD className="text-xs text-white/70">{row.starts_at ? <div>From {fmtDate(row.starts_at)}</div> : null}{row.expires_at ? <div>Until {fmtDate(row.expires_at)}</div> : null}{!row.starts_at && !row.expires_at ? "Always" : null}</AdminTD><AdminTD align="right">{redemptions[row.id] ?? 0}</AdminTD><AdminTD><button type="button" onClick={() => toggleDiscountCode(row)} disabled={functionUnavailable} className={`rounded px-2 py-1 text-xs font-bold ${row.is_active ? "bg-success/20 text-success" : "bg-white/10 text-white/60"} ${functionUnavailable ? "cursor-not-allowed opacity-60" : ""}`}>{row.is_active ? "Active" : "Inactive"}</button></AdminTD><AdminTD align="right"><div className="flex justify-end gap-1"><Button size="sm" variant="outline" onClick={() => setEditing(row)} disabled={functionUnavailable}><Pencil className="h-3.5 w-3.5" /></Button><Button size="sm" variant="outline" onClick={() => deleteDiscountCode(row)} disabled={functionUnavailable}><Trash2 className="h-3.5 w-3.5" /></Button></div></AdminTD></AdminTR>)}</tbody>
         </AdminTable>
       ) : !loading ? <EmptyRows rows={rows} label="discount codes" /> : null}
 
@@ -2150,7 +2175,7 @@ function DiscountCodesPage() {
         <DialogContent className="admin-dialog-content max-w-lg">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit code" : "New discount code"}</DialogTitle></DialogHeader>
           {editing ? <div className="space-y-3 text-sm"><div className="space-y-1"><FieldLabel label="Code" /><Input value={editing.code || ""} onChange={(e) => setEditing({ ...editing, code: e.target.value.toUpperCase() })} /></div><div className="space-y-1"><FieldLabel label="Description" /><Input value={editing.description || ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Type" /><select className="admin-select h-10 w-full" value={editing.discount_type || "percent"} onChange={(e) => setEditing({ ...editing, discount_type: e.target.value })}><option value="percent">Percentage</option><option value="fixed">Fixed amount</option></select></div><div className="space-y-1"><FieldLabel label="Value" /><Input type="number" step="0.01" value={editing.discount_value ?? 0} onChange={(e) => setEditing({ ...editing, discount_value: e.target.value })} /></div></div><div className="space-y-1"><FieldLabel label="Restrict to competition" /><select className="admin-select h-10 w-full" value={editing.competition_id || ""} onChange={(e) => setEditing({ ...editing, competition_id: e.target.value || null })}><option value="">Any competition</option>{competitions.map((competition) => <option key={competition.id} value={competition.id}>{competition.title}</option>)}</select></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Starts at" /><Input type="datetime-local" value={editing.starts_at?.slice(0, 16) || ""} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Expires at" /><Input type="datetime-local" value={editing.expires_at?.slice(0, 16) || ""} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value || null })} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Max uses" /><Input type="number" value={editing.max_uses ?? ""} onChange={(e) => setEditing({ ...editing, max_uses: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Max uses per user" /><Input type="number" value={editing.max_uses_per_user ?? ""} onChange={(e) => setEditing({ ...editing, max_uses_per_user: e.target.value || null })} /></div></div><div className="grid grid-cols-2 gap-3"><div className="space-y-1"><FieldLabel label="Min quantity" /><Input type="number" value={editing.min_quantity ?? ""} onChange={(e) => setEditing({ ...editing, min_quantity: e.target.value || null })} /></div><div className="space-y-1"><FieldLabel label="Min subtotal" /><Input type="number" step="0.01" value={editing.min_subtotal ?? ""} onChange={(e) => setEditing({ ...editing, min_subtotal: e.target.value || null })} /></div></div><label className="inline-flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Active</label></div> : null}
-          <DialogFooter><Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={saveDiscountCode} disabled={saving}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button><Button onClick={saveDiscountCode} disabled={saving || functionUnavailable}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -2354,8 +2379,8 @@ function PostalEntriesPage() {
 }
 
 function EmailsPage() {
-  const { rows, loading, error } = useRows("email_templates", "id,template_key,subject,is_active,updated_at", "template_key", true, 100);
-  return <SimpleListPage eyebrow="Comms" title="Emails" subtitle="Email templates available to the server-side send route." loading={loading} error={error} rows={rows} icon={<Send className="h-5 w-5" />} columns={["template_key", "subject", "is_active", "updated_at"]} />;
+  const { rows, loading, error } = useRows("email_templates", "id,template_key,label,subject,is_enabled,updated_at", "template_key", true, 100);
+  return <SimpleListPage eyebrow="Comms" title="Emails" subtitle="Email templates available to the server-side send route. Templates are sendable when is_enabled is true." loading={loading} error={error} rows={rows} icon={<Send className="h-5 w-5" />} columns={["template_key", "label", "subject", "is_enabled", "updated_at"]} />;
 }
 
 function FaqsPage() {

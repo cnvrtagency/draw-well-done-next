@@ -20,6 +20,9 @@
   - `/admin/payments-dev`
   - `/footers-preview`
 - `/admin/orders` now clearly documents its Vite parity status as a compatibility route while preserving explicit separation.
+- Admin runtime parity fixes applied:
+  - `/admin/emails` now queries `email_templates.is_enabled` (Vite-aligned) instead of non-existent `is_active`.
+  - `/admin/discount-codes` now enters a safe read-only unavailable mode when `admin-discount-codes` is not reachable, with explicit deployment messaging.
 - Remaining major risk remains legal/compliance content, staging validation of all write paths, and light-mode/admin accessibility polish.
 
 ## Top hard blockers
@@ -28,6 +31,7 @@
 2. High-risk checkout/account/admin write paths still need staging-safe execution (refund/cancel, entry actions, draw flow, claim + verification lifecycle).
 3. Legacy alias routes remain intentionally present and require operator documentation during rollout.
 4. Light-mode audit is only partial for dense admin tables, dialogs, and forms.
+5. Supabase Edge Function `admin-discount-codes` must be deployed and reachable in each target environment for discount-code mutations.
 
 ## What passed vs what remains
 
